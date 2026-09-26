@@ -15,8 +15,8 @@ T-3xx = M3, T-4xx = M4, T-5xx = M5. Never reuse a retired ID.
 
 | ID | Milestone | Task | Dep | State |
 |---|---|---|---|---|
-| T-001 | M0 | `git init`, set branch `main`, add `.gitignore` covering `.next/`, `__pycache__/`, `.pytest_cache/`, `.venv/`, `.env`; initial commit | - | [ ] |
-| T-002 | M0 | Create monorepo layout: `frontend/`, `backend/`, keep `assets/` at root | T-001 | [ ] |
+| T-001 | M0 | `git init`, set branch `main`, add `.gitignore` covering `.next/`, `__pycache__/`, `.pytest_cache/`, `.venv/`, `.env`; initial commit | - | [x] |
+| T-002 | M0 | Create monorepo layout: `frontend/`, `backend/`, keep `assets/` at root | T-001 | [x] |
 | T-003 | M0 | Scaffold Next.js 14+ App Router app in `frontend/` with TypeScript and Tailwind; `pnpm --dir frontend build` exits 0 | T-002 | [ ] |
 | T-004 | M0 | Add frontend lint and typecheck scripts to `frontend/package.json`; both exit 0 | T-003 | [ ] |
 | T-005 | M0 | Add frontend test runner with one real assertion; `pnpm --dir frontend test` collects non-zero and passes | T-004 | [ ] |
@@ -29,6 +29,12 @@ T-3xx = M3, T-4xx = M4, T-5xx = M5. Never reuse a retired ID.
 | T-012 | M0 | Convert the four brand assets from `.jpg` to `.png` at the PRD's paths; `ls -l assets/*.png` lists all four. Resolves B-006. | T-001 | [ ] |
 | T-013 | M0 | Write `.env.example` naming every secret with no values: `PAYSTACK_SECRET_KEY`, `PAYSTACK_PUBLIC_KEY`, `RESEND_API_KEY`, `DATABASE_URL`, `REDIS_URL` | T-010 | [ ] |
 | T-014 | M0 | GitHub Actions workflow running frontend build/typecheck/lint/test and backend check/ruff/pytest on push; paste the run. Resolves B-001..B-004. | T-005, T-008, T-009 | [ ] |
+| T-015 | M0 | DRY-07: cut the 26-line header comment in `.github/workflows/security.yml:1-26` to 5 lines or fewer; point at decision D-016 rather than restating it. Verify finding 5. | - | [ ] |
+| T-016 | M0 | DRY-07: cut the two 9-line comment blocks in `.github/workflows/security.yml:98-106` and `:222-230` to 5 lines or fewer. Verify finding 6. | - | [ ] |
+| T-017 | M0 | DRY-07: cut the 6-line comment block in `.github/workflows/security.yml:364-369` to 5 lines or fewer. Verify finding 8 (minor). | - | [ ] |
+| T-018 | M0 | DRY-07: cut the 10-line module docstring and the 7-line `ids_in_job_names` docstring in `.github/scripts/check-ci-mirrors-checklist.py` to 5 lines or fewer. Verify findings 2 and 3. | - | [ ] |
+| T-019 | M0 | DRY-07: cut the 9-line module docstring in `.github/scripts/render-security-report.py` to 5 lines or fewer. Verify finding 4. | - | [ ] |
+| T-020 | M0 | DRY-07: cut the two 8-line comment blocks in `.gitleaks.toml:1-8` and `:23-30` to 5 lines or fewer. Verify finding 7. | - | [ ] |
 | T-101 | M1 | Implement User and Address models per the PRD's Data Models section | T-014 | [ ] |
 | T-102 | M1 | Implement Category, Product, Collection, CollectionProduct models | T-101 | [ ] |
 | T-103 | M1 | Implement SavedDesign, Cart, CartItem models | T-102 | [ ] |
@@ -118,6 +124,9 @@ Append only, newest at the bottom. One row per `/implement` run.
 |---|---|---|---|
 | 2026-09-26 | scaffold | Generated `/implement` and `/verify` skills, `references/checklist.md`, `docs/MILESTONES.md` and `docs/TODO.md` from the PRD | 4 proof commands run, all `cannot run`; see Blockers B-001..B-004 |
 | 2026-09-26 | scaffold-security | Added `.github/workflows/security.yml` (5 scanners + drift gate + PR report), `.gitleaks.toml`, two `.github/scripts/`, and CI-SEC-01..05 checklist rows | gitleaks 8.30.1 run over full history: 3 commits, no leaks. Gate proven both directions: tip-only scan exit 0 vs full-history exit 1 on an identical tree. Drift gate tested in 3 directions. |
+| 2026-09-26 | verify (full project) | Audited all 7 dimensions against the PRD and checklist. 0 blockers, 7 major, 2 minor. Queued T-015..T-020 for the 8 DRY-07 violations. | `docs/VERIFICATION.md`. 8 prohibited-scope greps clean; drift gate `ok: 5 CI-SEC rules`; both named false passes reproduced verbatim (`no tests ran`, `All checks passed!` over 0 files, interpreter `waitlist-BE-fPoBPHaW`). |
+| 2026-09-26 | T-001 | Tracker correction, not new work: the repo already existed on `main` with 4 commits and a `.gitignore` covering all five required paths. Ticked `[x]` against reality rather than re-running `git init`. | `git rev-parse --is-inside-work-tree` -> `true`; `git rev-list --count HEAD` -> `4`; `git branch --show-current` -> `main`; `git check-ignore -v` resolves all 5 required paths to real `.gitignore` lines, and exits 1 on `frontend/README.md`, `backend/README.md`, `docs/TODO.md` (does not over-match). |
+| 2026-09-26 | T-002 | Created `frontend/` and `backend/`, each with a README naming its stack and its proof-command convention. `assets/` unchanged at root. Cut branch `m0-foundation` from `main`. | `ls -d frontend backend assets` lists all three; `ls -la` shows a tracked file in each (git cannot commit an empty directory). |
 
 ## Decisions
 
@@ -158,6 +167,7 @@ a new row that names the old one, never by editing or deleting.
 | B-005 | 2026-09-26 | T-007 | `uv` resolves to an unrelated virtualenv (`C:\Users\nwank\.virtualenvs\waitlist-BE-fPoBPHaW`) because `backend/` has no environment. Every backend proof command is measuring the wrong interpreter until fixed. Resolved by T-007. | open |
 | B-006 | 2026-09-26 | T-012, T-216 | Brand assets on disk are `.jpg`; the PRD's Brand Assets section names `.png` for all four. Code written against the PRD paths will not resolve until converted. Resolved by T-012 per D-006. | open |
 | B-007 | 2026-09-26 | CI-SEC-02, CI-SEC-03, CI-SEC-04, CI-SEC-05 | Four of the five CI security scanners are **unverified**: the project has no source files, so each would exit 0 having scanned nothing. Demonstrated verbatim: `ruff check --select S .` prints `warning: No Python files found` then `All checks passed!`. Each job has an empty-scan guard that reports `not run` rather than a pass, and semgrep fails the step if it matches 0 files while tracked source exists. They become verifiable as M0 lands: CI-SEC-03 at T-008, CI-SEC-04 at T-004, CI-SEC-02 and CI-SEC-05 at T-014. Only CI-SEC-01 (secret scan) is verified today. | open |
+| B-008 | 2026-09-26 | milestone completion accuracy | `/verify` over the current tree returns `PASS` with 0 blockers while nothing is built. The verdict keys on blocker count alone, and an empty tree cannot produce a blocker — 4 of 7 dimensions are wholly `not verified`. Not a defect in any file: a property of gating on an absence. Mitigated for now by the caveat paragraph under the header in `docs/VERIFICATION.md`. Reconsider whether the gate should also require zero `not verified` dimensions. | open |
 
 ## Retired requirement IDs
 
