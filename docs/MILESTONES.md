@@ -12,7 +12,7 @@ its own heading marks it "(Phase 2)" and the Out of Scope list repeats it.
 
 | Milestone | Name | Requirements | Depends on | Status |
 |---|---|---|---|---|
-| M0 | Foundation | foundation | - | awaiting verify |
+| M0 | Foundation | foundation | - | complete |
 | M1 | Data Models and Auth | FR-USR-01, FR-USR-02, FR-USR-06, FR-USR-07, NFR-04 | M0 | not started |
 | M2 | Catalog and Storefront | FR-CAT-01..07, FR-ADM-04, FR-ADM-05, FR-ADM-06, NFR-02, NFR-03, NFR-05 | M1 | not started |
 | M3 | Custom Design Tool | FR-DES-01..11, FR-USR-04, NFR-01 | M2 | not started |
@@ -59,8 +59,8 @@ assets from `.jpg` to the `.png` paths the PRD names.
 
 ### Verification
 
-- Verified: not yet — `/verify` has not run against this branch
-- Report: none
+- Verified: yes, 2026-09-26 (re-run against `a5d4d1d`, merged via PR #2 at `91dd33b`)
+- Report: `docs/VERIFICATION.md`, 0 blockers, 0 major, 0 minor
 
 ---
 
