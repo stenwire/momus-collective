@@ -120,3 +120,25 @@ def test_money_fields_are_integers_not_floats():
     assert isinstance(order.subtotal, int)
     assert isinstance(order.total, int)
     assert isinstance(order.delivery_fee, int)
+
+
+def test_order_can_reference_a_promo_code():
+    from promocodes.models import DiscountType, PromoCode
+
+    promo = PromoCode.objects.create(
+        code="WELCOME10", discount_type=DiscountType.PERCENTAGE, discount_value=10
+    )
+    order = make_order(user=make_user(), promo_code=promo)
+    assert order.promo_code == promo
+
+
+def test_order_survives_promo_code_deletion():
+    from promocodes.models import DiscountType, PromoCode
+
+    promo = PromoCode.objects.create(
+        code="WELCOME10", discount_type=DiscountType.PERCENTAGE, discount_value=10
+    )
+    order = make_order(user=make_user(), promo_code=promo)
+    promo.delete()
+    order.refresh_from_db()
+    assert order.promo_code is None

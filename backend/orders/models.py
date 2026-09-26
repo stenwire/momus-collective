@@ -48,9 +48,13 @@ class Order(models.Model):
     delivery_fee = models.PositiveIntegerField(default=0)
     discount = models.PositiveIntegerField(default=0)
     total = models.PositiveIntegerField(validators=[MinValueValidator(0)])
-    # promo_code FK to promocodes.PromoCode lands in T-105, which creates
-    # that model. Adding it here would migrate against a model that does
-    # not exist yet.
+    promo_code = models.ForeignKey(
+        "promocodes.PromoCode",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="orders",
+    )
     status = models.CharField(
         max_length=20, choices=OrderStatus.choices, default=OrderStatus.PAID
     )

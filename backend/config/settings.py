@@ -31,6 +31,9 @@ INSTALLED_APPS = [
     "catalog",
     "carts",
     "orders",
+    "promocodes",
+    "reviews",
+    "newsletter",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
