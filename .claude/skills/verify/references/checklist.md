@@ -60,7 +60,7 @@ in `docs/TODO.md`. They become live as M0 lands.
 | DRY-04 | Order status values exist as one enum shared by the model, the admin board, and the notification copy. The six statuses are not restated as string literals per call site. | `[prd]` `Order.status` enum; FR-ADM-02 | read |
 | DRY-05 | Views stay thin: business rules live in services or model methods, not in DRF view bodies. | `[prd]` Tech Stack (Django + DRF) | read |
 | DRY-06 | The shirt color list and the text color palette each have a single definition shared by the design tool and the backend validator. | `[prd]` FR-DES-02 (7 colors), FR-DES-05 (8-10 colors) | read |
-| DRY-07 | No comment block exceeds 5 lines, and no comment restates what the code plainly does. Applies to TypeScript, Python and docstrings. Severity `minor`. | `[user]` "Code comment MUST be as minimal as possible, with a MAX of 5 lines" | read |
+| DRY-07 | No comment block exceeds 5 lines, and no comment restates what the code plainly does. Applies to TypeScript, Python and docstrings. Severity `major` — a violation is fixed before the milestone is called done. | `[user]` "Code comment MUST be as minimal as possible, with a MAX of 5 lines", raised from `minor` at the user's instruction | read |
 
 ## 4. Tests
 

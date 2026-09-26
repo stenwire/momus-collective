@@ -150,6 +150,7 @@ zero blockers should be a run that actually looked.
 - A list endpoint whose query count grows with page size.
 - A public page rendered client-side that NFR-03 requires server-rendered.
 - A design file generated below the 300 DPI floor FR-DES-09 sets.
+- A comment block longer than 5 lines (DRY-07).
 
 ## VERIFICATION.md
 
