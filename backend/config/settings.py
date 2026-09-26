@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "accounts",
     "catalog",
+    "carts",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
