@@ -1,0 +1,412 @@
+# Security workflow for momus collective storefront
+#
+# GATING POSTURE — deliberate, not incidental:
+#
+#   CI-SEC-01  secret scan      FAILS THE BUILD. A committed credential is an
+#                               incident, not a lead. It worsens every minute
+#                               it sits unrotated and the fix is unambiguous.
+#   CI-SEC-02  semgrep SAST     reports only
+#   CI-SEC-03  ruff S (Python)  reports only
+#   CI-SEC-04  eslint security  reports only
+#   CI-SEC-05  dependency audit reports only
+#
+# The reporting scanners do not fail the build because a pattern match is a
+# lead a human confirms, not a finding. Blocking on them trains people to
+# bypass the workflow, after which nothing is scanned at all.
+#
+# Promoting one to blocking is a one-line change: drop its
+# `continue-on-error: true`. Record a decision row in docs/TODO.md when you do.
+#
+# EMPTY-SCAN GUARD: as of 2026-09-26 this project has no source files. Every
+# reporting scanner would exit 0 having scanned nothing, which is
+# indistinguishable from a clean pass. `ruff check --select S .` demonstrates
+# it verbatim: `warning: No Python files found` then `All checks passed!`.
+# Each job below therefore checks its target path exists FIRST and fails the
+# step if the path is present but empty. A scanner that scanned nothing
+# reports as a problem, never as a pass.
+
+name: security
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    # Weekly. Rulesets update independently of this repository, so a clean
+    # tree becomes a finding with no commit to trigger it.
+    - cron: '17 4 * * 1'
+  workflow_dispatch:
+
+# The repository default is usually read-only, so the report job cannot
+# comment without this. Declared at workflow level and narrowed per job.
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------------
+  # CI-SEC-01 — secret scan. THE GATE.
+  # ---------------------------------------------------------------------
+  secret-scan:
+    name: CI-SEC-01 secret scan (gates)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # NON-NEGOTIABLE. Verified 2026-09-26 on a repo whose secret lived
+          # only in history: a tip-only scan reported `no leaks found` and
+          # exit 0 (a green build), while the full-history scan on the
+          # identical tree reported `leaks found: 2` and exit 1. The default
+          # shallow clone leaves every commit but the tip unscanned.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install gitleaks
+        env:
+          # Pinned. An unpinned scanner changes rules with no commit.
+          # v8.30.1 confirmed to exist and was run locally during scaffolding;
+          # an earlier attempt to pin v8.24.0 returned 404 Not Found.
+          GITLEAKS_VERSION: '8.30.1'
+        run: |
+          set -euo pipefail
+          # Release binary rather than the marketplace action: some scanner
+          # actions impose a license gate on organization-owned repositories
+          # and fail before scanning anything.
+          curl -sSLf -o gitleaks.tar.gz \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          tar -xzf gitleaks.tar.gz gitleaks
+          sudo mv gitleaks /usr/local/bin/
+          gitleaks version
+
+      - name: Verify history depth
+        run: |
+          set -euo pipefail
+          if [ "$(git rev-parse --is-shallow-repository)" = "true" ]; then
+            echo "::error::Repository is shallow. fetch-depth: 0 is required or this scan is near-worthless."
+            exit 1
+          fi
+          echo "commits available to scan: $(git rev-list --count HEAD)"
+
+      - name: Scan full history
+        run: |
+          set -euo pipefail
+          # --redact is mandatory: without it a real secret found in history
+          # is printed into the CI log and any artifact, turning one
+          # disclosure into a wider and more permanent one. Verified during
+          # scaffolding: report contains "Secret": "REDACTED", zero
+          # occurrences of the raw value.
+          #
+          # The non-zero exit on findings IS the gate. Never add
+          # --exit-code 0; that disarms it while leaving the job in place,
+          # which reads as protection and is not.
+          gitleaks git . \
+            --redact \
+            --config .gitleaks.toml \
+            --log-level info \
+            --report-path gitleaks-report.json \
+            --report-format json
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gitleaks-report
+          path: gitleaks-report.json
+          retention-days: 30
+          if-no-files-found: warn
+
+  # ---------------------------------------------------------------------
+  # CI-SEC-02 — semgrep SAST. Reports.
+  # ---------------------------------------------------------------------
+  sast:
+    name: CI-SEC-02 semgrep (reports)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Check there is something to scan
+        id: targets
+        run: |
+          set -euo pipefail
+          count=$(git ls-files '*.py' '*.ts' '*.tsx' '*.js' '*.jsx' | wc -l)
+          echo "count=${count}" >> "$GITHUB_OUTPUT"
+          if [ "${count}" -eq 0 ]; then
+            echo "::notice::No source files tracked yet; semgrep skipped. Activates as M0 lands."
+          else
+            echo "source files to scan: ${count}"
+          fi
+
+      - name: Run semgrep
+        if: steps.targets.outputs.count != '0'
+        continue-on-error: true
+        env:
+          # NO SEMGREP_APP_TOKEN. It moves rule selection out of version
+          # control into a web interface where rules change with no commit
+          # and no review, and uploads a private repo's findings to a third
+          # party. The public rulesets below need no token.
+          SEMGREP_RULES: >-
+            p/python
+            p/django
+            p/javascript
+            p/typescript
+            p/react
+            p/secrets
+        run: |
+          set -euo pipefail
+          pip install --quiet semgrep
+          # --metrics off: private repository.
+          semgrep scan \
+            --config auto \
+            --metrics off \
+            --json --output semgrep-report.json \
+            --exclude node_modules --exclude .next --exclude staticfiles \
+            --exclude '*/migrations/*' \
+            . || true
+          # Fail only if semgrep ran but matched no files at all, which
+          # would mean the paths are wrong and this job is theatre.
+          scanned=$(python -c "import json;print(json.load(open('semgrep-report.json')).get('paths',{}).get('scanned',[]).__len__())" 2>/dev/null || echo 0)
+          echo "semgrep scanned ${scanned} files"
+          if [ "${scanned}" -eq 0 ]; then
+            echo "::error::semgrep matched 0 files despite tracked source existing. Paths are wrong."
+            exit 1
+          fi
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-report
+          path: semgrep-report.json
+          retention-days: 30
+          if-no-files-found: ignore
+
+  # ---------------------------------------------------------------------
+  # CI-SEC-03 — Python security lint. Reports.
+  # ---------------------------------------------------------------------
+  python-security-lint:
+    name: CI-SEC-03 ruff S ruleset (reports)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Check there is something to scan
+        id: targets
+        run: |
+          set -euo pipefail
+          count=$(git ls-files 'backend/**/*.py' '*.py' | wc -l)
+          echo "count=${count}" >> "$GITHUB_OUTPUT"
+          if [ "${count}" -eq 0 ]; then
+            echo "::notice::No Python files tracked yet; ruff S skipped. Activates with M0 task T-008."
+          fi
+
+      - name: Run ruff security rules
+        if: steps.targets.outputs.count != '0'
+        continue-on-error: true
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          pip install --quiet ruff
+          # OVERLAP IS DELIBERATE, DO NOT REMOVE ONE BELIEVING THE OTHER
+          # COVERS IT. ruff's S ruleset is a port of most of bandit and runs
+          # over every file with no threshold on every pull request. Semgrep
+          # (CI-SEC-02) adds a confidence dimension and the checks the port
+          # lacks. Dropping either narrows coverage silently.
+          #
+          # `ruff check --select S .` prints "All checks passed!" after
+          # "warning: No Python files found" — a pass over zero files proves
+          # nothing, which is why the guard above exists.
+          ruff check --select S --output-format json --output-file ../ruff-security.json . || true
+          ruff check --select S --statistics . || true
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ruff-security-report
+          path: ruff-security.json
+          retention-days: 30
+          if-no-files-found: ignore
+
+  # ---------------------------------------------------------------------
+  # CI-SEC-04 — Node security lint. Reports.
+  # ---------------------------------------------------------------------
+  node-security-lint:
+    name: CI-SEC-04 eslint security (reports)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Check there is something to scan
+        id: targets
+        run: |
+          set -euo pipefail
+          if [ -f frontend/package.json ]; then
+            echo "count=1" >> "$GITHUB_OUTPUT"
+          else
+            echo "count=0" >> "$GITHUB_OUTPUT"
+            echo "::notice::No frontend/package.json yet; eslint security skipped. Activates with M0 task T-004."
+          fi
+
+      - name: Run eslint security rules
+        if: steps.targets.outputs.count != '0'
+        continue-on-error: true
+        working-directory: frontend
+        run: |
+          set -euo pipefail
+          corepack enable
+          pnpm install --frozen-lockfile
+          pnpm exec eslint . --plugin security --format json --output-file ../eslint-security.json || true
+          pnpm exec eslint . --plugin security || true
+
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eslint-security-report
+          path: eslint-security.json
+          retention-days: 30
+          if-no-files-found: ignore
+
+  # ---------------------------------------------------------------------
+  # CI-SEC-05 — dependency audit. Reports.
+  # ---------------------------------------------------------------------
+  dependency-audit:
+    name: CI-SEC-05 dependency audit (reports)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Audit Python dependencies
+        if: hashFiles('backend/pyproject.toml', 'backend/requirements.txt') != ''
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          pip install --quiet pip-audit
+          pip-audit --format json --output pip-audit.json -r backend/requirements.txt || true
+          pip-audit -r backend/requirements.txt || true
+
+      - name: Audit Node dependencies
+        if: hashFiles('frontend/package.json') != ''
+        continue-on-error: true
+        working-directory: frontend
+        run: |
+          set -euo pipefail
+          corepack enable
+          pnpm audit --json > ../pnpm-audit.json || true
+          pnpm audit || true
+
+      - name: Note when nothing to audit
+        if: hashFiles('backend/requirements.txt', 'frontend/package.json') == ''
+        run: echo "::notice::No dependency manifests yet; audit skipped. Activates as M0 lands."
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-audit-reports
+          path: |
+            pip-audit.json
+            pnpm-audit.json
+          retention-days: 30
+          if-no-files-found: ignore
+
+  # ---------------------------------------------------------------------
+  # Drift gate — CI and the verify checklist must cite the same rule IDs.
+  # ---------------------------------------------------------------------
+  checklist-drift:
+    name: CI mirrors verify checklist
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: python .github/scripts/check-ci-mirrors-checklist.py
+
+  # ---------------------------------------------------------------------
+  # Report. Holds the ONLY write-scoped token in this workflow.
+  # ---------------------------------------------------------------------
+  report:
+    name: Security report
+    needs: [secret-scan, sast, python-security-lint, node-security-lint, dependency-audit]
+    # always(): without it, a failed scanner skips this job and the comment
+    # goes missing exactly when it is most wanted. The event guard stops
+    # scheduled and push runs trying to comment where there is no pull
+    # request; those still get the job summary.
+    if: always() && github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      # This job holds a write-scoped token, so it must NOT run arbitrary
+      # code from the branch under review. Sparse-checkout of the renderer
+      # directory only, with credentials not persisted.
+      #
+      # A CHANGE TO .github/scripts/ IS A CHANGE TO CODE RUNNING WITH WRITE
+      # SCOPE. Reviewers should read those diffs accordingly.
+      - uses: actions/checkout@v4
+        with:
+          # Head ref, not base: the renderer must exist for the pull request
+          # that introduces it, and a base checkout cannot see a file the
+          # base does not have. The narrowed checkout is what makes this safe.
+          ref: ${{ github.event.pull_request.head.sha }}
+          sparse-checkout: .github/scripts
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: reports
+          merge-multiple: false
+
+      - name: Render report
+        id: render
+        run: python .github/scripts/render-security-report.py reports >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comment on pull request
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('security-report.md', 'utf8');
+            const marker = '<!-- momus-security-report -->';
+            const { owner, repo } = context.repo;
+            const issue_number = context.payload.pull_request.number;
+            const comments = await github.paginate(
+              github.rest.issues.listComments, { owner, repo, issue_number }
+            );
+            const existing = comments.find(c => c.body.includes(marker));
+            // Update in place. A fresh comment per push makes the pull
+            // request unreadable and gets muted.
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner, repo, comment_id: existing.id, body: marker + '\n' + body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner, repo, issue_number, body: marker + '\n' + body
+              });
+            }

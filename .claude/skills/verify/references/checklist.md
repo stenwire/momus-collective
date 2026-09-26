@@ -37,6 +37,25 @@ in `docs/TODO.md`. They become live as M0 lands.
 | SEC-14 | Customer PII (phone, email, shipping address) is not written to application logs, and is returned only on endpoints scoped to the owning user or an admin. | `[prd]` FR-ADM-01, Data Models (`User`, `Address`) | read |
 | SEC-15 | Design files and uploaded assets are served from storage with either a signed URL or an access check. An order's design file is not readable by URL guess. | `[prd]` FR-DES-09, FR-ADM-03 "design file download" | read |
 
+### CI-enforced security rules
+
+Run by `.github/workflows/security.yml`. Numbered in a separate `CI-SEC` band
+because `SEC-01`..`SEC-15` above were already taken — reusing those IDs would
+silently redefine fifteen existing checks. The linkage between these rows and
+the workflow is asserted by `.github/scripts/check-ci-mirrors-checklist.py`.
+
+**`not run` is never `pass`.** A scanner with nothing to scan exits 0 and looks
+identical to a clean result. Four of the five below are unverified until M0
+lands source files — see blocker B-007.
+
+| ID | Check | Source | Effort |
+|---|---|---|---|
+| CI-SEC-01 | Secret scan over **full git history** (`fetch-depth: 0`) with `--redact`, exit code not overridden. **Gates the build.** Verified 2026-09-26: on an identical tree, a tip-only scan reported `no leaks found` exit 0 while full history reported `leaks found: 2` exit 1. | `[user]` approved the gating posture; scanner behaviour confirmed by local run | run: the `secret-scan` job |
+| CI-SEC-02 | Semgrep SAST over `p/python`, `p/django`, `p/javascript`, `p/typescript`, `p/react`, `p/secrets`. Reports only. No `SEMGREP_APP_TOKEN` — rule selection stays in version control and findings stay off third-party servers. | `[prd]` Tech Stack (Django + Next.js); `[user]` approved reporting posture | run: the `sast` job |
+| CI-SEC-03 | Ruff `S` ruleset over `backend/`. Reports only. Overlaps CI-SEC-02 deliberately: `S` is a port of most of bandit and runs over every file with no threshold, while semgrep adds a confidence dimension and the checks the port lacks. Do not drop one believing the other covers it. | `[prd]` Tech Stack (Python 3.12+) | run: the `python-security-lint` job |
+| CI-SEC-04 | `eslint-plugin-security` over `frontend/`. Reports only. | `[prd]` Tech Stack (Next.js, TypeScript) | run: the `node-security-lint` job |
+| CI-SEC-05 | Dependency audit: `pip-audit` for the backend, `pnpm audit` for the frontend. Reports only. | `[prd]` Tech Stack | run: the `dependency-audit` job |
+
 ## 2. Efficiency
 
 | ID | Check | Source | Effort |

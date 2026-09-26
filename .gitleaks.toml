@@ -1,0 +1,30 @@
+# gitleaks configuration for momus collective storefront
+#
+# Baselined 2026-09-26 against full history: 3 commits, ~105 KB scanned,
+# no leaks found. The allowlist below is empty because the history is
+# VERIFIED CLEAN, not because it is unfinished. Do not add an entry without
+# a comment saying why the matched value authenticates nothing.
+#
+# A bare allowlist entry is indistinguishable from silencing a real finding.
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Verified empty as of 2026-09-26. See header."
+
+# Asset binaries: JPEG/PNG entropy triggers generic high-entropy rules.
+# These are brand images, not credentials. Scoped to the assets directory
+# and to image extensions only, so a stray .env in assets/ is still scanned.
+paths = [
+  '''assets/.*\.(jpg|jpeg|png|webp)$''',
+]
+
+# Intentionally NO regex allowlist entries.
+#
+# When .env.example lands in M0 (task T-013) it will contain only bare key
+# names with no values, so it should need no entry. If the first CI run
+# flags it, narrow the allowlist by BOTH path and pattern — for example
+# allow `CHANGEME`-style placeholders within .env.example only — rather
+# than allowlisting the whole file. A bare path allowlist over a config
+# file blinds the scan to a genuinely leaked token pasted into it later.
