@@ -120,24 +120,18 @@ jobs:
       - name: Run semgrep
         if: steps.targets.outputs.count != '0'
         continue-on-error: true
-        env:
-          # NO SEMGREP_APP_TOKEN. It moves rule selection out of version
-          # control into a web interface where rules change with no commit
-          # and no review, and uploads a private repo's findings to a third
-          # party. The public rulesets below need no token.
-          SEMGREP_RULES: >-
-            p/python
-            p/django
-            p/javascript
-            p/typescript
-            p/react
-            p/secrets
+        # No SEMGREP_APP_TOKEN (D-020): rule selection stays in version
+        # control and findings stay off third-party servers. The public
+        # rulesets passed via --config below need no token.
         run: |
           set -euo pipefail
           pip install --quiet semgrep
-          # --metrics off: private repository.
+          # Explicit rulesets, not --config auto: auto requires metrics on,
+          # and with --metrics off it scans 0 files while still exiting 0.
           semgrep scan \
-            --config auto \
+            --config p/python --config p/django \
+            --config p/javascript --config p/typescript \
+            --config p/react --config p/secrets \
             --metrics off \
             --json --output semgrep-report.json \
             --exclude node_modules --exclude .next --exclude staticfiles \
