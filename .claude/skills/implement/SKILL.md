@@ -134,6 +134,11 @@ of page size. The product grid in particular must `select_related`/
 (non-zero), and every payment, authentication, and admin-authorization path has
 a test. Zero tests collected is never a pass.
 
+**Code comments.** Comments are as minimal as possible, with a **maximum of 5
+lines** per comment block. Prefer no comment when the code is self-explanatory;
+when one earns its place, write the shortest form that conveys the non-obvious
+reason. Applies to TypeScript, Python and docstrings alike.
+
 **Mobile-first (NFR-01).** Every feature, the design tool included, works at
 360px. Touch targets are at least 44x44px.
 
