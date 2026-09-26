@@ -77,8 +77,8 @@ exist, and because saved designs, carts, and orders all key on `User`.
 
 | # | Criterion | State |
 |---|---|---|
-| 1 | All 14 models exist with the PRD's fields: User, Address, Category, Product, Collection, CollectionProduct, SavedDesign, Cart, CartItem, Order, OrderItem, Review, PromoCode, NewsletterSubscriber | [ ] |
-| 2 | `cd backend && uv run python manage.py makemigrations --check --dry-run` reports no missing migrations | [ ] |
+| 1 | All 14 models exist with the PRD's fields: User, Address, Category, Product, Collection, CollectionProduct, SavedDesign, Cart, CartItem, Order, OrderItem, Review, PromoCode, NewsletterSubscriber |[x] |
+| 2 | `cd backend && uv run python manage.py makemigrations --check --dry-run` reports no missing migrations |[x] |
 | 3 | Registration rejects a duplicate email with a clear message — test passes | [ ] |
 | 4 | Password minimum of 8 characters enforced — test passes | [ ] |
 | 5 | JWT login issues access and refresh tokens; sessions persist 30 days with Remember Me — test passes | [ ] |
@@ -90,7 +90,7 @@ exist, and because saved designs, carts, and orders all key on `User`.
 | 11 | Saved addresses support multiple per user with one default (FR-USR-06) — test passes | [ ] |
 | 12 | Account settings update name, email with re-verification, phone, password, notification_pref (FR-USR-07) — test passes | [ ] |
 | 13 | All routes are under `/api/v1/` | [ ] |
-| 14 | Money fields are `Decimal` or integer minor units; no float — confirmed by opening the models | [ ] |
+| 14 | Money fields are `Decimal` or integer minor units; no float — confirmed by opening the models |[x] |
 
 ### Verification
 
