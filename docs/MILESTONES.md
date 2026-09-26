@@ -43,8 +43,8 @@ assets from `.jpg` to the `.png` paths the PRD names.
 |---|---|---|
 | 1 | `git status --porcelain` runs in a repo on branch `main` with an initial commit | [x] |
 | 2 | `pnpm --dir frontend build` exits 0 on a Next.js 14+ App Router app with TypeScript and Tailwind | [x] |
-| 3 | `pnpm --dir frontend typecheck` exits 0 | [ ] |
-| 4 | `pnpm --dir frontend lint` exits 0 | [ ] |
+| 3 | `pnpm --dir frontend typecheck` exits 0 | [x] |
+| 4 | `pnpm --dir frontend lint` exits 0 | [x] |
 | 5 | `pnpm --dir frontend test` collects a non-zero number of tests and passes | [ ] |
 | 6 | `cd backend && uv run python manage.py check` reports no issues | [ ] |
 | 7 | `cd backend && uv run pytest -q` collects a non-zero number of tests and passes | [ ] |
