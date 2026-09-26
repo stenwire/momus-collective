@@ -1,3 +1,4 @@
+from datetime import timedelta
 from pathlib import Path
 
 import environ
@@ -27,6 +28,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "rest_framework_simplejwt.token_blacklist",
     "accounts",
     "catalog",
     "carts",
@@ -102,4 +104,30 @@ REST_FRAMEWORK = {
     # Deny-by-default: an endpoint that forgets to declare permissions is
     # unreachable rather than open, matching the admin boundary (D-007).
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ],
 }
+
+SIMPLE_JWT = {
+    # Remember Me controls refresh lifetime per-request (T-109); this is
+    # the ceiling FR-USR-02 sets for a "remembered" session.
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=30),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "USER_ID_FIELD": "id",
+    "USER_ID_CLAIM": "user_id",
+}
+
+FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
+
+DEFAULT_FROM_EMAIL = env(
+    "DEFAULT_FROM_EMAIL", default="no-reply@momuscollective.example"
+)
+
+# Resend integration lands with the transactional-email task in a later
+# milestone; console output is enough to prove the send path fires today.
+EMAIL_BACKEND = env(
+    "EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend"
+)
