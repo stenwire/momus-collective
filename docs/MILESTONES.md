@@ -12,7 +12,7 @@ its own heading marks it "(Phase 2)" and the Out of Scope list repeats it.
 
 | Milestone | Name | Requirements | Depends on | Status |
 |---|---|---|---|---|
-| M0 | Foundation | foundation | - | in progress |
+| M0 | Foundation | foundation | - | awaiting verify |
 | M1 | Data Models and Auth | FR-USR-01, FR-USR-02, FR-USR-06, FR-USR-07, NFR-04 | M0 | not started |
 | M2 | Catalog and Storefront | FR-CAT-01..07, FR-ADM-04, FR-ADM-05, FR-ADM-06, NFR-02, NFR-03, NFR-05 | M1 | not started |
 | M3 | Custom Design Tool | FR-DES-01..11, FR-USR-04, NFR-01 | M2 | not started |
@@ -53,13 +53,13 @@ assets from `.jpg` to the `.png` paths the PRD names.
 | 10 | The backend `uv` environment resolves inside `backend/`, not a borrowed virtualenv — proved by pasting `uv run python -c "import sys; print(sys.prefix)"` | [x] |
 | 11 | `ls -l assets/*.png` lists wordmark, avatar, mascot-human and mascot-raven |[x] |
 | 12 | PostgreSQL and Redis connect from the backend via `DATABASE_URL` and `REDIS_URL` |[x] |
-| 13 | A GitHub Actions workflow runs every command in rows 2-9 on push | [ ] |
+| 13 | A GitHub Actions workflow runs every command in rows 2-9 on push |[x] |
 | 14 | `.gitignore` covers `.next/`, `__pycache__/`, `.pytest_cache/`, `.venv/`, `.env` | [x] |
 | 15 | `.env.example` names every secret without holding a value: `PAYSTACK_SECRET_KEY`, `PAYSTACK_PUBLIC_KEY`, `RESEND_API_KEY`, `DATABASE_URL`, `REDIS_URL` |[x] |
 
 ### Verification
 
-- Verified: not yet
+- Verified: not yet — `/verify` has not run against this branch
 - Report: none
 
 ---
