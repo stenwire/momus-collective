@@ -1,0 +1,109 @@
+# Build and test gate. Mirrors M0 Definition of Done rows 2-9; every command
+# here is one a developer runs locally with the same arguments.
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    name: frontend build, types, lint, test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - run: pnpm --dir frontend install --frozen-lockfile
+
+      - run: pnpm --dir frontend typecheck
+      - run: pnpm --dir frontend lint
+      - run: pnpm --dir frontend test
+      - run: pnpm --dir frontend build
+
+  backend:
+    name: backend check, lint, format, test
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: momus
+          POSTGRES_PASSWORD: momus
+          POSTGRES_DB: momus
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U momus -d momus"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+
+    env:
+      # Settings read every one of these with no fallback (D-025), so CI must
+      # supply them or the app will not import. Not secrets: a throwaway key
+      # and the service containers above.
+      DJANGO_SECRET_KEY: ci-only-key-not-used-outside-github-actions
+      DJANGO_DEBUG: "False"
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1
+      DATABASE_URL: postgres://momus:momus@localhost:5432/momus
+      REDIS_URL: redis://localhost:6379/0
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - run: uv sync --frozen
+        working-directory: backend
+
+      - run: uv run python manage.py check
+        working-directory: backend
+
+      - run: uv run ruff check .
+        working-directory: backend
+
+      - run: uv run ruff format --check .
+        working-directory: backend
+
+      # --check --dry-run catches a model edited without a migration.
+      # `migrate --check` would fail every run: CI's database starts empty.
+      - run: uv run python manage.py makemigrations --check --dry-run
+        working-directory: backend
+
+      - run: uv run python manage.py migrate
+        working-directory: backend
+
+      - run: uv run pytest -q
+        working-directory: backend

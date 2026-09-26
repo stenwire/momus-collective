@@ -1,29 +1,7 @@
-# Security workflow for momus collective storefront
-#
-# GATING POSTURE — deliberate, not incidental:
-#
-#   CI-SEC-01  secret scan      FAILS THE BUILD. A committed credential is an
-#                               incident, not a lead. It worsens every minute
-#                               it sits unrotated and the fix is unambiguous.
-#   CI-SEC-02  semgrep SAST     reports only
-#   CI-SEC-03  ruff S (Python)  reports only
-#   CI-SEC-04  eslint security  reports only
-#   CI-SEC-05  dependency audit reports only
-#
-# The reporting scanners do not fail the build because a pattern match is a
-# lead a human confirms, not a finding. Blocking on them trains people to
-# bypass the workflow, after which nothing is scanned at all.
-#
-# Promoting one to blocking is a one-line change: drop its
-# `continue-on-error: true`. Record a decision row in docs/TODO.md when you do.
-#
-# EMPTY-SCAN GUARD: as of 2026-09-26 this project has no source files. Every
-# reporting scanner would exit 0 having scanned nothing, which is
-# indistinguishable from a clean pass. `ruff check --select S .` demonstrates
-# it verbatim: `warning: No Python files found` then `All checks passed!`.
-# Each job below therefore checks its target path exists FIRST and fails the
-# step if the path is present but empty. A scanner that scanned nothing
-# reports as a problem, never as a pass.
+# Security scanners. CI-SEC-01 (secret scan) gates the build; CI-SEC-02..05
+# report only — rationale in docs/TODO.md D-016.
+# Each reporting job checks its target exists first: a scanner with nothing
+# to scan exits 0 and is indistinguishable from a clean pass (B-007).
 
 name: security
 
@@ -95,15 +73,9 @@ jobs:
       - name: Scan full history
         run: |
           set -euo pipefail
-          # --redact is mandatory: without it a real secret found in history
-          # is printed into the CI log and any artifact, turning one
-          # disclosure into a wider and more permanent one. Verified during
-          # scaffolding: report contains "Secret": "REDACTED", zero
-          # occurrences of the raw value.
-          #
-          # The non-zero exit on findings IS the gate. Never add
-          # --exit-code 0; that disarms it while leaving the job in place,
-          # which reads as protection and is not.
+          # --redact: without it a found secret is printed into the CI log,
+          # widening the disclosure. The non-zero exit on findings IS the
+          # gate — never add --exit-code 0.
           gitleaks git . \
             --redact \
             --config .gitleaks.toml \
@@ -148,24 +120,18 @@ jobs:
       - name: Run semgrep
         if: steps.targets.outputs.count != '0'
         continue-on-error: true
-        env:
-          # NO SEMGREP_APP_TOKEN. It moves rule selection out of version
-          # control into a web interface where rules change with no commit
-          # and no review, and uploads a private repo's findings to a third
-          # party. The public rulesets below need no token.
-          SEMGREP_RULES: >-
-            p/python
-            p/django
-            p/javascript
-            p/typescript
-            p/react
-            p/secrets
+        # No SEMGREP_APP_TOKEN (D-020): rule selection stays in version
+        # control and findings stay off third-party servers. The public
+        # rulesets passed via --config below need no token.
         run: |
           set -euo pipefail
           pip install --quiet semgrep
-          # --metrics off: private repository.
+          # Explicit rulesets, not --config auto: auto requires metrics on,
+          # and with --metrics off it scans 0 files while still exiting 0.
           semgrep scan \
-            --config auto \
+            --config p/python --config p/django \
+            --config p/javascript --config p/typescript \
+            --config p/react --config p/secrets \
             --metrics off \
             --json --output semgrep-report.json \
             --exclude node_modules --exclude .next --exclude staticfiles \
@@ -219,15 +185,9 @@ jobs:
         run: |
           set -euo pipefail
           pip install --quiet ruff
-          # OVERLAP IS DELIBERATE, DO NOT REMOVE ONE BELIEVING THE OTHER
-          # COVERS IT. ruff's S ruleset is a port of most of bandit and runs
-          # over every file with no threshold on every pull request. Semgrep
-          # (CI-SEC-02) adds a confidence dimension and the checks the port
-          # lacks. Dropping either narrows coverage silently.
-          #
-          # `ruff check --select S .` prints "All checks passed!" after
-          # "warning: No Python files found" — a pass over zero files proves
-          # nothing, which is why the guard above exists.
+          # Overlap with semgrep (CI-SEC-02) is deliberate: ruff S is the
+          # bandit port with no threshold, semgrep adds confidence scoring.
+          # Dropping either narrows coverage silently.
           ruff check --select S --output-format json --output-file ../ruff-security.json . || true
           ruff check --select S --statistics . || true
 
@@ -361,12 +321,9 @@ jobs:
       contents: read
       pull-requests: write
     steps:
-      # This job holds a write-scoped token, so it must NOT run arbitrary
-      # code from the branch under review. Sparse-checkout of the renderer
-      # directory only, with credentials not persisted.
-      #
-      # A CHANGE TO .github/scripts/ IS A CHANGE TO CODE RUNNING WITH WRITE
-      # SCOPE. Reviewers should read those diffs accordingly.
+      # Holds a write-scoped token, so it must not run branch code:
+      # sparse-checkout of .github/scripts only. A change there is a change
+      # to code running with write scope — review those diffs accordingly.
       - uses: actions/checkout@v4
         with:
           # Head ref, not base: the renderer must exist for the pull request
