@@ -45,17 +45,17 @@ assets from `.jpg` to the `.png` paths the PRD names.
 | 2 | `pnpm --dir frontend build` exits 0 on a Next.js 14+ App Router app with TypeScript and Tailwind | [x] |
 | 3 | `pnpm --dir frontend typecheck` exits 0 | [x] |
 | 4 | `pnpm --dir frontend lint` exits 0 | [x] |
-| 5 | `pnpm --dir frontend test` collects a non-zero number of tests and passes | [ ] |
-| 6 | `cd backend && uv run python manage.py check` reports no issues | [ ] |
-| 7 | `cd backend && uv run pytest -q` collects a non-zero number of tests and passes | [ ] |
-| 8 | `cd backend && uv run ruff check .` passes and reports no `No Python files found` warning | [ ] |
-| 9 | `cd backend && uv run ruff format --check .` exits 0 | [ ] |
-| 10 | The backend `uv` environment resolves inside `backend/`, not a borrowed virtualenv — proved by pasting `uv run python -c "import sys; print(sys.prefix)"` | [ ] |
+| 5 | `pnpm --dir frontend test` collects a non-zero number of tests and passes | [x] |
+| 6 | `cd backend && uv run python manage.py check` reports no issues | [x] |
+| 7 | `cd backend && uv run pytest -q` collects a non-zero number of tests and passes | [x] |
+| 8 | `cd backend && uv run ruff check .` passes and reports no `No Python files found` warning | [x] |
+| 9 | `cd backend && uv run ruff format --check .` exits 0 | [x] |
+| 10 | The backend `uv` environment resolves inside `backend/`, not a borrowed virtualenv — proved by pasting `uv run python -c "import sys; print(sys.prefix)"` | [x] |
 | 11 | `ls -l assets/*.png` lists wordmark, avatar, mascot-human and mascot-raven | [ ] |
 | 12 | PostgreSQL and Redis connect from the backend via `DATABASE_URL` and `REDIS_URL` | [ ] |
 | 13 | A GitHub Actions workflow runs every command in rows 2-9 on push | [ ] |
 | 14 | `.gitignore` covers `.next/`, `__pycache__/`, `.pytest_cache/`, `.venv/`, `.env` | [x] |
-| 15 | `.env.example` names every secret without holding a value: `PAYSTACK_SECRET_KEY`, `PAYSTACK_PUBLIC_KEY`, `RESEND_API_KEY`, `DATABASE_URL`, `REDIS_URL` | [ ] |
+| 15 | `.env.example` names every secret without holding a value: `PAYSTACK_SECRET_KEY`, `PAYSTACK_PUBLIC_KEY`, `RESEND_API_KEY`, `DATABASE_URL`, `REDIS_URL` |[x] |
 
 ### Verification
 

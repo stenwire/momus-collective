@@ -1,0 +1,37 @@
+[project]
+name = "momus-collective-backend"
+version = "0.1.0"
+description = "momus collective storefront backend"
+requires-python = ">=3.12"
+dependencies = [
+    "django>=5.0",
+    "djangorestframework>=3.15",
+    "django-environ>=0.11",
+    "psycopg[binary]>=3.2",
+    "redis>=5.0",
+    "celery>=5.4",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.6",
+    "pytest>=8.0",
+    "pytest-django>=4.9",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "S"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["S101"]
+"**/test_*.py" = ["S101"]
+"**/settings.py" = ["S105"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+python_files = ["test_*.py"]
+addopts = "--strict-markers"
