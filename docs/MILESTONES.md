@@ -89,7 +89,7 @@ exist, and because saved designs, carts, and orders all key on `User`.
 | 10 | Rate limiting is enforced on login, registration and password reset — test passes | [ ] |
 | 11 | Saved addresses support multiple per user with one default (FR-USR-06) — test passes | [ ] |
 | 12 | Account settings update name, email with re-verification, phone, password, notification_pref (FR-USR-07) — test passes | [ ] |
-| 13 | All routes are under `/api/v1/` | [ ] |
+| 13 | All routes are under `/api/v1/` |[x] |
 | 14 | Money fields are `Decimal` or integer minor units; no float — confirmed by opening the models |[x] |
 
 ### Verification

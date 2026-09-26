@@ -1,0 +1,17 @@
+from django.urls import path
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def health(request):
+    """Proves /api/v1/ actually resolves to DRF, not just that the URLconf
+    declares it. Real endpoints replace this as each app lands its routes."""
+    return Response({"status": "ok"})
+
+
+urlpatterns = [
+    path("health/", health, name="api-health"),
+]
