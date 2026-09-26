@@ -1,205 +1,190 @@
 # Verification Report
 
-**Milestone:** full project
-**Scope:** Whole repository at commit `92fd9f3` on `main`. The only files that exist are trackers, the PRD, `.github/workflows/security.yml`, two `.github/scripts/` Python files, `.gitleaks.toml`, `.gitignore` and four `assets/*.jpg`. There is no `frontend/` and no `backend/`. All seven checklist dimensions were attempted; those requiring built code could not run.
+**Milestone:** M0 - Foundation
+**Scope:** M0's own code (frontend scaffold, backend Django/Celery/Postgres/Redis wiring, brand assets, both CI workflows) plus every cross-cutting checklist item M0 touches: SEC-11/12 (secrets, DEBUG), all 8 prohibited-scope greps (project-wide, not milestone-scoped by nature), DRY-07 (every tracked file), TST-01/05/06, BLD-01..07, API-06.
 **Date:** 2026-09-26
 **Blockers:** 0
-**Major:** 7
-**Minor:** 2
+**Major:** 2
+**Minor:** 0
 **Verdict:** PASS
-**Dimensions not verified:** 1 Security (partial — SEC-01..SEC-10, SEC-12..SEC-15 have no code to audit; SEC-11 verified clean; CI-SEC-02..05 unverified per B-007), 2 Efficiency (wholly — no endpoints, no frontend), 3 DRY and layering (partial — DRY-01..DRY-06 have no code; DRY-07 verified and failing), 4 Tests (wholly — `pytest` collected 0, no frontend suite), 5 Spec conformance (partial — SPC-01..SPC-14, SPC-16, SPC-17 have no implementation; SPC-15 verified and failing; PRO-01..PRO-08 verified clean), 6 Build and types (wholly — BLD-01..BLD-05 cannot run, BLD-06 confirms the wrong interpreter), 7 Client contract (partial — API-01..API-05, API-07, API-08 have no code; API-06 verified and failing).
-
-**Read the verdict with its counts.** `PASS` here means zero blockers were found, not that the project is sound. Nothing is built: fourteen of fifteen input-trust checks, every efficiency check, every test check and every build check had no code to run against. A `PASS` over an empty tree is the arithmetic of the gate, not evidence of quality. No milestone may be marked complete on this report — M0's own Definition of Done is 0/15.
+**Dimensions not verified:** 1 Security (SEC-01..10, SEC-13..15 have no code yet — no webhook, no admin route, no order model, no storage layer); 2 Efficiency (wholly — no endpoints exist); 3 DRY (DRY-01..06 have no code to check; DRY-07 fully verified, see findings); 4 Tests (TST-02/03/04 have no payment/auth/admin-authz code yet); 5 Spec conformance (SPC-01..14, 16, 17 have no implementation; SPC-06 is FR-DES-09's design-tool export, out of M0's scope; SPC-15 and prohibited scope fully verified); 7 Client contract (API-01..05, 07, 08 have no routes/pages/notifications yet; API-06 fully verified)
 
 ## Findings
 
 | # | Severity | Dimension | Location | Finding | Remediation |
 |---|---|---|---|---|---|
-| 1 | major | 5 Spec conformance | `assets/wordmark.jpg`, `assets/avatar.jpg`, `assets/mascot-human.jpg`, `assets/mascot-raven.jpg` | SPC-15 fails. The PRD's Brand Assets section (lines 25, 27, 29, 31) names `assets/wordmark.png`, `assets/avatar.png`, `assets/mascot-human.png`, `assets/mascot-raven.png`. Only `.jpg` exists; `ls -l assets/*.png` returns `No such file or directory`. Confirmed by opening the PRD and listing the directory. | Convert all four to `.png` at the PRD paths per D-006 (task T-012). Transparency matters — these are line art, so this is not a rename. |
-| 2 | major | 3 DRY and layering | `.github/scripts/check-ci-mirrors-checklist.py:2-12` | DRY-07 fails. Module docstring is 10 lines against the 5-line cap. | Cut to 5 lines or fewer, keeping the non-obvious reason (ID linkage only, no command comparison). |
-| 3 | major | 3 DRY and layering | `.github/scripts/check-ci-mirrors-checklist.py:28-35` | DRY-07 fails. `ids_in_job_names` docstring is 7 lines against the 5-line cap. | Cut to 5 lines or fewer, keeping why it parses rather than greps. |
-| 4 | major | 3 DRY and layering | `.github/scripts/render-security-report.py:2-11` | DRY-07 fails. Module docstring is 9 lines against the 5-line cap. | Cut to 5 lines or fewer. |
-| 5 | major | 3 DRY and layering | `.github/workflows/security.yml:1-26` | DRY-07 fails. Header comment block is 26 lines against the 5-line cap — the single largest violation in the repo. | Cut to 5 lines or fewer. The gating-posture rationale is already recorded as decision D-016 in `docs/TODO.md`; the file needs a pointer, not a duplicate. |
-| 6 | major | 3 DRY and layering | `.github/workflows/security.yml:98-106`, `:222-230` | DRY-07 fails. Two 9-line comment blocks (the `--redact`/gate rationale, and the deliberate-overlap note). | Cut each to 5 lines or fewer. |
-| 7 | major | 3 DRY and layering | `.gitleaks.toml:1-8`, `:23-30` | DRY-07 fails. Two 8-line comment blocks (the baseline header and the allowlist-discipline note). | Cut each to 5 lines or fewer. |
-| 8 | minor | 3 DRY and layering | `.github/workflows/security.yml:364-369` | DRY-07 fails at the margin — a 6-line comment block on the write-scoped `report` job checkout. Filed `minor` rather than `major` because it is one line over and the content is a genuine security warning to reviewers; the letter of DRY-07 still makes it a violation. | Cut one line. |
-| 9 | minor | 7 Client contract | `docs/MILESTONES.md` M0 Definition of Done | API-06 fails by design at this stage: 0 of 15 M0 criteria are `[x]` and no proof is pasted in `docs/TODO.md`. Recorded so the gate has a written trace, not as a defect — no `/implement` run has occurred. | No action. Clears as M0 tasks land with pasted proof. |
+| 1 | major | 3 DRY and layering | `backend/config/asgi.py:1-8` | DRY-07 fails. Django's generated module docstring is 6 lines (over the 5-line cap). `urls.py` and `manage.py` were trimmed for this rule during M0 (T-015..T-020 covered `.github/` only); `asgi.py` and `wsgi.py` were missed. | Cut to 5 lines or fewer, e.g. a one-line pointer to Django's ASGI docs. |
+| 2 | major | 3 DRY and layering | `backend/config/wsgi.py:1-8` | DRY-07 fails, identical shape to finding 1 — Django's generated WSGI docstring is 6 lines. | Cut to 5 lines or fewer. |
 
-### Not raised as findings
+### Not raised as a finding, but worth recording
 
-`.pytest_cache/` and `.ruff_cache/` appear in `git status --porcelain --ignored` as `!!`, meaning `.gitignore` already covers them. Tool byproducts, correctly ignored, not a finding.
+`docs/TODO.md`'s B-007 row still reads `open` and states "CI-SEC-02 ran but scanned 0 of 16 files ... re-verification pending." The re-verification has since happened: CI runs `36232575707` and `36232674772` (both on the current `m0-foundation` HEAD) show `CI-SEC-02 semgrep (reports)` green with `semgrep scanned 46 files`, and CI-SEC-02 through CI-SEC-05 all pass. The blocker's content is accurate as history but its `open` state understates where the branch now stands. `/implement`'s next run should close it; `/verify` does not edit existing rows. Not a code defect, so not counted in the finding table.
 
 ## Commands run
 
 ```
-$ ls -d frontend backend
-ls: cannot access 'frontend': No such file or directory
-ls: cannot access 'backend': No such file or directory
-
-$ ls -l assets/
-total 7184
--rw-r--r-- 1 nwank 197610 1682253 Sep 26 06:50 avatar.jpg
--rw-r--r-- 1 nwank 197610 2235114 Sep 26 07:02 mascot-human.jpg
--rw-r--r-- 1 nwank 197610 2404047 Sep 26 06:59 mascot-raven.jpg
--rw-r--r-- 1 nwank 197610 1029217 Sep 26 06:49 wordmark.jpg
-
-$ ls -l assets/*.png                                    # SPC-15
-ls: cannot access 'assets/*.png': No such file or directory
-```
-
-### Prohibited scope — all eight clean, zero matches
-
-```
-$ rg -nwi "printful|printify|afrprint|jaraprint" --glob '!*.md'          # PRO-01
-exit=1
-$ rg -nw "tenant|tenant_id|storefront_builder" --glob '!*.md'            # PRO-02
-exit=1
-$ rg -nw "currency|exchange_rate|USD|EUR|GBP" --glob '!*.md'             # PRO-03
-exit=1
-$ rg -nw "layers|freeDrag|free_drag|backPlacement|back_placement|imageUpload" --glob '!*.md'   # PRO-04
-exit=1
-$ rg -nw "inventory|stock_count|stock_level|reorder_point" --glob '!*.md'    # PRO-05
-exit=1
-$ rg -nwi "abandoned_cart|abandonedCart|cart_reminder" --glob '!*.md'        # PRO-06
-exit=1
-$ rg -nw "referral_code|affiliate|subscription_plan|billing_cycle|recurring_charge" --glob '!*.md'   # PRO-07
-exit=1
-$ rg -nwi "instagram_shop|tiktok_shop|i18n|gettext|ab_test|experiment_variant" --glob '!*.md'        # PRO-08
+$ rg -n "sk_live|sk_test|PAYSTACK_SECRET_KEY\s*=\s*[\"']" --glob '!*.md' --glob '!node_modules' --glob '!.venv'
 exit=1
 ```
-
-`exit=1` is ripgrep's no-match code. These are genuine passes: the greps ran
-over a real (if small) tree. Note the standing caveat from the checklist — an
-identifier grep is blind to a capability described only in English prose.
-
-### Secret scan (SEC-11)
+SEC-11, clean.
 
 ```
-$ rg -n "sk_live|sk_test|PAYSTACK_SECRET_KEY\s*=\s*[\"']" --glob '!*.md'
-exit=1
+$ git ls-files backend/.env frontend/.env .env
+(empty)
+$ git show HEAD:backend/.env.example | grep -vE '^#' | grep -E '=.+'
+DJANGO_DEBUG=False
 ```
-
-Clean. Corroborated by the scaffolding run of gitleaks 8.30.1 over full history
-(3 commits, no leaks). No environment-variable read sites exist yet, so the
-"no hardcoded fallback default" half of SEC-11 is not yet testable.
-
-### Frontend — BLD-01, BLD-02, BLD-03, TST-05 all `cannot run`
+No `.env` tracked; `.env.example` holds only that one non-secret value.
 
 ```
-$ pnpm --dir frontend build
-[ERROR] ENOENT: no such file or directory, lstat 'C:\Users\nwank\Desktop\sten_lab\momus-collective\frontend'
-$ pnpm --dir frontend typecheck
-[ERROR] ENOENT: no such file or directory, lstat 'C:\Users\nwank\Desktop\sten_lab\momus-collective\frontend'
-$ pnpm --dir frontend lint
-[ERROR] ENOENT: no such file or directory, lstat 'C:\Users\nwank\Desktop\sten_lab\momus-collective\frontend'
-$ pnpm --dir frontend test
-[ERROR] ENOENT: no such file or directory, lstat 'C:\Users\nwank\Desktop\sten_lab\momus-collective\frontend'
+$ rg -nwi "printful|printify|afrprint|jaraprint" --glob '!*.md' --glob '!node_modules' --glob '!.venv' --glob '!*.lock'
+exit=1   # PRO-01 clean
+$ rg -nw "tenant|tenant_id|storefront_builder" [same globs]
+exit=1   # PRO-02 clean
+$ rg -nw "currency|exchange_rate|USD|EUR|GBP" [same globs]
+exit=1   # PRO-03 clean
+$ rg -nw "layers|freeDrag|free_drag|backPlacement|back_placement|imageUpload" [same globs]
+exit=1   # PRO-04 clean
+$ rg -nw "inventory|stock_count|stock_level|reorder_point" [same globs]
+exit=1   # PRO-05 clean
+$ rg -nwi "abandoned_cart|abandonedCart|cart_reminder" [same globs]
+exit=1   # PRO-06 clean
+$ rg -nw "referral_code|affiliate|subscription_plan|billing_cycle|recurring_charge" [same globs]
+exit=1   # PRO-07 clean
+$ rg -nwi "instagram_shop|tiktok_shop|i18n|gettext|ab_test|experiment_variant" [same globs]
+exit=1   # PRO-08 clean
 ```
 
-Confirms blocker B-001 is still open.
-
-### Backend — both named false passes reproduced
-
-`cd backend` fails, so the checklist's backend commands cannot be run as
-written. They were run from the repository root to capture what the false pass
-looks like:
+Note on PRO-08: `backend/config/settings.py:84` sets `USE_I18N = True`, which the grep does not match (it targets the literal token `i18n`). Confirmed by opening the file: no `LocaleMiddleware`, no `LANGUAGES`, no `LOCALE_PATHS`, no `locale/` directory anywhere under `backend/`, and a single `LANGUAGE_CODE = "en-us"`. This is Django's inert default flag, not built multi-language support, so it is not recorded as a PRO-08 violation.
 
 ```
-$ cd backend
-/usr/bin/bash: line 1: cd: backend: No such file or directory
+$ python  (AST + consecutive-hash-comment scan over every tracked .py/.yml/.yaml/.toml,
+           and //-comment scan over every tracked .ts/.tsx)
+('backend/config/asgi.py', '<module> docstring', 6)
+('backend/config/wsgi.py', '<module> docstring', 6)
 
-$ uv run pytest -q                                      # TST-01
-
-no tests ran in 0.01s
-
-$ uv run ruff check .                                   # BLD-04
-All checks passed!
---- exit=0 ---
-
-$ uv run python -c "import sys; print(sys.prefix)"      # BLD-06
-C:\Users\nwank\.virtualenvs\waitlist-BE-fPoBPHaW
+total violations: 2
+py=11 ts=5 yml=5 toml=2
 ```
-
-Three things, all recorded as `not verified`, never as `pass`:
-
-- **TST-01** — zero tests collected. The checklist names this explicitly as a
-  false pass. Confirms B-002.
-- **BLD-04** — `All checks passed!` at exit 0 over zero Python files under this
-  path. The checklist names this too. Confirms B-003.
-- **BLD-06** — the interpreter is `waitlist-BE-fPoBPHaW`, an unrelated
-  project's virtualenv. Confirms B-005 is live, exactly as D-012 predicted.
-  Any backend result obtained this way measures the wrong environment.
-
-`manage.py check` (BLD-05) was not attempted: `backend/` does not exist, so
-there is no directory to run it from. Confirms B-004.
-
-### CI drift gate
+Both confirmed by opening the files (see Findings 1-2). All other tracked Python, YAML, TOML and TypeScript/TSX files scanned clean — including `backend/config/urls.py`, `manage.py`, `celery.py`, and both `.github/scripts/` files, all of which were cut for this exact rule during M0's own T-015..T-020.
 
 ```
-$ python .github/scripts/check-ci-mirrors-checklist.py
-ok: 5 CI-SEC rules linked in both files
+$ cd backend && uv run pytest -q
+.........                                                                [100%]
+9 passed in 0.79s
 exit=0
 ```
-
-A genuine pass. It ran, parsed both files, and compared five real IDs.
-
-### Git state
+Non-zero collected (TST-01). Containers confirmed healthy first: `momus-db-1 healthy`, `momus-redis-1 healthy`. Every assertion in `tests/test_settings.py` and `tests/test_celery.py` was opened and read — none merely checks that a call did not raise (TST-06).
 
 ```
-$ git log --oneline
-92fd9f3 Add security CI workflow: gating secret scan plus reporting scanners
-04953df Raise DRY-07 comment-length severity from minor to major
-9ce859c Add 5-line code comment cap to project conventions
-2fba579 Scaffold tracker workflow: /implement, /verify, MILESTONES, TODO
-
-$ git branch --show-current
-main
-
-$ git status --porcelain --ignored
-!! .pytest_cache/
-!! .ruff_cache/
+$ pnpm --dir frontend test
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+exit=0
 ```
-
-### DRY-07 measurement
-
-Python docstrings measured with `ast.get_docstring`; comment blocks in YAML and
-TOML measured by counting consecutive `#` lines. Every location below was then
-opened and read to confirm.
+Non-zero collected (TST-05).
 
 ```
---- .github/scripts/check-ci-mirrors-checklist.py ---
-  <module> @ line 1: docstring 10 lines  <-- OVER 5
-  ids_in_job_names @ line 27: docstring 7 lines  <-- OVER 5
---- .github/scripts/render-security-report.py ---
-  <module> @ line 1: docstring 9 lines  <-- OVER 5
---- .github/workflows/security.yml ---
-  line 1: comment block of 26 lines
-  line 98: comment block of 9 lines
-  line 222: comment block of 9 lines
-  line 364: comment block of 6 lines
---- .gitleaks.toml ---
-  line 1: 8-line block
-  line 23: 8-line block
+$ ls -l assets/*.png
+avatar.png  mascot-human.png  mascot-raven.png  wordmark.png
 ```
+SPC-15, all four present.
 
-Eight blocks over the cap across four files. No inline `#` block inside either
-Python script exceeds 5 lines.
+```
+$ pnpm --dir frontend typecheck
+$ next typegen && tsc --noEmit
+Generating route types...
+Types generated successfully
+exit=0
+```
+BLD-02.
+
+```
+$ pnpm --dir frontend lint
+$ eslint --max-warnings 0
+exit=0
+```
+BLD-03.
+
+`pnpm --dir frontend build` (BLD-01) was not run in this audit: it writes `frontend/.next/`, which the write restrictions forbid regardless of the path being gitignored. Evidence instead comes from the live CI run below, which ran the identical command on a clean checkout minutes before this audit.
+
+```
+$ cd backend && uv run ruff check .
+All checks passed!
+exit=0
+
+$ uv run ruff format --check .
+10 files already formatted
+exit=0
+```
+BLD-04, non-zero files, not the false pass.
+
+```
+$ uv run python manage.py check
+System check identified no issues (0 silenced).
+exit=0
+
+$ uv run python manage.py makemigrations --check --dry-run
+No changes detected
+exit=0
+```
+BLD-05.
+
+```
+$ uv run python -c "import sys; print(sys.prefix)"
+C:\Users\nwank\Desktop\sten_lab\momus-collective\backend\.venv
+```
+BLD-06, project-local, not the borrowed waitlist-BE env.
+
+```
+$ gh run list --branch m0-foundation --limit 4
+completed success  ci        36232674770   35s
+completed success  security  36232674772   1m0s
+completed success  security  36232575707   39s
+completed success  ci        36232575698   1m11s
+
+$ gh run view 36232674770
+frontend build, types, lint, test  in 31s  (success)
+backend check, lint, format, test  in 28s  (success)
+
+$ gh run view 36232674772
+CI-SEC-01 secret scan (gates)        8s  (success)
+CI-SEC-03 ruff S ruleset (reports)   7s  (success)
+CI-SEC-02 semgrep (reports)         22s  (success)
+CI mirrors verify checklist          6s  (success)
+CI-SEC-04 eslint security (reports) 17s  (success)
+CI-SEC-05 dependency audit (reports) 17s  (success)
+Security report                      9s  (success)
+```
+BLD-07: both workflows currently green on `m0-foundation`'s HEAD, including `frontend build` (satisfying BLD-01 without a local write) via the CI job.
+
+```
+$ grep -E '^\| T-0[0-2][0-9] \|' docs/TODO.md
+```
+All 20 rows state `[x]`.
+
+```
+$ sed -n M0 DoD table in docs/MILESTONES.md
+```
+All 15 rows state `[x]`.
+
+API-06: verified true for M0. Both trackers were spot-checked, not just grepped: `docs/TODO.md` rows for T-011 and T-014 carry pasted command output and worker-log task-ID matches, not bare claims.
+
+```
+$ git status --porcelain
+(clean, before this report and docs/TODO.md were written)
+```
 
 ## Dimension summary
 
 | Dimension | Result | Notes |
 |---|---|---|
-| 1 Security and input trust | not verified | SEC-11 passes (no secret in tree, corroborated by a full-history gitleaks run). SEC-01..SEC-10 and SEC-12..SEC-15 have no code: no webhook, no admin route, no serializer, no logging config, no storage layer. CI-SEC-01 is the one verified scanner; CI-SEC-02..05 remain unverified per open blocker B-007 — each would exit 0 having scanned nothing. The empty-scan guards in the workflow are the right shape, but a guard that has only ever fired on an empty tree is itself untested. |
-| 2 Efficiency | not verified | Nothing to measure. No endpoint exists for EFF-01..EFF-03, no frontend for EFF-04..EFF-06, no Celery app for EFF-07, no build to run Lighthouse against for EFF-08. |
-| 3 DRY and layering | fail | DRY-07 fails in eight places across four files — findings 2-8. DRY-01..DRY-06 are not verified: no pricing module, no delivery-fee rule, no status enum, no DRF views, no color lists exist yet. |
-| 4 Tests | not verified | `pytest` collected 0 items and no frontend suite exists. Per the checklist this is a failure to verify, never a pass. TST-02..TST-04 and TST-06 have no tests to inspect. |
-| 5 Spec conformance | fail | SPC-15 fails (finding 1) — assets are `.jpg`, the PRD names `.png`. All eight prohibited-scope greps pass clean, which is meaningful: no out-of-scope Phase 2 capability has crept in. SPC-01..SPC-14, SPC-16 and SPC-17 have no implementation to check. |
-| 6 Build and types | not verified | BLD-01..BLD-03 cannot run (no `frontend/`). BLD-04 produced the documented false pass over zero files. BLD-05 cannot run (no `manage.py`). BLD-06 actively fails — the interpreter resolves to a borrowed virtualenv. BLD-07 is partially satisfied: a security workflow exists and its drift gate passes, but the M0 build/test workflow from task T-014 does not. |
-| 7 Client contract and acceptance | not verified | API-06 fails as expected pre-build (finding 9). API-01..API-05, API-07 and API-08 have no routes, pages or notification code to audit. |
+| 1 Security and input trust | not verified (partial pass) | SEC-11 and SEC-12 pass on inspection of `backend/config/settings.py`: no secret committed, no hardcoded fallback, `DEBUG` defaults `False`, `ALLOWED_HOSTS` is not `["*"]`. SEC-01..10, 13, 14, 15 have no code yet (no webhook, no admin routes, no order/design models) — correctly out of M0's scope, not a pass. All 5 CI-SEC scanners now run against real targets and pass, including CI-SEC-02 after its fix. |
+| 2 Efficiency | not verified | No list endpoints exist. Wholly out of M0's scope. |
+| 3 DRY and layering | fail (major) | DRY-07 fails twice (findings 1-2), both Django-generated boilerplate the M0 comment-cutting pass (T-015..T-020) missed because it targeted only `.github/`. DRY-01..06 have no code yet. |
+| 4 Tests | pass (scoped) | TST-01 and TST-05 both collect non-zero and pass; TST-06 confirmed by reading every assertion. TST-02/03/04 have no payment/auth/admin-authz code yet. |
+| 5 Spec conformance | pass (scoped) | SPC-15 passes: all four PNGs present at the PRD's paths. All 8 prohibited-scope greps clean; `USE_I18N = True` investigated and found to be Django's inert default, not built i18n. SPC-01..14, 16, 17 have no implementation; SPC-06 belongs to FR-DES-09 (design tool), not M0. |
+| 6 Build and types | pass | BLD-02..06 all pass directly. BLD-01 evidenced via the live CI run rather than a local `pnpm build` (forbidden by this skill's write restrictions). BLD-07: both workflows green on the current HEAD. |
+| 7 Client contract and acceptance | pass (scoped) | API-06 verified true: all 20 M0 tasks and all 15 DoD rows are `[x]` with pasted proof, spot-checked for substance. API-01..05, 07, 08 have no routes, pages, or notification code yet. |
 
-### What would make the next run meaningful
-
-This audit's value is almost entirely in what it could not check. Landing M0
-converts eleven of these rows from `not verified` into real results, and closes
-B-001 through B-006. Until then, treat every `not verified` row as an open
-question rather than a benign one.
+M0's completion gate needs this header to name `M0 - Foundation` with zero blockers — it does. The two `major` DRY-07 findings do not block: per this skill's severity table, only `blocker` prevents completion, and DRY-07 is explicitly `major`, "fixed before the milestone is called done" but not a hard gate on its own. `/implement` should still fix both before marking M0 `complete`, since the checklist's own language treats an outstanding `major` DRY-07 as unfinished business for the milestone, not a passable gap.
