@@ -1,0 +1,33 @@
+# Non-default host ports: this machine runs other projects' postgres and
+# redis, and 6379 is already held. Container ports stay standard.
+name: momus
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: momus
+      POSTGRES_PASSWORD: momus
+      POSTGRES_DB: momus
+    ports:
+      - "55432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U momus -d momus"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    volumes:
+      - momus-db:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "56379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  momus-db:
