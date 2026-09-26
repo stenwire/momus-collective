@@ -1,14 +1,8 @@
 #!/usr/bin/env python3
-"""Prevents CI and the verify checklist drifting into false confidence.
+"""Fails when CI jobs and verify-checklist CI-SEC rows stop naming the same IDs.
 
-The failure this prevents: someone deletes a scanner job from security.yml,
-`/verify` keeps reporting its CI-SEC row as enforced, and the audit says a
-rule is covered by CI that no longer runs. Or the reverse — a job is added
-and never appears in the checklist, so `/verify` never reports on it.
-
-Asserts ID LINKAGE ONLY. It deliberately does not compare shell commands:
-comparing command strings meaningfully is not achievable, and a script that
-pretends to is worse than useless.
+Asserts ID linkage only: comparing shell command text is not meaningfully
+achievable, and a check that pretends to is worse than none.
 """
 
 import re
@@ -27,11 +21,8 @@ ID = re.compile(r"CI-SEC-\d{2}")
 def ids_in_job_names(path: Path) -> set[str]:
     """IDs cited by a real job's name, ignoring comments.
 
-    Parsed rather than grepped: the workflow's header comment documents every
-    rule, so a whole-file grep still finds CI-SEC-05 after that job is
-    deleted. Verified during scaffolding — the grep version passed a tree
-    with the job removed, which is the exact drift this script exists to
-    catch.
+    Parsed, not grepped: the header comment names every rule, so a whole-file
+    grep still matched CI-SEC-05 after that job was deleted (D-019).
     """
     data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     names = [job.get("name", "") for job in (data.get("jobs") or {}).values()]

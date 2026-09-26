@@ -51,7 +51,7 @@ assets from `.jpg` to the `.png` paths the PRD names.
 | 8 | `cd backend && uv run ruff check .` passes and reports no `No Python files found` warning | [x] |
 | 9 | `cd backend && uv run ruff format --check .` exits 0 | [x] |
 | 10 | The backend `uv` environment resolves inside `backend/`, not a borrowed virtualenv — proved by pasting `uv run python -c "import sys; print(sys.prefix)"` | [x] |
-| 11 | `ls -l assets/*.png` lists wordmark, avatar, mascot-human and mascot-raven | [ ] |
+| 11 | `ls -l assets/*.png` lists wordmark, avatar, mascot-human and mascot-raven |[x] |
 | 12 | PostgreSQL and Redis connect from the backend via `DATABASE_URL` and `REDIS_URL` |[x] |
 | 13 | A GitHub Actions workflow runs every command in rows 2-9 on push | [ ] |
 | 14 | `.gitignore` covers `.next/`, `__pycache__/`, `.pytest_cache/`, `.venv/`, `.env` | [x] |

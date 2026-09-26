@@ -17,6 +17,7 @@ dev = [
     "ruff>=0.6",
     "pytest>=8.0",
     "pytest-django>=4.9",
+    "pillow>=12.3.0",
 ]
 
 [tool.ruff]

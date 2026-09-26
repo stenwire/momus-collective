@@ -1,13 +1,8 @@
 #!/usr/bin/env python3
 """Renders scanner artifacts into one pull request comment.
 
-Runs in the only write-scoped job in the workflow, so it is sparse-checked-out
-alone and reads nothing but the downloaded report artifacts. It writes
-security-report.md and echoes the same content to the job summary.
-
-Treats every artifact as absent-by-default: a scanner that did not run
-reports as "not run", never as a pass. A missing report is the normal case
-while the project is still being scaffolded.
+Absent-by-default: a scanner that did not run reports as "not run", never as
+a pass. Runs write-scoped, so it reads only the downloaded artifacts.
 """
 
 import json
