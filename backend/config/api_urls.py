@@ -3,6 +3,8 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
+from .permissions import IsStaffUser
+
 
 @api_view(["GET"])
 @permission_classes([AllowAny])
@@ -12,7 +14,16 @@ def health(request):
     return Response({"status": "ok"})
 
 
+@api_view(["GET"])
+@permission_classes([IsStaffUser])
+def admin_ping(request):
+    """Real anchor for IsStaffUser (NFR-04) until M2's admin CRUD routes
+    land and take over as the permission class's actual callers."""
+    return Response({"status": "ok"})
+
+
 urlpatterns = [
     path("health/", health, name="api-health"),
+    path("admin/ping/", admin_ping, name="api-admin-ping"),
     path("auth/", include("accounts.urls")),
 ]
