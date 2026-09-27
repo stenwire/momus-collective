@@ -122,6 +122,8 @@ SIMPLE_JWT = {
 
 FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
 
+GOOGLE_OAUTH_CLIENT_ID = env("GOOGLE_OAUTH_CLIENT_ID")
+
 DEFAULT_FROM_EMAIL = env(
     "DEFAULT_FROM_EMAIL", default="no-reply@momuscollective.example"
 )

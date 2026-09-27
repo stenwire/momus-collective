@@ -81,8 +81,8 @@ exist, and because saved designs, carts, and orders all key on `User`.
 | 2 | `cd backend && uv run python manage.py makemigrations --check --dry-run` reports no missing migrations |[x] |
 | 3 | Registration rejects a duplicate email with a clear message — test passes | [ ] |
 | 4 | Password minimum of 8 characters enforced — test passes | [ ] |
-| 5 | JWT login issues access and refresh tokens; sessions persist 30 days with Remember Me — test passes | [ ] |
-| 6 | Google OAuth login succeeds and sets `auth_provider` — test passes | [ ] |
+| 5 | JWT login issues access and refresh tokens; sessions persist 30 days with Remember Me — test passes | [x] |
+| 6 | Google OAuth login succeeds and sets `auth_provider` — test passes | [x] |
 | 7 | Password reset emails a working link — test passes | [ ] |
 | 8 | Email verification is sent on registration — test passes | [ ] |
 | 9 | An authenticated non-admin gets `403` and an anonymous request `401` on an admin route — test passes | [ ] |
