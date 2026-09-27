@@ -45,7 +45,7 @@ T-3xx = M3, T-4xx = M4, T-5xx = M5. Never reuse a retired ID.
 | T-106 | M1 | Confirm all money fields are Decimal or integer minor units, no float; migrations complete | T-105 | [x] |
 | T-107 | M1 | Mount all DRF routes under `/api/v1/` | T-106 | [x] |
 | T-108 | M1 | Registration with email verification; duplicate email rejected with a clear message; 8-char minimum | T-107 | [x] |
-| T-109 | M1 | JWT login with refresh tokens, 30-day sessions, Remember Me | T-108 | [ ] |
+| T-109 | M1 | JWT login with refresh tokens, 30-day sessions, Remember Me | T-108 | [x] |
 | T-110 | M1 | Google OAuth login setting `auth_provider` | T-109 | [ ] |
 | T-111 | M1 | Forgot-password flow emailing a working reset link | T-109 | [ ] |
 | T-112 | M1 | `is_staff` DRF permission class; test 401 anonymous and 403 authenticated non-admin | T-109 | [ ] |

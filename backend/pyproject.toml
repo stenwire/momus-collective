@@ -31,8 +31,8 @@ exclude = ["**/migrations/*.py"]
 select = ["E", "F", "I", "UP", "B", "S"]
 
 [tool.ruff.lint.per-file-ignores]
-"**/tests/**" = ["S101", "S105", "S106"]
-"**/test_*.py" = ["S101", "S105", "S106"]
+"**/tests/**" = ["S101", "S105", "S106", "S107"]
+"**/test_*.py" = ["S101", "S105", "S106", "S107"]
 "**/settings.py" = ["S105"]
 
 [tool.pytest.ini_options]
