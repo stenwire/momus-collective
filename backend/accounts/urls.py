@@ -10,4 +10,14 @@ urlpatterns = [
     path("login/", LoginView.as_view(), name="auth-login"),
     path("login/google/", google_login, name="auth-login-google"),
     path("token/refresh/", TokenRefreshView.as_view(), name="auth-token-refresh"),
+    path(
+        "password-reset/",
+        views.request_password_reset,
+        name="auth-password-reset-request",
+    ),
+    path(
+        "password-reset/confirm/",
+        views.confirm_password_reset,
+        name="auth-password-reset-confirm",
+    ),
 ]
