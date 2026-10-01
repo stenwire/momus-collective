@@ -7,8 +7,12 @@ from rest_framework.response import Response
 
 from config.permissions import IsStaffUser
 
-from .admin_serializers import AdminCategorySerializer, AdminProductSerializer
-from .models import Category, Product
+from .admin_serializers import (
+    AdminCategorySerializer,
+    AdminCollectionSerializer,
+    AdminProductSerializer,
+)
+from .models import Category, Collection, CollectionProduct, Product
 
 
 class AdminProductViewSet(viewsets.ModelViewSet):
@@ -90,3 +94,48 @@ class AdminCategoryViewSet(viewsets.ModelViewSet):
     serializer_class = AdminCategorySerializer
     permission_classes = [IsStaffUser]
     queryset = Category.objects.order_by("display_order", "name")
+
+
+class AdminCollectionViewSet(viewsets.ModelViewSet):
+    """FR-ADM-06. Featured flag and display order are ordinary fields on
+    the CRUD serializer; product membership is managed through the two
+    actions below, since CollectionProduct is a through-table the plain
+    collection serializer doesn't expose for writing."""
+
+    serializer_class = AdminCollectionSerializer
+    permission_classes = [IsStaffUser]
+    queryset = Collection.objects.order_by("display_order", "name")
+
+    @action(detail=True, methods=["post"])
+    def add_product(self, request, pk=None):
+        collection = self.get_object()
+        product_id = request.data.get("product_id")
+        product = Product.objects.filter(pk=product_id).first()
+        if product is None:
+            return Response(
+                {"detail": "product_id did not match a product."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        display_order = request.data.get("display_order", 0)
+        _, created = CollectionProduct.objects.get_or_create(
+            collection=collection,
+            product=product,
+            defaults={"display_order": display_order},
+        )
+        return Response(
+            {"added": created}, status=status.HTTP_201_CREATED if created else 200
+        )
+
+    @action(detail=True, methods=["post"])
+    def remove_product(self, request, pk=None):
+        collection = self.get_object()
+        product_id = request.data.get("product_id")
+        deleted, _ = CollectionProduct.objects.filter(
+            collection=collection, product_id=product_id
+        ).delete()
+        if deleted == 0:
+            return Response(
+                {"detail": "That product is not in this collection."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        return Response(status=status.HTTP_204_NO_CONTENT)

@@ -6,12 +6,19 @@ from rest_framework.routers import DefaultRouter
 
 from accounts import account_views
 from accounts.address_views import AddressViewSet
-from catalog.admin_views import AdminCategoryViewSet, AdminProductViewSet
+from catalog.admin_views import (
+    AdminCategoryViewSet,
+    AdminCollectionViewSet,
+    AdminProductViewSet,
+)
 
 router = DefaultRouter()
 router.register("addresses", AddressViewSet, basename="address")
 router.register("admin/products", AdminProductViewSet, basename="admin-product")
 router.register("admin/categories", AdminCategoryViewSet, basename="admin-category")
+router.register(
+    "admin/collections", AdminCollectionViewSet, basename="admin-collection"
+)
 
 
 @api_view(["GET"])
