@@ -1,3 +1,4 @@
+from django.db import IntegrityError, transaction
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -64,7 +65,21 @@ def confirm_email_change(request):
         )
 
     request.user.email = new_email
-    request.user.save(update_fields=["email"])
+    try:
+        # A savepoint, not a bare save: once a query fails inside a
+        # transaction, Postgres aborts it and every further query raises
+        # until rollback. atomic() scopes that rollback to this block alone.
+        with transaction.atomic():
+            request.user.save(update_fields=["email"])
+    except IntegrityError:
+        # The .exists() check above is a TOCTOU race: two confirmations for
+        # the same target email could both pass it. The database's own
+        # unique constraint is the real guard; this just turns its failure
+        # into the same friendly response instead of an unhandled 500.
+        return Response(
+            {"detail": "An account with this email address already exists."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
     return Response({"detail": "Email address updated."})
 
 
