@@ -4,10 +4,19 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchProducts } from "@/lib/api";
 import { ProductCard } from "./product-card";
 
-export function ProductGrid({ category }: { category?: string | null }) {
+type Props = {
+  category?: string | null;
+  search?: string;
+};
+
+export function ProductGrid({ category, search }: Props) {
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["products", category ?? null],
-    queryFn: () => fetchProducts(category ? { category } : {}),
+    queryKey: ["products", category ?? null, search ?? ""],
+    queryFn: () =>
+      fetchProducts({
+        ...(category ? { category } : {}),
+        ...(search ? { search } : {}),
+      }),
   });
 
   if (isLoading) {
@@ -24,7 +33,11 @@ export function ProductGrid({ category }: { category?: string | null }) {
 
   if (!data || data.results.length === 0) {
     return (
-      <p className="p-8 text-center text-zinc-400">No products found.</p>
+      <p className="p-8 text-center text-zinc-400">
+        {search
+          ? `No products match "${search}". Try a different word or category.`
+          : "No products found."}
+      </p>
     );
   }
 

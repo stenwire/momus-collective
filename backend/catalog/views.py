@@ -29,6 +29,12 @@ class ProductListView(ListAPIView):
         category_slug = self.request.query_params.get("category")
         if category_slug:
             queryset = queryset.filter(category__slug=category_slug)
+
+        search = self.request.query_params.get("search", "").strip()
+        if search:
+            queryset = queryset.filter(
+                Q(slogan__icontains=search) | Q(category__name__icontains=search)
+            )
         return queryset
 
 
