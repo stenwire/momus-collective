@@ -70,6 +70,7 @@ T-3xx = M3, T-4xx = M4, T-5xx = M5. Never reuse a retired ID.
 | T-215 | M2 | Accessibility pass: alt text, keyboard nav, dark-theme contrast (NFR-05) | T-214 | [x] |
 | T-216 | M2 | Homepage brand assets: raven hero, Our Story mascot, wordmark nav at 140px/110px, avatar favicon and PWA icons | T-212 | [x] |
 | T-217 | M2 | Document and wire the CI/deploy requirement that the backend must be reachable at `NEXT_PUBLIC_API_URL` when `next build` runs, so the homepage's static generation produces real SSR content rather than an empty, silently-failed prefetch | T-212 | [x] |
+| T-218 | M2 | Verify finding 1 (major): `CategoryFilter` pills, `SearchInput` and `SortSelect` render under the 44x44px touch-target floor NFR-01/SPC-16 require (`category-filter.tsx:25,39`, `search-input.tsx:16`, `sort-select.tsx:21`); add `min-h-11` matching the pattern already used in `ProductDetailView`/`ProductModal` | T-217 | [ ] |
 | T-301 | M3 | Canvas shirt mockup renderer with live re-render (FR-DES-01, FR-DES-07) | T-216 | [ ] |
 | T-302 | M3 | Shirt color selection, all 7 colors, instant mockup update (FR-DES-02) | T-301 | [ ] |
 | T-303 | M3 | Text input capped at 80 chars with live counter and sanitization (FR-DES-03) | T-301 | [ ] |
