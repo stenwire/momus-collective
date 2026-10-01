@@ -127,7 +127,7 @@ the design tool's pricing and shirt-color options reuse catalog primitives.
 | 13 | URLs match `/shop`, `/shop/<category>`, `/product/<slug>` (NFR-03) | [x] |
 | 14 | Images lazy-load as WebP; Lighthouse performance above 80 (NFR-02) | [x] |
 | 15 | Alt text on every product image, keyboard navigation works, dark-theme contrast checked (NFR-05) | [x] |
-| 16 | Homepage uses the brand assets at their PRD paths, including the raven hero and Our Story mascot | [ ] |
+| 16 | Homepage uses the brand assets at their PRD paths, including the raven hero and Our Story mascot | [x] |
 
 ### Verification
 

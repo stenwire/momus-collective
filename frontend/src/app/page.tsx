@@ -1,7 +1,8 @@
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Collections } from "@/components/catalog/collections";
+import { Hero } from "@/components/hero";
+import { OurStory } from "@/components/our-story";
 import { fetchCollections } from "@/lib/api";
 import { getQueryClient } from "@/lib/get-query-client";
 
@@ -25,16 +26,9 @@ export default async function Home() {
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <main className="flex flex-1 flex-col">
-        <h1 className="px-4 pt-8 text-2xl font-semibold text-zinc-50">
-          momus collective
-        </h1>
+        <Hero />
         <Collections />
-        <Link
-          href="/shop"
-          className="mx-4 mb-8 inline-block rounded-md bg-amber-400 px-6 py-2 text-center font-medium text-black transition-colors hover:bg-amber-300"
-        >
-          Shop All Products
-        </Link>
+        <OurStory />
       </main>
     </HydrationBoundary>
   );

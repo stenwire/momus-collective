@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "corsheaders",
     "rest_framework",
     "rest_framework_simplejwt.token_blacklist",
     "accounts",
@@ -42,6 +43,7 @@ AUTH_USER_MODEL = "accounts.User"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -136,6 +138,10 @@ SIMPLE_JWT = {
 }
 
 FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
+
+# The frontend is the only client (D-011); CORS is scoped to exactly the
+# origins it can legitimately run on, not a wildcard.
+CORS_ALLOWED_ORIGINS = [FRONTEND_URL, *env.list("CORS_EXTRA_ORIGINS", default=[])]
 
 GOOGLE_OAUTH_CLIENT_ID = env("GOOGLE_OAUTH_CLIENT_ID")
 
