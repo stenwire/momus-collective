@@ -8,7 +8,8 @@ from catalog.models import Category, Product
 pytestmark = pytest.mark.django_db
 
 
-def make_category(name="Philosophy", slug="philosophy"):
+def make_category(name="Test Category", slug="test-category"):
+    # Distinct from the real launch categories T-203's migration seeds.
     return Category.objects.create(name=name, slug=slug)
 
 
@@ -35,7 +36,7 @@ def test_product_list_excludes_inactive_products():
     Product.objects.create(
         slogan="hidden",
         slug="hidden",
-        category=make_category("Tech", "tech"),
+        category=make_category("Other Test Category", "other-test-category"),
         price=500000,
         is_active=False,
     )
@@ -54,7 +55,7 @@ def test_product_list_serializes_card_fields():
         "mockup_images",
         "tags",
     }
-    assert item["category"]["name"] == "Philosophy"
+    assert item["category"]["name"] == "Test Category"
 
 
 def test_product_list_issues_a_constant_query_count_regardless_of_page_size():

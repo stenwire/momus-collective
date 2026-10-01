@@ -4,10 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchProducts } from "@/lib/api";
 import { ProductCard } from "./product-card";
 
-export function ProductGrid() {
+export function ProductGrid({ category }: { category?: string | null }) {
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["products"],
-    queryFn: () => fetchProducts(),
+    queryKey: ["products", category ?? null],
+    queryFn: () => fetchProducts(category ? { category } : {}),
   });
 
   if (isLoading) {

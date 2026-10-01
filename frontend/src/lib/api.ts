@@ -38,3 +38,18 @@ export async function fetchProducts(
   }
   return res.json();
 }
+
+export type CategoryWithCount = Category & { product_count: number };
+
+export type CategoryList = {
+  all_count: number;
+  categories: CategoryWithCount[];
+};
+
+export async function fetchCategories(): Promise<CategoryList> {
+  const res = await fetch(`${API_URL}/api/v1/categories/`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch categories: ${res.status}`);
+  }
+  return res.json();
+}

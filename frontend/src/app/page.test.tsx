@@ -29,14 +29,22 @@ describe("Home", () => {
   beforeEach(() => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({
-          count: 1,
-          next: null,
-          previous: null,
-          results: [mockProduct],
-        }),
+      vi.fn().mockImplementation(async (url: string) => {
+        if (url.includes("/categories/")) {
+          return {
+            ok: true,
+            json: async () => ({ all_count: 1, categories: [] }),
+          };
+        }
+        return {
+          ok: true,
+          json: async () => ({
+            count: 1,
+            next: null,
+            previous: null,
+            results: [mockProduct],
+          }),
+        };
       }),
     );
   });

@@ -113,7 +113,7 @@ the design tool's pricing and shirt-color options reuse catalog primitives.
 | # | Criterion | State |
 |---|---|---|
 | 1 | Product grid renders 4 columns desktop, 2 mobile, each card showing mockup, slogan, category, NGN price and tag (FR-CAT-01) | [x] |
-| 2 | All 11 launch categories exist and filter correctly, each showing its product count (FR-CAT-02) | [ ] |
+| 2 | All 11 launch categories exist and filter correctly, each showing its product count (FR-CAT-02) | [x] |
 | 3 | Search matches slogan and category, debounced at 300ms, with a friendly empty state (FR-CAT-03) | [ ] |
 | 4 | Sorting by Newest, Price asc, Price desc and Most Popular works (FR-CAT-04) | [ ] |
 | 5 | Product detail shows mockup, sizes S-XXL, colors, Add to Bag, details and up to 4 related; modal on desktop, full page on mobile (FR-CAT-05) | [ ] |
