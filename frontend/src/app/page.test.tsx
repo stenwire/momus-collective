@@ -56,15 +56,15 @@ describe("Home", () => {
     vi.unstubAllGlobals();
   });
 
-  it("renders a heading", () => {
-    renderWithQueryClient(<Home />);
+  it("renders a heading", async () => {
+    renderWithQueryClient(await Home());
     expect(
       screen.getByRole("heading", { level: 1 }),
     ).toBeInTheDocument();
   });
 
   it("gives every image alt text", async () => {
-    const { container } = renderWithQueryClient(<Home />);
+    const { container } = renderWithQueryClient(await Home());
     await waitFor(() => {
       expect(container.querySelectorAll("img").length).toBeGreaterThan(0);
     });
