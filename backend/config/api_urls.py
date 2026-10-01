@@ -4,6 +4,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.routers import DefaultRouter
 
+from accounts import account_views
 from accounts.address_views import AddressViewSet
 
 from .permissions import IsStaffUser
@@ -32,5 +33,17 @@ urlpatterns = [
     path("health/", health, name="api-health"),
     path("admin/ping/", admin_ping, name="api-admin-ping"),
     path("auth/", include("accounts.urls")),
+    path("account/", account_views.account_settings, name="account-settings"),
+    path(
+        "account/email/",
+        account_views.request_email_change,
+        name="account-email-change-request",
+    ),
+    path(
+        "account/email/confirm/",
+        account_views.confirm_email_change,
+        name="account-email-change-confirm",
+    ),
+    path("account/password/", account_views.change_password, name="account-password"),
     path("", include(router.urls)),
 ]
