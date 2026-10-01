@@ -19,6 +19,42 @@ jobs:
   frontend:
     name: frontend build, types, lint, test
     runs-on: ubuntu-latest
+
+    # next build runs the homepage's SSR prefetch for real (T-212):
+    # without a reachable backend it still exits 0, but silently bakes
+    # an empty loading shell into the static HTML instead of real
+    # content (T-217). These services and the backend step below exist
+    # so that failure mode can't hide in this job the way it did before.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: momus
+          POSTGRES_PASSWORD: momus
+          POSTGRES_DB: momus
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U momus -d momus"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+
+    env:
+      DJANGO_SECRET_KEY: ci-only-key-not-used-outside-github-actions
+      DJANGO_DEBUG: "False"
+      DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1
+      DATABASE_URL: postgres://momus:momus@localhost:5432/momus
+      REDIS_URL: redis://localhost:6379/0
+      GOOGLE_OAUTH_CLIENT_ID: ci-only-placeholder.apps.googleusercontent.com
+      CORS_EXTRA_ORIGINS: http://localhost:3000
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -39,7 +75,51 @@ jobs:
       - run: pnpm --dir frontend typecheck
       - run: pnpm --dir frontend lint
       - run: pnpm --dir frontend test
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: backend/uv.lock
+
+      - run: uv sync --frozen
+        working-directory: backend
+
+      - run: uv run python manage.py migrate
+        working-directory: backend
+
+      - name: Start backend for SSR build
+        run: |
+          uv run python manage.py runserver 0.0.0.0:8000 &
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8000/api/v1/health/ && break
+            sleep 1
+          done
+        working-directory: backend
+
+      # A product in a collection so the homepage's SSR prefetch (it only
+      # fetches collections, not the product list -- see T-213) has
+      # something real to bake into the static HTML. The assertion below
+      # is what actually catches T-217's failure mode (an empty, silently
+      # successful build).
+      - name: Seed a CI-only product for the SSR assertion
+        run: |
+          uv run python manage.py shell -c "
+          from catalog.models import Category, Product, Collection, CollectionProduct
+          cat, _ = Category.objects.get_or_create(slug='ci-ssr-check', defaults={'name': 'CI SSR Check'})
+          product, _ = Product.objects.get_or_create(slug='ci-ssr-check-product', defaults={'slogan': 'CI SSR CHECK MARKER', 'category': cat, 'price': 100000})
+          collection, _ = Collection.objects.get_or_create(slug='ci-ssr-check-collection', defaults={'name': 'CI Check'})
+          CollectionProduct.objects.get_or_create(collection=collection, product=product)
+          "
+        working-directory: backend
+
       - run: pnpm --dir frontend build
+
+      - name: Assert the homepage's static HTML has real SSR content
+        run: |
+          grep -q "CI SSR CHECK MARKER" frontend/.next/server/app/index.html || {
+            echo "::error::Homepage static HTML has no real product content -- the SSR prefetch silently failed (T-217)."
+            exit 1
+          }
 
   backend:
     name: backend check, lint, format, test
