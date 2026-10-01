@@ -12,8 +12,8 @@ its own heading marks it "(Phase 2)" and the Out of Scope list repeats it.
 
 | Milestone | Name | Requirements | Depends on | Status |
 |---|---|---|---|---|
-| M0 | Foundation | foundation | - | awaiting verify |
-| M1 | Data Models and Auth | FR-USR-01, FR-USR-02, FR-USR-06, FR-USR-07, NFR-04 | M0 | not started |
+| M0 | Foundation | foundation | - | complete |
+| M1 | Data Models and Auth | FR-USR-01, FR-USR-02, FR-USR-06, FR-USR-07, NFR-04 | M0 | complete |
 | M2 | Catalog and Storefront | FR-CAT-01..07, FR-ADM-04, FR-ADM-05, FR-ADM-06, NFR-02, NFR-03, NFR-05 | M1 | not started |
 | M3 | Custom Design Tool | FR-DES-01..11, FR-USR-04, NFR-01 | M2 | not started |
 | M4 | Cart, Checkout and Payment | FR-CART-01..09, FR-USR-03, FR-USR-05, FR-NOT-01 | M3 | not started |
@@ -59,8 +59,8 @@ assets from `.jpg` to the `.png` paths the PRD names.
 
 ### Verification
 
-- Verified: not yet — `/verify` has not run against this branch
-- Report: none
+- Verified: yes, 2026-09-26 (re-run against `a5d4d1d`, merged via PR #2 at `91dd33b`)
+- Report: `docs/VERIFICATION.md`, 0 blockers, 0 major, 0 minor
 
 ---
 
@@ -77,25 +77,25 @@ exist, and because saved designs, carts, and orders all key on `User`.
 
 | # | Criterion | State |
 |---|---|---|
-| 1 | All 14 models exist with the PRD's fields: User, Address, Category, Product, Collection, CollectionProduct, SavedDesign, Cart, CartItem, Order, OrderItem, Review, PromoCode, NewsletterSubscriber | [ ] |
-| 2 | `cd backend && uv run python manage.py makemigrations --check --dry-run` reports no missing migrations | [ ] |
-| 3 | Registration rejects a duplicate email with a clear message — test passes | [ ] |
-| 4 | Password minimum of 8 characters enforced — test passes | [ ] |
-| 5 | JWT login issues access and refresh tokens; sessions persist 30 days with Remember Me — test passes | [ ] |
-| 6 | Google OAuth login succeeds and sets `auth_provider` — test passes | [ ] |
-| 7 | Password reset emails a working link — test passes | [ ] |
-| 8 | Email verification is sent on registration — test passes | [ ] |
-| 9 | An authenticated non-admin gets `403` and an anonymous request `401` on an admin route — test passes | [ ] |
-| 10 | Rate limiting is enforced on login, registration and password reset — test passes | [ ] |
-| 11 | Saved addresses support multiple per user with one default (FR-USR-06) — test passes | [ ] |
-| 12 | Account settings update name, email with re-verification, phone, password, notification_pref (FR-USR-07) — test passes | [ ] |
-| 13 | All routes are under `/api/v1/` | [ ] |
-| 14 | Money fields are `Decimal` or integer minor units; no float — confirmed by opening the models | [ ] |
+| 1 | All 14 models exist with the PRD's fields: User, Address, Category, Product, Collection, CollectionProduct, SavedDesign, Cart, CartItem, Order, OrderItem, Review, PromoCode, NewsletterSubscriber |[x] |
+| 2 | `cd backend && uv run python manage.py makemigrations --check --dry-run` reports no missing migrations |[x] |
+| 3 | Registration rejects a duplicate email with a clear message — test passes | [x] |
+| 4 | Password minimum of 8 characters enforced — test passes | [x] |
+| 5 | JWT login issues access and refresh tokens; sessions persist 30 days with Remember Me — test passes | [x] |
+| 6 | Google OAuth login succeeds and sets `auth_provider` — test passes | [x] |
+| 7 | Password reset emails a working link — test passes | [x] |
+| 8 | Email verification is sent on registration — test passes | [x] |
+| 9 | An authenticated non-admin gets `403` and an anonymous request `401` on an admin route — test passes | [x] |
+| 10 | Rate limiting is enforced on login, registration and password reset — test passes | [x] |
+| 11 | Saved addresses support multiple per user with one default (FR-USR-06) — test passes | [x] |
+| 12 | Account settings update name, email with re-verification, phone, password, notification_pref (FR-USR-07) — test passes | [x] |
+| 13 | All routes are under `/api/v1/` |[x] |
+| 14 | Money fields are `Decimal` or integer minor units; no float — confirmed by opening the models |[x] |
 
 ### Verification
 
-- Verified: not yet
-- Report: none
+- Verified: yes, 2026-10-01
+- Report: `docs/VERIFICATION.md`, 0 blockers, 0 major, 1 minor (T-116 queued)
 
 ---
 

@@ -1,7 +1,9 @@
 from django.contrib import admin
-from django.urls import path
+from django.urls import include, path
 
-# All DRF routes mount under /api/v1/ (D-011). App routes join here as they land.
+# All DRF routes mount here (D-011, API-01). Additive-only within v1; a
+# removal, rename, tightened validation or changed status code needs v2.
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("api/v1/", include("config.api_urls")),
 ]

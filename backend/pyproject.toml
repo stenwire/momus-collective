@@ -10,6 +10,9 @@ dependencies = [
     "psycopg[binary]>=3.2",
     "redis>=5.0",
     "celery>=5.4",
+    "djangorestframework-simplejwt>=5.5.1",
+    "google-auth[requests]>=2.58.1",
+    "django-redis>=7.0.0",
 ]
 
 [dependency-groups]
@@ -23,13 +26,15 @@ dev = [
 [tool.ruff]
 target-version = "py312"
 line-length = 88
+# Django-generated, not hand-authored; formatting them serves no one.
+exclude = ["**/migrations/*.py"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "S"]
 
 [tool.ruff.lint.per-file-ignores]
-"**/tests/**" = ["S101"]
-"**/test_*.py" = ["S101"]
+"**/tests/**" = ["S101", "S105", "S106", "S107"]
+"**/test_*.py" = ["S101", "S105", "S106", "S107"]
 "**/settings.py" = ["S105"]
 
 [tool.pytest.ini_options]
