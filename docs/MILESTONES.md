@@ -13,7 +13,7 @@ its own heading marks it "(Phase 2)" and the Out of Scope list repeats it.
 | Milestone | Name | Requirements | Depends on | Status |
 |---|---|---|---|---|
 | M0 | Foundation | foundation | - | complete |
-| M1 | Data Models and Auth | FR-USR-01, FR-USR-02, FR-USR-06, FR-USR-07, NFR-04 | M0 | awaiting verify |
+| M1 | Data Models and Auth | FR-USR-01, FR-USR-02, FR-USR-06, FR-USR-07, NFR-04 | M0 | complete |
 | M2 | Catalog and Storefront | FR-CAT-01..07, FR-ADM-04, FR-ADM-05, FR-ADM-06, NFR-02, NFR-03, NFR-05 | M1 | not started |
 | M3 | Custom Design Tool | FR-DES-01..11, FR-USR-04, NFR-01 | M2 | not started |
 | M4 | Cart, Checkout and Payment | FR-CART-01..09, FR-USR-03, FR-USR-05, FR-NOT-01 | M3 | not started |
@@ -94,8 +94,8 @@ exist, and because saved designs, carts, and orders all key on `User`.
 
 ### Verification
 
-- Verified: not yet
-- Report: none
+- Verified: yes, 2026-10-01
+- Report: `docs/VERIFICATION.md`, 0 blockers, 0 major, 1 minor (T-116 queued)
 
 ---
 

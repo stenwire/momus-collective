@@ -52,6 +52,7 @@ T-3xx = M3, T-4xx = M4, T-5xx = M5. Never reuse a retired ID.
 | T-113 | M1 | Rate limiting on login, registration and password reset | T-111 | [x] |
 | T-114 | M1 | Saved addresses: multiple per user, one default (FR-USR-06) | T-109 | [x] |
 | T-115 | M1 | Account settings: name, email with re-verification, phone, password, notification_pref (FR-USR-07) | T-114 | [x] |
+| T-116 | M1 | Verify finding 1 (minor): `confirm_email_change` (`accounts/account_views.py:54-68`) has no `IntegrityError` handling around the email-uniqueness race; wrap the save and return a 400 on conflict instead of an unhandled 500 | T-115 | [ ] |
 | T-201 | M2 | Product list endpoint with `select_related`/`prefetch_related` and an `assertNumQueries` test | T-115 | [ ] |
 | T-202 | M2 | Product grid UI, 4 columns desktop / 2 mobile, cards per FR-CAT-01 | T-201 | [ ] |
 | T-203 | M2 | Seed the 11 launch categories; filtering with per-category counts (FR-CAT-02) | T-202 | [ ] |
