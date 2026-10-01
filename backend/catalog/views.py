@@ -15,17 +15,22 @@ class ProductPagination(PageNumberPagination):
     max_page_size = 100
 
 
+SORT_OPTIONS = {
+    "newest": ("-created_at",),
+    "price_asc": ("price",),
+    "price_desc": ("-price",),
+    "popular": ("-total_orders",),
+}
+
+
 class ProductListView(ListAPIView):
     serializer_class = ProductListSerializer
     pagination_class = ProductPagination
     permission_classes = [AllowAny]
 
     def get_queryset(self):
-        queryset = (
-            Product.objects.filter(is_active=True)
-            .select_related("category")
-            .order_by("display_order", "-created_at")
-        )
+        queryset = Product.objects.filter(is_active=True).select_related("category")
+
         category_slug = self.request.query_params.get("category")
         if category_slug:
             queryset = queryset.filter(category__slug=category_slug)
@@ -35,7 +40,10 @@ class ProductListView(ListAPIView):
             queryset = queryset.filter(
                 Q(slogan__icontains=search) | Q(category__name__icontains=search)
             )
-        return queryset
+
+        sort = self.request.query_params.get("sort", "newest")
+        order_fields = SORT_OPTIONS.get(sort, SORT_OPTIONS["newest"])
+        return queryset.order_by(*order_fields)
 
 
 class CategoryListView(APIView):

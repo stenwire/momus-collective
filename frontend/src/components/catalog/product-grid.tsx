@@ -7,15 +7,17 @@ import { ProductCard } from "./product-card";
 type Props = {
   category?: string | null;
   search?: string;
+  sort?: string;
 };
 
-export function ProductGrid({ category, search }: Props) {
+export function ProductGrid({ category, search, sort }: Props) {
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["products", category ?? null, search ?? ""],
+    queryKey: ["products", category ?? null, search ?? "", sort ?? "newest"],
     queryFn: () =>
       fetchProducts({
         ...(category ? { category } : {}),
         ...(search ? { search } : {}),
+        ...(sort ? { sort } : {}),
       }),
   });
 
