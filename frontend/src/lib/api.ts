@@ -39,6 +39,23 @@ export async function fetchProducts(
   return res.json();
 }
 
+export type ProductDetail = Product & {
+  description: string;
+  shirt_colors: string[];
+  related_products: Product[];
+};
+
+export async function fetchProduct(slug: string): Promise<ProductDetail | null> {
+  const res = await fetch(`${API_URL}/api/v1/products/${slug}/`);
+  if (res.status === 404) {
+    return null;
+  }
+  if (!res.ok) {
+    throw new Error(`Failed to fetch product: ${res.status}`);
+  }
+  return res.json();
+}
+
 export type CategoryWithCount = Category & { product_count: number };
 
 export type CategoryList = {

@@ -26,3 +26,25 @@ class ProductListSerializer(serializers.ModelSerializer):
             "avg_rating",
             "created_at",
         ]
+
+
+class ProductDetailSerializer(ProductListSerializer):
+    related_products = serializers.SerializerMethodField()
+
+    class Meta(ProductListSerializer.Meta):
+        fields = [
+            *ProductListSerializer.Meta.fields,
+            "description",
+            "shirt_colors",
+            "related_products",
+        ]
+
+    def get_related_products(self, product):
+        # FR-CAT-05: up to 4 from the same category, excluding itself.
+        related = (
+            Product.objects.filter(category=product.category, is_active=True)
+            .exclude(pk=product.pk)
+            .select_related("category")
+            .order_by("-created_at")[:4]
+        )
+        return ProductListSerializer(related, many=True).data

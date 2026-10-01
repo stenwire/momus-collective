@@ -1,12 +1,12 @@
 from django.db.models import Count, Q
-from rest_framework.generics import ListAPIView
+from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Category, Product
-from .serializers import ProductListSerializer
+from .serializers import ProductDetailSerializer, ProductListSerializer
 
 
 class ProductPagination(PageNumberPagination):
@@ -44,6 +44,15 @@ class ProductListView(ListAPIView):
         sort = self.request.query_params.get("sort", "newest")
         order_fields = SORT_OPTIONS.get(sort, SORT_OPTIONS["newest"])
         return queryset.order_by(*order_fields)
+
+
+class ProductDetailView(RetrieveAPIView):
+    serializer_class = ProductDetailSerializer
+    permission_classes = [AllowAny]
+    lookup_field = "slug"
+
+    def get_queryset(self):
+        return Product.objects.filter(is_active=True).select_related("category")
 
 
 class CategoryListView(APIView):

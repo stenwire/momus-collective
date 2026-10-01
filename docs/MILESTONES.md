@@ -116,7 +116,7 @@ the design tool's pricing and shirt-color options reuse catalog primitives.
 | 2 | All 11 launch categories exist and filter correctly, each showing its product count (FR-CAT-02) | [x] |
 | 3 | Search matches slogan and category, debounced at 300ms, with a friendly empty state (FR-CAT-03) | [x] |
 | 4 | Sorting by Newest, Price asc, Price desc and Most Popular works (FR-CAT-04) | [x] |
-| 5 | Product detail shows mockup, sizes S-XXL, colors, Add to Bag, details and up to 4 related; modal on desktop, full page on mobile (FR-CAT-05) | [ ] |
+| 5 | Product detail shows mockup, sizes S-XXL, colors, Add to Bag, details and up to 4 related; modal on desktop, full page on mobile (FR-CAT-05) | [x] |
 | 6 | Collections render as homepage carousels; a product can belong to several (FR-CAT-06) | [ ] |
 | 7 | Shop loads 20 then infinite-scrolls in batches of 20 with a loading indicator (FR-CAT-07) | [ ] |
 | 8 | Admin can create, edit, archive, bulk-price and reorder products (FR-ADM-04) | [ ] |
