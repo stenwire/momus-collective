@@ -45,5 +45,6 @@ urlpatterns = [
         name="account-email-change-confirm",
     ),
     path("account/password/", account_views.change_password, name="account-password"),
+    path("", include("catalog.urls")),
     path("", include(router.urls)),
 ]

@@ -14,7 +14,7 @@ its own heading marks it "(Phase 2)" and the Out of Scope list repeats it.
 |---|---|---|---|---|
 | M0 | Foundation | foundation | - | complete |
 | M1 | Data Models and Auth | FR-USR-01, FR-USR-02, FR-USR-06, FR-USR-07, NFR-04 | M0 | complete |
-| M2 | Catalog and Storefront | FR-CAT-01..07, FR-ADM-04, FR-ADM-05, FR-ADM-06, NFR-02, NFR-03, NFR-05 | M1 | not started |
+| M2 | Catalog and Storefront | FR-CAT-01..07, FR-ADM-04, FR-ADM-05, FR-ADM-06, NFR-02, NFR-03, NFR-05 | M1 | in progress |
 | M3 | Custom Design Tool | FR-DES-01..11, FR-USR-04, NFR-01 | M2 | not started |
 | M4 | Cart, Checkout and Payment | FR-CART-01..09, FR-USR-03, FR-USR-05, FR-NOT-01 | M3 | not started |
 | M5 | Admin Pipeline, Notifications and Reviews | FR-ADM-01, FR-ADM-02, FR-ADM-03, FR-ADM-07, FR-ADM-08, FR-ADM-09, FR-ADM-10, FR-NOT-02, FR-NOT-03, FR-NOT-04, FR-REV-01..05, NFR-06, NFR-07 | M4 | not started |
@@ -122,7 +122,7 @@ the design tool's pricing and shirt-color options reuse catalog primitives.
 | 8 | Admin can create, edit, archive, bulk-price and reorder products (FR-ADM-04) | [ ] |
 | 9 | Admin can create, rename, reorder and archive categories (FR-ADM-05) | [ ] |
 | 10 | Admin can manage collections and set one featured (FR-ADM-06) | [ ] |
-| 11 | The grid endpoint issues a constant query count regardless of page size — `assertNumQueries` test passes | [ ] |
+| 11 | The grid endpoint issues a constant query count regardless of page size — `assertNumQueries` test passes | [x] |
 | 12 | Public pages are server-rendered with unique meta tags and product JSON-LD (NFR-03) | [ ] |
 | 13 | URLs match `/shop`, `/shop/<category>`, `/product/<slug>` (NFR-03) | [ ] |
 | 14 | Images lazy-load as WebP; Lighthouse performance above 80 (NFR-02) | [ ] |
