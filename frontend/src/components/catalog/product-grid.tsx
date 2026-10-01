@@ -1,7 +1,8 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { fetchProducts } from "@/lib/api";
+import { useIntersectionObserver } from "@/lib/use-intersection-observer";
 import { ProductCard } from "./product-card";
 
 type Props = {
@@ -11,14 +12,31 @@ type Props = {
 };
 
 export function ProductGrid({ category, search, sort }: Props) {
-  const { data, isLoading, isError } = useQuery({
+  const {
+    data,
+    isLoading,
+    isError,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
     queryKey: ["products", category ?? null, search ?? "", sort ?? "newest"],
-    queryFn: () =>
+    queryFn: ({ pageParam }) =>
       fetchProducts({
         ...(category ? { category } : {}),
         ...(search ? { search } : {}),
         ...(sort ? { sort } : {}),
+        page: pageParam,
       }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.next ? allPages.length + 1 : undefined,
+  });
+
+  const sentinelRef = useIntersectionObserver(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
   });
 
   if (isLoading) {
@@ -33,7 +51,9 @@ export function ProductGrid({ category, search, sort }: Props) {
     );
   }
 
-  if (!data || data.results.length === 0) {
+  const products = data?.pages.flatMap((page) => page.results) ?? [];
+
+  if (products.length === 0) {
     return (
       <p className="p-8 text-center text-zinc-400">
         {search
@@ -44,10 +64,16 @@ export function ProductGrid({ category, search, sort }: Props) {
   }
 
   return (
-    <div className="grid grid-cols-2 gap-4 p-4 md:grid-cols-4">
-      {data.results.map((product) => (
-        <ProductCard key={product.id} product={product} />
-      ))}
-    </div>
+    <>
+      <div className="grid grid-cols-2 gap-4 p-4 md:grid-cols-4">
+        {products.map((product) => (
+          <ProductCard key={product.id} product={product} />
+        ))}
+      </div>
+      <div ref={sentinelRef} className="h-1" />
+      {isFetchingNextPage ? (
+        <p className="p-4 text-center text-zinc-400">Loading more…</p>
+      ) : null}
+    </>
   );
 }
