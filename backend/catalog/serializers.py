@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Category, Product
+from .models import Category, Collection, Product
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -48,3 +48,21 @@ class ProductDetailSerializer(ProductListSerializer):
             .order_by("-created_at")[:4]
         )
         return ProductListSerializer(related, many=True).data
+
+
+class CollectionSerializer(serializers.ModelSerializer):
+    products = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Collection
+        fields = ["id", "name", "slug", "is_featured", "products"]
+
+    def get_products(self, collection):
+        # Ordered through CollectionProduct.display_order (its Meta.ordering),
+        # not the M2M's arbitrary join order.
+        products = (
+            collection.products.filter(is_active=True)
+            .select_related("category")
+            .order_by("collectionproduct__display_order")
+        )
+        return ProductListSerializer(products, many=True).data

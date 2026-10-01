@@ -5,8 +5,12 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Category, Product
-from .serializers import ProductDetailSerializer, ProductListSerializer
+from .models import Category, Collection, Product
+from .serializers import (
+    CollectionSerializer,
+    ProductDetailSerializer,
+    ProductListSerializer,
+)
 
 
 class ProductPagination(PageNumberPagination):
@@ -53,6 +57,19 @@ class ProductDetailView(RetrieveAPIView):
 
     def get_queryset(self):
         return Product.objects.filter(is_active=True).select_related("category")
+
+
+class CollectionListView(ListAPIView):
+    """FR-CAT-06: homepage carousels. A small, admin-curated set -- one
+    query per collection for its products is acceptable here; EFF-01's
+    constant-query-count requirement targets the product grid, not this."""
+
+    serializer_class = CollectionSerializer
+    permission_classes = [AllowAny]
+    pagination_class = None
+
+    def get_queryset(self):
+        return Collection.objects.filter(is_active=True)
 
 
 class CategoryListView(APIView):

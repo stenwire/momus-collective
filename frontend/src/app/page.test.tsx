@@ -36,6 +36,9 @@ describe("Home", () => {
             json: async () => ({ all_count: 1, categories: [] }),
           };
         }
+        if (url.includes("/collections/")) {
+          return { ok: true, json: async () => [] };
+        }
         return {
           ok: true,
           json: async () => ({

@@ -70,3 +70,19 @@ export async function fetchCategories(): Promise<CategoryList> {
   }
   return res.json();
 }
+
+export type Collection = {
+  id: string;
+  name: string;
+  slug: string;
+  is_featured: boolean;
+  products: Product[];
+};
+
+export async function fetchCollections(): Promise<Collection[]> {
+  const res = await fetch(`${API_URL}/api/v1/collections/`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch collections: ${res.status}`);
+  }
+  return res.json();
+}
