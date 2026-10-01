@@ -22,7 +22,7 @@ export function CategoryFilter({ selected, onSelect }: Props) {
         type="button"
         onClick={() => onSelect(null)}
         aria-pressed={selected === null}
-        className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
+        className={`min-h-11 rounded-full border px-3 py-1.5 text-sm transition-colors ${
           selected === null
             ? "border-amber-400 bg-amber-400 text-black"
             : "border-zinc-700 text-zinc-300 hover:border-zinc-500"
@@ -36,7 +36,7 @@ export function CategoryFilter({ selected, onSelect }: Props) {
           type="button"
           onClick={() => onSelect(category.slug)}
           aria-pressed={selected === category.slug}
-          className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
+          className={`min-h-11 rounded-full border px-3 py-1.5 text-sm transition-colors ${
             selected === category.slug
               ? "border-amber-400 bg-amber-400 text-black"
               : "border-zinc-700 text-zinc-300 hover:border-zinc-500"
