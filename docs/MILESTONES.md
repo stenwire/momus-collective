@@ -120,7 +120,7 @@ the design tool's pricing and shirt-color options reuse catalog primitives.
 | 6 | Collections render as homepage carousels; a product can belong to several (FR-CAT-06) | [x] |
 | 7 | Shop loads 20 then infinite-scrolls in batches of 20 with a loading indicator (FR-CAT-07) | [x] |
 | 8 | Admin can create, edit, archive, bulk-price and reorder products (FR-ADM-04) | [x] |
-| 9 | Admin can create, rename, reorder and archive categories (FR-ADM-05) | [ ] |
+| 9 | Admin can create, rename, reorder and archive categories (FR-ADM-05) | [x] |
 | 10 | Admin can manage collections and set one featured (FR-ADM-06) | [ ] |
 | 11 | The grid endpoint issues a constant query count regardless of page size — `assertNumQueries` test passes | [x] |
 | 12 | Public pages are server-rendered with unique meta tags and product JSON-LD (NFR-03) | [ ] |
