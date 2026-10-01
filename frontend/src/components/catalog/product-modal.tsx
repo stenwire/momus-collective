@@ -1,9 +1,23 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useEffect, useRef } from "react";
 
 export function ProductModal({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    closeButtonRef.current?.focus();
+
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        router.back();
+      }
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [router]);
 
   return (
     <div
@@ -17,6 +31,7 @@ export function ProductModal({ children }: { children: React.ReactNode }) {
         className="h-full w-full overflow-y-auto bg-zinc-950 shadow-xl md:h-auto md:max-h-[90vh] md:w-full md:max-w-3xl md:rounded-xl"
       >
         <button
+          ref={closeButtonRef}
           type="button"
           onClick={() => router.back()}
           aria-label="Close"

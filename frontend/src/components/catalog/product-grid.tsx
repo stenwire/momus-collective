@@ -65,6 +65,9 @@ export function ProductGrid({ category, search, sort }: Props) {
 
   return (
     <>
+      {/* Keeps the heading hierarchy intact: card titles are h3s, so the
+          grid needs an h2 between them and the page's h1. */}
+      <h2 className="sr-only">Products</h2>
       <div className="grid grid-cols-2 gap-4 p-4 md:grid-cols-4">
         {products.map((product) => (
           <ProductCard key={product.id} product={product} />
