@@ -1,7 +1,7 @@
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
-from .models import User
+from .models import Address, User
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -21,3 +21,22 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
+
+
+class AddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Address
+        fields = [
+            "id",
+            "label",
+            "full_name",
+            "phone",
+            "address_line_1",
+            "address_line_2",
+            "city",
+            "state",
+            "lga",
+            "is_default",
+            "created_at",
+        ]
+        read_only_fields = ["id", "created_at"]

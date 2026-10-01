@@ -2,8 +2,14 @@ from django.urls import include, path
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.routers import DefaultRouter
+
+from accounts.address_views import AddressViewSet
 
 from .permissions import IsStaffUser
+
+router = DefaultRouter()
+router.register("addresses", AddressViewSet, basename="address")
 
 
 @api_view(["GET"])
@@ -26,4 +32,5 @@ urlpatterns = [
     path("health/", health, name="api-health"),
     path("admin/ping/", admin_ping, name="api-admin-ping"),
     path("auth/", include("accounts.urls")),
+    path("", include(router.urls)),
 ]
