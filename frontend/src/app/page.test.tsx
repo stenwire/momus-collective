@@ -30,24 +30,21 @@ describe("Home", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockImplementation(async (url: string) => {
-        if (url.includes("/categories/")) {
+        if (url.includes("/collections/")) {
           return {
             ok: true,
-            json: async () => ({ all_count: 1, categories: [] }),
+            json: async () => [
+              {
+                id: "1",
+                name: "New Drops",
+                slug: "new-drops",
+                is_featured: true,
+                products: [mockProduct],
+              },
+            ],
           };
         }
-        if (url.includes("/collections/")) {
-          return { ok: true, json: async () => [] };
-        }
-        return {
-          ok: true,
-          json: async () => ({
-            count: 1,
-            next: null,
-            previous: null,
-            results: [mockProduct],
-          }),
-        };
+        return { ok: true, json: async () => ({}) };
       }),
     );
   });
@@ -73,5 +70,12 @@ describe("Home", () => {
       expect(img).toHaveAttribute("alt");
       expect(img.getAttribute("alt")).not.toBe("");
     }
+  });
+
+  it("links to the shop page", async () => {
+    renderWithQueryClient(await Home());
+    expect(
+      screen.getByRole("link", { name: "Shop All Products" }),
+    ).toHaveAttribute("href", "/shop");
   });
 });

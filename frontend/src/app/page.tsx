@@ -1,8 +1,8 @@
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Collections } from "@/components/catalog/collections";
-import { Shop } from "@/components/catalog/shop";
-import { fetchCollections, fetchProducts } from "@/lib/api";
+import { fetchCollections } from "@/lib/api";
 import { getQueryClient } from "@/lib/get-query-client";
 
 export const metadata: Metadata = {
@@ -17,26 +17,24 @@ export const metadata: Metadata = {
 
 export default async function Home() {
   const queryClient = getQueryClient();
-  await Promise.all([
-    queryClient.prefetchInfiniteQuery({
-      queryKey: ["products", null, "", "newest"],
-      queryFn: ({ pageParam }) => fetchProducts({ page: pageParam }),
-      initialPageParam: 1,
-    }),
-    queryClient.prefetchQuery({
-      queryKey: ["collections"],
-      queryFn: fetchCollections,
-    }),
-  ]);
+  await queryClient.prefetchQuery({
+    queryKey: ["collections"],
+    queryFn: fetchCollections,
+  });
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <main className="flex flex-1 flex-col">
-        <Collections />
         <h1 className="px-4 pt-8 text-2xl font-semibold text-zinc-50">
-          Shop
+          momus collective
         </h1>
-        <Shop />
+        <Collections />
+        <Link
+          href="/shop"
+          className="mx-4 mb-8 inline-block rounded-md bg-amber-400 px-6 py-2 text-center font-medium text-black transition-colors hover:bg-amber-300"
+        >
+          Shop All Products
+        </Link>
       </main>
     </HydrationBoundary>
   );
