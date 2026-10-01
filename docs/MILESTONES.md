@@ -125,7 +125,7 @@ the design tool's pricing and shirt-color options reuse catalog primitives.
 | 11 | The grid endpoint issues a constant query count regardless of page size — `assertNumQueries` test passes | [x] |
 | 12 | Public pages are server-rendered with unique meta tags and product JSON-LD (NFR-03) | [x] |
 | 13 | URLs match `/shop`, `/shop/<category>`, `/product/<slug>` (NFR-03) | [x] |
-| 14 | Images lazy-load as WebP; Lighthouse performance above 80 (NFR-02) | [ ] |
+| 14 | Images lazy-load as WebP; Lighthouse performance above 80 (NFR-02) | [x] |
 | 15 | Alt text on every product image, keyboard navigation works, dark-theme contrast checked (NFR-05) | [ ] |
 | 16 | Homepage uses the brand assets at their PRD paths, including the raven hero and Our Story mascot | [ ] |
 

@@ -17,6 +17,7 @@ export function ProductCard({ product }: { product: Product }) {
             src={mockup}
             alt={product.slogan}
             fill
+            sizes="(max-width: 768px) 50vw, 25vw"
             className="object-cover transition-transform group-hover:scale-105"
           />
         ) : null}

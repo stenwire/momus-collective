@@ -18,7 +18,14 @@ export function ProductDetailView({ product }: { product: ProductDetail }) {
     <div className="flex flex-col gap-6 p-6 md:flex-row">
       <div className="relative aspect-square w-full flex-shrink-0 overflow-hidden rounded-lg bg-zinc-900 md:w-96">
         {mockup ? (
-          <Image src={mockup} alt={product.slogan} fill className="object-cover" />
+          <Image
+            src={mockup}
+            alt={product.slogan}
+            fill
+            priority
+            sizes="(max-width: 768px) 100vw, 384px"
+            className="object-cover"
+          />
         ) : null}
       </div>
 
