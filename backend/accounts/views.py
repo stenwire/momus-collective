@@ -3,9 +3,12 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
+
+from config.throttling import scoped
 
 from .models import User
 from .serializers import RegistrationSerializer
@@ -19,6 +22,8 @@ from .tokens import (
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
+@throttle_classes([ScopedRateThrottle])
+@scoped("auth-register")
 def register(request):
     serializer = RegistrationSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -52,6 +57,8 @@ def verify_email(request):
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
+@throttle_classes([ScopedRateThrottle])
+@scoped("auth-password-reset")
 def request_password_reset(request):
     email = request.data.get("email", "")
     user = User.objects.filter(email__iexact=email).first()
@@ -66,6 +73,8 @@ def request_password_reset(request):
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
+@throttle_classes([ScopedRateThrottle])
+@scoped("auth-password-reset")
 def confirm_password_reset(request):
     uid = request.data.get("uid", "")
     token = request.data.get("token", "")

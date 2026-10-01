@@ -86,7 +86,7 @@ exist, and because saved designs, carts, and orders all key on `User`.
 | 7 | Password reset emails a working link — test passes | [x] |
 | 8 | Email verification is sent on registration — test passes | [ ] |
 | 9 | An authenticated non-admin gets `403` and an anonymous request `401` on an admin route — test passes | [x] |
-| 10 | Rate limiting is enforced on login, registration and password reset — test passes | [ ] |
+| 10 | Rate limiting is enforced on login, registration and password reset — test passes | [x] |
 | 11 | Saved addresses support multiple per user with one default (FR-USR-06) — test passes | [ ] |
 | 12 | Account settings update name, email with re-verification, phone, password, notification_pref (FR-USR-07) — test passes | [ ] |
 | 13 | All routes are under `/api/v1/` |[x] |

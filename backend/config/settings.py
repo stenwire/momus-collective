@@ -76,6 +76,13 @@ REDIS_URL = env("REDIS_URL")
 CELERY_BROKER_URL = REDIS_URL
 CELERY_RESULT_BACKEND = REDIS_URL
 
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": REDIS_URL,
+    }
+}
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": (
@@ -107,6 +114,14 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
+    "DEFAULT_THROTTLE_CLASSES": ["rest_framework.throttling.ScopedRateThrottle"],
+    "DEFAULT_THROTTLE_RATES": {
+        # Per-IP, deliberately tight: these guard credential-stuffing and
+        # account-enumeration surfaces, not general API traffic (D-047).
+        "auth-login": "10/min",
+        "auth-register": "5/min",
+        "auth-password-reset": "5/min",
+    },
 }
 
 SIMPLE_JWT = {
