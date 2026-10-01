@@ -6,11 +6,12 @@ from rest_framework.routers import DefaultRouter
 
 from accounts import account_views
 from accounts.address_views import AddressViewSet
-
-from .permissions import IsStaffUser
+from catalog.admin_views import AdminCategoryViewSet, AdminProductViewSet
 
 router = DefaultRouter()
 router.register("addresses", AddressViewSet, basename="address")
+router.register("admin/products", AdminProductViewSet, basename="admin-product")
+router.register("admin/categories", AdminCategoryViewSet, basename="admin-category")
 
 
 @api_view(["GET"])
@@ -21,17 +22,8 @@ def health(request):
     return Response({"status": "ok"})
 
 
-@api_view(["GET"])
-@permission_classes([IsStaffUser])
-def admin_ping(request):
-    """Real anchor for IsStaffUser (NFR-04) until M2's admin CRUD routes
-    land and take over as the permission class's actual callers."""
-    return Response({"status": "ok"})
-
-
 urlpatterns = [
     path("health/", health, name="api-health"),
-    path("admin/ping/", admin_ping, name="api-admin-ping"),
     path("auth/", include("accounts.urls")),
     path("account/", account_views.account_settings, name="account-settings"),
     path(
