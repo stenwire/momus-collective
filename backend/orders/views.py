@@ -12,7 +12,7 @@ from . import paystack
 from .checkout import cart_lines, guest_lines, quote
 from .delivery import delivery_settings, public_delivery_info
 from .locations import LAGOS_LGAS, NIGERIAN_STATES
-from .models import CheckoutSession, DeliverySettings
+from .models import CheckoutSession, DeliverySettings, OrderItem
 from .payments import AmountMismatch, open_session, settle
 from .serializers import (
     CheckoutRequestSerializer,
@@ -153,4 +153,33 @@ def checkout_verify(request):
             {"detail": "Payment didn't go through; you weren't charged. Try again."},
             status=status.HTTP_402_PAYMENT_REQUIRED,
         )
-    return Response({"reference": session.reference, "status": session.status})
+    order = session.order
+    return Response(
+        {
+            "reference": session.reference,
+            "status": session.status,
+            "order_number": order.order_number if order else None,
+            "tracking_token": order.tracking_token if order else None,
+        }
+    )
+
+
+@api_view(["GET"])
+@permission_classes([IsStaffUser])
+def order_item_design_file(request, pk):
+    """SEC-15: an ordered custom shirt's print file, staff only (M5's order
+    detail links here)."""
+    from django.http import FileResponse, Http404
+
+    from designs.storage import design_storage, order_item_file_name
+
+    item = get_object_or_404(OrderItem, pk=pk, saved_design__isnull=False)
+    storage, name = design_storage(), order_item_file_name(item.id)
+    if not storage.exists(name):
+        raise Http404
+    return FileResponse(
+        storage.open(name, "rb"),
+        content_type="image/png",
+        as_attachment=True,
+        filename=f"{item.order.order_number}-{item.id}.png",
+    )

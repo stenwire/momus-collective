@@ -8,6 +8,11 @@ urlpatterns = [
     path("checkout/", views.checkout_start, name="checkout-start"),
     path("checkout/verify/", views.checkout_verify, name="checkout-verify"),
     path(
+        "orders/items/<uuid:pk>/design-file/",
+        views.order_item_design_file,
+        name="order-item-design-file",
+    ),
+    path(
         "payments/paystack/webhook/",
         webhooks.paystack_webhook,
         name="paystack-webhook",

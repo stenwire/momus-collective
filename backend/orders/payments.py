@@ -18,6 +18,8 @@ def line_snapshot(line):
         "color": line.color,
         "quantity": line.quantity,
         "unit_price": line.unit_price,
+        # Frozen so the print file is the design as ordered (D-086).
+        "design_config": design.config if design else None,
     }
 
 
@@ -72,4 +74,9 @@ def settle(reference, paystack_data):
         session.status = CheckoutSession.Status.PAID
         session.paid_at = timezone.now()
         session.save(update_fields=["status", "paid_at"])
+        # Same transaction: if the order can't be created, the payment isn't
+        # recorded either, and Paystack's retry or the next verify tries again.
+        from .fulfilment import fulfil
+
+        fulfil(session)
         return session, True

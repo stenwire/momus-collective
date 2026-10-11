@@ -4,7 +4,7 @@ from django.core.files.base import ContentFile
 from django.utils import timezone
 
 from .render import render_design_png
-from .storage import design_file_name, design_storage
+from .storage import design_file_name, design_storage, order_item_file_name
 
 
 @shared_task
@@ -26,3 +26,12 @@ def generate_design_file(design_id):
     )
     if not published:
         storage.delete(name)
+
+
+@shared_task
+def render_order_item_file(item_id, config):
+    """The print file for one ordered custom shirt, from the config frozen
+    at checkout, so later edits to the saved design can't change it."""
+    storage, name = design_storage(), order_item_file_name(item_id)
+    if not storage.exists(name):
+        storage.save(name, ContentFile(render_design_png(config)))

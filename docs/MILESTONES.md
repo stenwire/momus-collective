@@ -192,16 +192,16 @@ server-side total computation both live here.
 | 6 | Guest checkout completes with email and phone, then offers account creation (FR-CART-05) | [ ] |
 | 7 | Paystack Inline handles card, bank transfer and USSD; failed payments show a clear error and allow retry (FR-CART-06) | [ ] |
 | 8 | The webhook verifies HMAC-SHA512 over the raw body against `x-paystack-signature` in constant time, rejecting with `401` **before touching order state** — tests cover unsigned and wrong-signature (FR-CART-06) | [x] |
-| 9 | A replayed valid webhook does not create or confirm a second order — test passes | [ ] |
+| 9 | A replayed valid webhook does not create or confirm a second order — test passes | [x] |
 | 10 | Promo codes validate expiry, max uses, per-user uses and minimum order value at redemption — test passes (FR-CART-07) | [x] |
 | 11 | Delivery fees apply per state band with a configurable free-delivery threshold (FR-CART-08) | [x] |
 | 12 | Order totals are recomputed server-side; a client-supplied price is rejected or ignored — test passes | [x] |
-| 13 | Order numbers follow `MOM-YYYYMMDD-NNN` (FR-CART-09) | [ ] |
+| 13 | Order numbers follow `MOM-YYYYMMDD-NNN` (FR-CART-09) | [x] |
 | 14 | Confirmation page and email both show order number, summary, estimated delivery and tracking link (FR-CART-09, FR-NOT-01) | [ ] |
 | 15 | The guest tracking link is unguessable, not the sequential order number | [ ] |
 | 16 | Order history lists orders reverse-chronologically and expands to full detail (FR-USR-03) | [ ] |
 | 17 | Wishlist adds from a product card heart and moves items to cart (FR-USR-05) | [ ] |
-| 18 | `Order.shipping_address` is a JSON snapshot that does not follow later edits to the saved address — test passes | [ ] |
+| 18 | `Order.shipping_address` is a JSON snapshot that does not follow later edits to the saved address — test passes | [x] |
 
 ### Verification
 

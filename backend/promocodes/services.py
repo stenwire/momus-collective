@@ -57,3 +57,22 @@ def redeem(code, order, subtotal, user, email):
         promo_code=promo, order=order, user=user, email=email, discount=discount
     )
     return promo, discount
+
+
+def record_use(code, order, user, email, discount):
+    """At order creation the customer has already paid the discounted total,
+    so the use is recorded whatever the limits say now; the gate was the
+    locked check before payment. Returns True if the code went over a limit,
+    for the admin to see."""
+    promo = PromoCode.objects.select_for_update().filter(code__iexact=code).first()
+    if promo is None:
+        return True
+    over = (promo.max_uses is not None and promo.uses_count >= promo.max_uses) or (
+        _uses_by(promo, user, email) >= promo.max_uses_per_user
+    )
+    promo.uses_count += 1
+    promo.save(update_fields=["uses_count"])
+    PromoRedemption.objects.create(
+        promo_code=promo, order=order, user=user, email=email, discount=discount
+    )
+    return over
