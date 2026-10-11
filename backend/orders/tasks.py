@@ -10,6 +10,7 @@ from django.utils import timezone
 from config.email import EmailNotSent
 
 from .delivery import delivery_settings, estimated_delivery
+from .serializers import item_payload
 
 
 def _image_url(order, item):
@@ -51,7 +52,7 @@ def send_order_confirmation(order):
                 "item": item,
                 "image": _image_url(order, item),
                 "title": "Custom Design" if item.design_config else item.slogan_text,
-                "line_total": naira(item.unit_price * item.quantity),
+                "line_total": naira(item_payload(item)["line_total"]),
             }
             for item in order.items.all()
         ],

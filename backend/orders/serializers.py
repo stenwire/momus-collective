@@ -72,7 +72,7 @@ class CheckoutRequestSerializer(serializers.Serializer):
     promo_code = serializers.CharField(required=False, allow_blank=True, default="")
 
 
-def _item_payload(item):
+def item_payload(item):
     product = item.product
     return {
         "id": str(item.id),
@@ -109,7 +109,7 @@ def order_payload(order, delivery, include_shipping=False):
             for entry in order.status_history
         ],
         "created_at": order.created_at.isoformat(),
-        "items": [_item_payload(item) for item in order.items.all()],
+        "items": [item_payload(item) for item in order.items.all()],
         "subtotal": order.subtotal,
         "delivery_fee": order.delivery_fee,
         "discount": order.discount,

@@ -129,7 +129,7 @@ def staff_client(is_staff=True):
     return client
 
 
-def test_admin_delivery_settings_need_staff(settings_row):
+def test_admin_delivery_settings_authz_need_staff(settings_row):
     url = "/api/v1/admin/delivery-settings/"
     assert APIClient().get(url).status_code == 401
     customer = staff_client(is_staff=False)

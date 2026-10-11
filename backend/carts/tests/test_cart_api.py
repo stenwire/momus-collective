@@ -192,7 +192,7 @@ def test_the_cart_follows_the_user_across_devices(product):
     assert Cart.objects.filter(user=user).count() == 1
 
 
-def test_cart_query_count_is_constant(product):
+def test_cart_num_queries_are_constant(product):
     user = make_user()
     client = client_for(user)
     add(client, product=str(product.id), size="S", color="Black")

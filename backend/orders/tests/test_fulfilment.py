@@ -208,7 +208,7 @@ def test_a_custom_design_is_frozen_into_its_own_print_file(
     assert design_storage().open(order_item_file_name(item.id)).read() == before
 
 
-def test_the_ordered_print_file_is_staff_only(
+def test_the_ordered_print_file_authz_is_staff_only(
     user, monkeypatch, django_capture_on_commit_callbacks
 ):
     design = SavedDesign.objects.create(user=user, name="mine", config=CONFIG)
