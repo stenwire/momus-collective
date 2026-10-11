@@ -29,3 +29,14 @@ export const moveOrder = (id: string, status: OrderStatus) =>
     method: "PATCH",
     body: JSON.stringify({ status }),
   });
+
+export type AdminRow = AdminCard & { status_label: string };
+export type OrderListPage = { count: number; next: string | null; results: AdminRow[] };
+export type OrderListQuery = { status: string; search: string; ordering: string; page: number };
+
+export function fetchOrderList({ status, search, ordering, page }: OrderListQuery) {
+  const params = new URLSearchParams({ ordering, page: String(page) });
+  if (status) params.set("status", status);
+  if (search) params.set("search", search);
+  return adminCall<OrderListPage>(`/api/v1/admin/orders/?${params}`);
+}

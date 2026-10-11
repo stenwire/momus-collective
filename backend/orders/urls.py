@@ -26,6 +26,7 @@ urlpatterns = [
         name="paystack-webhook",
     ),
     path("checkout/delivery/", views.delivery_info, name="checkout-delivery"),
+    path("admin/orders/", admin_views.admin_order_list, name="admin-order-list"),
     path(
         "admin/orders/board/", admin_views.admin_order_board, name="admin-order-board"
     ),

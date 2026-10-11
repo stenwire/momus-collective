@@ -224,7 +224,7 @@ because every one of these acts on orders that M4 creates.
 |---|---|---|
 | 1 | A paid order notifies the admin by email with the design file attached and by WhatsApp with a summary and link (FR-ADM-01) | [ ] |
 | 2 | Kanban board shows Paid, Shirt Acquired, Printed, Out for Delivery, Delivered and Cancelled; dragging updates status and notifies the customer (FR-ADM-02) | [ ] |
-| 3 | A sortable list view is available alongside the board (FR-ADM-02) | [ ] |
+| 3 | A sortable list view is available alongside the board (FR-ADM-02) | [x] |
 | 4 | Order detail shows customer info, items, design file download, Paystack reference, status timeline and notes (FR-ADM-03) | [ ] |
 | 5 | Custom designs enter a moderation queue before fulfillment; approval moves the order to Shirt Acquired (FR-ADM-07) | [ ] |
 | 6 | Rejection captures a reason and notifies the customer with revise-or-refund options (FR-ADM-07, FR-NOT-03) | [ ] |

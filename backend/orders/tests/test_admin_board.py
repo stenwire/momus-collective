@@ -21,15 +21,17 @@ def staff():
     )
 
 
-def make(n, status="paid", days_ago=0, items=1, custom=False, product=None):
+def make(
+    n, status="paid", days_ago=0, items=1, custom=False, product=None, total=1000000
+):
     order = Order.objects.create(
         order_number=f"MOM-20261011-{n:03d}",
         guest_email="g@example.com",
         guest_phone="1",
         shipping_address={**SHIPPING, "full_name": f"Customer {n}"},
-        subtotal=1000000,
+        subtotal=total,
         delivery_fee=0,
-        total=1000000,
+        total=total,
         status=status,
         status_history=[{"status": status, "timestamp": "2026-10-11T00:00:00"}],
     )
@@ -165,3 +167,72 @@ def test_an_unknown_order_is_404(staff):
         format="json",
     )
     assert resp.status_code == 404
+
+
+LIST = "/api/v1/admin/orders/"
+
+
+def numbers(resp):
+    return [o["order_number"][-3:] for o in resp.json()["results"]]
+
+
+def test_admin_order_list_authz(user):
+    make(1)
+    assert APIClient().get(LIST).status_code == 401
+    assert client_for(user).get(LIST).status_code == 403
+
+
+def test_the_list_sorts_by_date_status_and_amount(staff):
+    make(1, "printed", days_ago=3, total=500000)
+    make(2, "paid", days_ago=1, total=3000000)
+    make(3, "delivered", days_ago=2, total=1500000)
+    client = client_for(staff)
+    assert numbers(client.get(LIST)) == ["002", "003", "001"]
+    assert numbers(client.get(LIST, {"ordering": "date"})) == ["001", "003", "002"]
+    assert numbers(client.get(LIST, {"ordering": "-amount"})) == ["002", "003", "001"]
+    assert numbers(client.get(LIST, {"ordering": "amount"})) == ["001", "003", "002"]
+    # Pipeline order: paid, printed, delivered.
+    assert numbers(client.get(LIST, {"ordering": "status"})) == ["002", "001", "003"]
+    row = client.get(LIST).json()["results"][0]
+    assert (row["status"], row["status_label"], row["total"]) == (
+        "paid",
+        "Paid",
+        3000000,
+    )
+
+
+def test_the_list_filters_and_searches(staff):
+    make(1, "printed")
+    make(2, "paid")
+    Order.objects.filter(order_number__endswith="002").update(
+        shipping_address={**SHIPPING, "full_name": "Chiamaka Obi"},
+        guest_email="chi@example.com",
+    )
+    client = client_for(staff)
+    assert numbers(client.get(LIST, {"status": "printed"})) == ["001"]
+    assert numbers(client.get(LIST, {"search": "chiamaka"})) == ["002"]
+    assert numbers(client.get(LIST, {"search": "CHI@EXAMPLE"})) == ["002"]
+    assert numbers(client.get(LIST, {"search": "20261011-001"})) == ["001"]
+    assert client.get(LIST, {"status": "lost"}).status_code == 400
+    assert client.get(LIST, {"ordering": "customer"}).status_code == 400
+
+
+def test_the_list_pages_by_25(staff):
+    for n in range(27):
+        make(n + 1, items=0, days_ago=n)
+    client = client_for(staff)
+    first = client.get(LIST).json()
+    assert first["count"] == 27 and len(first["results"]) == 25 and first["next"]
+    assert len(client.get(LIST, {"page": 2}).json()["results"]) == 2
+
+
+def test_admin_order_list_num_queries_are_constant(staff):
+    client = client_for(staff)
+    make(1)
+    with CaptureQueriesContext(connection) as few:
+        client.get(LIST)
+    for n in range(2, 20):
+        make(n, items=3)
+    with CaptureQueriesContext(connection) as many:
+        client.get(LIST)
+    assert len(few) == len(many)
