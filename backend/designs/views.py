@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from carts.models import SavedDesign
 
 from .options import public_options
+from .pricing import price_list
 from .serializers import SavedDesignSerializer
 from .storage import design_file_name, design_storage, discard_design_file
 from .tasks import generate_design_file
@@ -16,6 +17,14 @@ from .tasks import generate_design_file
 @permission_classes([AllowAny])
 def design_options(request):
     return Response(public_options())
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def design_pricing(request):
+    """Selling price per shirt colour in kobo. The cost breakdown behind it
+    is admin-only."""
+    return Response({"prices": price_list()})
 
 
 class SavedDesignViewSet(viewsets.ModelViewSet):
@@ -30,6 +39,9 @@ class SavedDesignViewSet(viewsets.ModelViewSet):
         return SavedDesign.objects.filter(user=self.request.user).order_by(
             "-updated_at"
         )
+
+    def get_serializer_context(self):
+        return {**super().get_serializer_context(), "prices": price_list()}
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)

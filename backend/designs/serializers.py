@@ -52,6 +52,8 @@ def validate_design_config(config):
 
 
 class SavedDesignSerializer(serializers.ModelSerializer):
+    price = serializers.SerializerMethodField()
+
     class Meta:
         model = SavedDesign
         fields = [
@@ -60,6 +62,7 @@ class SavedDesignSerializer(serializers.ModelSerializer):
             "config",
             "preview_image_url",
             "design_file_url",
+            "price",
             "created_at",
             "updated_at",
         ]
@@ -70,6 +73,9 @@ class SavedDesignSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
+
+    def get_price(self, design):
+        return self.context["prices"].get(design.config.get("shirt_color"))
 
     def validate_name(self, value):
         name = sanitize_design_text(value).replace("\n", " ").strip()

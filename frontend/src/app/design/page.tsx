@@ -1,7 +1,7 @@
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import type { Metadata } from "next";
 import { DesignTool } from "@/components/design/design-tool";
-import { fetchDesignOptions } from "@/lib/api";
+import { fetchDesignOptions, fetchDesignPricing } from "@/lib/api";
 import { getQueryClient } from "@/lib/get-query-client";
 
 export const metadata: Metadata = {
@@ -12,10 +12,16 @@ export const metadata: Metadata = {
 
 export default async function DesignPage() {
   const queryClient = getQueryClient();
-  await queryClient.prefetchQuery({
-    queryKey: ["design-options"],
-    queryFn: fetchDesignOptions,
-  });
+  await Promise.all([
+    queryClient.prefetchQuery({
+      queryKey: ["design-options"],
+      queryFn: fetchDesignOptions,
+    }),
+    queryClient.prefetchQuery({
+      queryKey: ["design-pricing"],
+      queryFn: fetchDesignPricing,
+    }),
+  ]);
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>

@@ -100,3 +100,16 @@ export async function fetchDesignOptions(): Promise<DesignOptions> {
   }
   return res.json();
 }
+
+export type DesignPricing = { prices: Record<string, number> };
+
+// Admin-set (FR-DES-11): never served from a build-time copy.
+export async function fetchDesignPricing(): Promise<DesignPricing> {
+  const res = await fetch(`${API_URL}/api/v1/designs/pricing/`, {
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch design pricing: ${res.status}`);
+  }
+  return res.json();
+}

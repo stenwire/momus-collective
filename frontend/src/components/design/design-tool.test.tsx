@@ -3,7 +3,7 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useDesignStore } from "@/lib/design/store";
-import { designOptions } from "@/test/design-fixtures";
+import { designOptions, mockDesignApi } from "@/test/design-fixtures";
 import { DesignTool } from "./design-tool";
 
 function renderTool() {
@@ -20,10 +20,7 @@ describe("DesignTool", () => {
     localStorage.clear();
     useDesignStore.setState({ config: null, savedId: null, name: "" });
     vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({ ok: true, json: async () => designOptions }),
-    );
+    vi.stubGlobal("fetch", mockDesignApi());
   });
 
   afterEach(() => {
@@ -171,5 +168,12 @@ describe("DesignTool", () => {
     renderTool();
     const group = await screen.findByRole("group", { name: "Disclaimer Style" });
     expect(within(group).getByRole("button", { name: "Use template: Trust Me" })).toBeInTheDocument();
+  });
+
+  it("shows the server's price for the chosen shirt colour", async () => {
+    renderTool();
+    expect(await screen.findByText("₦12,500")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Navy" }));
+    expect(await screen.findByText("₦13,000")).toBeInTheDocument();
   });
 });

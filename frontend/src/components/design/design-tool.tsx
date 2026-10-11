@@ -2,8 +2,9 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
-import { fetchDesignOptions } from "@/lib/api";
+import { fetchDesignOptions, fetchDesignPricing } from "@/lib/api";
 import { allowedTextColors, withShirtColor } from "@/lib/design/config";
+import { formatNaira } from "@/lib/format";
 import { useDesignStore } from "@/lib/design/store";
 import { DesignPreview } from "./design-preview";
 import { FontPicker } from "./font-picker";
@@ -18,6 +19,10 @@ export function DesignTool() {
   const { data: options, isError } = useQuery({
     queryKey: ["design-options"],
     queryFn: fetchDesignOptions,
+  });
+  const { data: pricing } = useQuery({
+    queryKey: ["design-pricing"],
+    queryFn: fetchDesignPricing,
   });
   const config = useDesignStore((s) => s.config);
   const initialize = useDesignStore((s) => s.initialize);
@@ -39,6 +44,8 @@ export function DesignTool() {
   if (!options || !config) {
     return <p className="px-4 text-zinc-400">Loading the design tool…</p>;
   }
+
+  const price = pricing?.prices[config.shirt_color];
 
   if (previewing) {
     return (
@@ -62,7 +69,13 @@ export function DesignTool() {
         >
           Preview
         </button>
-        <div className="mt-4">
+        <p className="mt-4 text-lg font-semibold text-amber-400">
+          {price === undefined ? "\u00a0" : formatNaira(price)}
+          <span className="ml-2 text-sm font-normal text-zinc-400">
+            on a {config.shirt_color} shirt
+          </span>
+        </p>
+        <div className="mt-3">
           <SaveDesign config={config} />
         </div>
       </div>

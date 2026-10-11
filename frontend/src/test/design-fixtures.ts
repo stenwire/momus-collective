@@ -108,6 +108,19 @@ export const designOptions: DesignOptions = {
   },
 };
 
+export const designPricing = {
+  prices: { Black: 1250000, White: 1250000, Navy: 1300000 },
+};
+
+// Answers the options and pricing endpoints by URL.
+export function mockDesignApi() {
+  return vi.fn(async (url: string) => ({
+    ok: true,
+    status: 200,
+    json: async () => (url.includes("/designs/pricing/") ? designPricing : designOptions),
+  }));
+}
+
 // Records every fillText and fillStyle so drawing can be asserted on.
 export function fakeContext() {
   const calls = { fillText: [] as string[], fillStyles: [] as string[] };
