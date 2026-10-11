@@ -15,7 +15,7 @@ its own heading marks it "(Phase 2)" and the Out of Scope list repeats it.
 | M0 | Foundation | foundation | - | complete |
 | M1 | Data Models and Auth | FR-USR-01, FR-USR-02, FR-USR-06, FR-USR-07, NFR-04 | M0 | complete |
 | M2 | Catalog and Storefront | FR-CAT-01..07, FR-ADM-04, FR-ADM-05, FR-ADM-06, NFR-02, NFR-03, NFR-05 | M1 | complete |
-| M3 | Custom Design Tool | FR-DES-01..11, FR-USR-04, NFR-01 | M2 | not started |
+| M3 | Custom Design Tool | FR-DES-01..11, FR-USR-04, NFR-01 | M2 | complete |
 | M4 | Cart, Checkout and Payment | FR-CART-01..09, FR-USR-03, FR-USR-05, FR-NOT-01 | M3 | not started |
 | M5 | Admin Pipeline, Notifications and Reviews | FR-ADM-01, FR-ADM-02, FR-ADM-03, FR-ADM-07, FR-ADM-08, FR-ADM-09, FR-ADM-10, FR-NOT-02, FR-NOT-03, FR-NOT-04, FR-REV-01..05, NFR-06, NFR-07 | M4 | not started |
 
@@ -149,25 +149,25 @@ custom design as a line item.
 
 | # | Criterion | State |
 |---|---|---|
-| 1 | Canvas renders a shirt mockup and re-renders live as the user types (FR-DES-01, FR-DES-07) | [ ] |
-| 2 | All 7 shirt colors select and update the mockup instantly (FR-DES-02) | [ ] |
-| 3 | Text input caps at 80 characters with a live counter (FR-DES-03) | [ ] |
-| 4 | 8-10 curated fonts selectable with previews, covering bold sans, condensed impact, script, monospace, serif and stencil (FR-DES-04) | [ ] |
-| 5 | Size, text color, alignment and letter spacing all adjustable (FR-DES-05) | [ ] |
-| 6 | Placement offers exactly Upper Chest, Center Chest default, Lower Chest, Full Front — no back, no free-drag (FR-DES-06) | [ ] |
-| 7 | Preview button shows a clean mockup without controls (FR-DES-07) | [ ] |
-| 8 | Logged-in users save designs with full config; guests are prompted to register (FR-DES-08) | [ ] |
-| 9 | Adding to cart generates a PNG or SVG at 300 DPI minimum with transparent background — test asserts the resolution (FR-DES-09) | [ ] |
-| 10 | 10-15 templates across Bold Statement, Minimalist, Stacked Text and Disclaimer Style (FR-DES-10) | [ ] |
-| 11 | Custom pricing computes server-side as blank + print + margin, varying by shirt color (FR-DES-11) | [ ] |
-| 12 | Saved-design gallery supports edit, add to cart, duplicate and delete (FR-USR-04) | [ ] |
-| 13 | The tool is fully usable at 360px with touch targets at least 44x44px (NFR-01) | [ ] |
-| 14 | Design text is sanitized before it reaches the canvas or the generated file | [ ] |
+| 1 | Canvas renders a shirt mockup and re-renders live as the user types (FR-DES-01, FR-DES-07) | [x] |
+| 2 | All 7 shirt colors select and update the mockup instantly (FR-DES-02) | [x] |
+| 3 | Text input caps at 80 characters with a live counter (FR-DES-03) | [x] |
+| 4 | 8-10 curated fonts selectable with previews, covering bold sans, condensed impact, script, monospace, serif and stencil (FR-DES-04) | [x] |
+| 5 | Size, text color, alignment and letter spacing all adjustable (FR-DES-05) | [x] |
+| 6 | Placement offers exactly Upper Chest, Center Chest default, Lower Chest, Full Front — no back, no free-drag (FR-DES-06) | [x] |
+| 7 | Preview button shows a clean mockup without controls (FR-DES-07) | [x] |
+| 8 | Logged-in users save designs with full config; guests are prompted to register (FR-DES-08) | [x] |
+| 9 | Adding to cart generates a PNG or SVG at 300 DPI minimum with transparent background — test asserts the resolution (FR-DES-09) | [x] |
+| 10 | 10-15 templates across Bold Statement, Minimalist, Stacked Text and Disclaimer Style (FR-DES-10) | [x] |
+| 11 | Custom pricing computes server-side as blank + print + margin, varying by shirt color (FR-DES-11) | [x] |
+| 12 | Saved-design gallery supports edit, add to cart, duplicate and delete (FR-USR-04) | [x] |
+| 13 | The tool is fully usable at 360px with touch targets at least 44x44px (NFR-01) | [x] |
+| 14 | Design text is sanitized before it reaches the canvas or the generated file | [x] |
 
 ### Verification
 
-- Verified: not yet
-- Report: none
+- Verified: yes, 2026-10-11 (final run against `a47afa8`, after T-321's cookie auth and its fixes)
+- Report: `docs/VERIFICATION.md`, 0 blockers, 0 major, 0 minor
 
 ---
 

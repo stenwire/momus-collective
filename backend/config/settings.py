@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "promocodes",
     "reviews",
     "newsletter",
+    "designs",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
@@ -113,8 +114,9 @@ REST_FRAMEWORK = {
     # Deny-by-default: an endpoint that forgets to declare permissions is
     # unreachable rather than open, matching the admin boundary (D-007).
     "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],
+    # Bearer header first, then the browser's httpOnly cookie (D-080).
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "config.authentication.CookieJWTAuthentication",
     ],
     "DEFAULT_THROTTLE_CLASSES": ["rest_framework.throttling.ScopedRateThrottle"],
     "DEFAULT_THROTTLE_RATES": {
@@ -139,9 +141,30 @@ SIMPLE_JWT = {
 
 FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
 
+# Absolute links the backend hands out to itself, e.g. design-file downloads.
+BACKEND_URL = env("BACKEND_URL", default="http://localhost:8000")
+
+# Print files are private: outside any public media URL, served only through
+# an access-checked endpoint (SEC-15).
+DESIGN_FILES_ROOT = Path(
+    env("DESIGN_FILES_ROOT", default=str(BASE_DIR / "private" / "design-files"))
+)
+
 # The frontend is the only client (D-011); CORS is scoped to exactly the
 # origins it can legitimately run on, not a wildcard.
 CORS_ALLOWED_ORIGINS = [FRONTEND_URL, *env.list("CORS_EXTRA_ORIGINS", default=[])]
+# Credentialed requests carry the auth cookies; still only these origins.
+CORS_ALLOW_CREDENTIALS = True
+CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
+
+# Browser auth lives in httpOnly cookies no script can read (D-080). The
+# frontend and API must share a site (e.g. shop.example / api.shop.example)
+# for SameSite=Lax cookies to flow; set AUTH_COOKIE_SAMESITE=None otherwise.
+AUTH_COOKIE_SECURE = env.bool("AUTH_COOKIE_SECURE", default=True)
+AUTH_COOKIE_SAMESITE = env("AUTH_COOKIE_SAMESITE", default="Lax")
+AUTH_COOKIE_DOMAIN = env("AUTH_COOKIE_DOMAIN", default=None)
+CSRF_COOKIE_SECURE = AUTH_COOKIE_SECURE
+CSRF_COOKIE_SAMESITE = AUTH_COOKIE_SAMESITE
 
 GOOGLE_OAUTH_CLIENT_ID = env("GOOGLE_OAUTH_CLIENT_ID")
 

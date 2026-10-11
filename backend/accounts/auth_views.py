@@ -29,6 +29,8 @@ def issue_token_pair(user, remember_me):
     lifetime = REMEMBER_ME_LIFETIME if remember_me else SESSION_ONLY_LIFETIME
     refresh = RefreshToken.for_user(user)
     refresh.set_exp(from_time=timezone.now(), lifetime=lifetime)
+    # Carried so a cookie-session rotation keeps the same lifetime (T-321).
+    refresh["remember"] = bool(remember_me)
     return {"access": str(refresh.access_token), "refresh": str(refresh)}
 
 

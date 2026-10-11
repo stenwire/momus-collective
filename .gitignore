@@ -24,3 +24,6 @@ htmlcov/
 # OS
 .DS_Store
 Thumbs.db
+
+# Generated customer design files (backend DESIGN_FILES_ROOT default)
+backend/private/

@@ -11,6 +11,9 @@ APP_MONEY_LABELS = frozenset(
         "discount_value",
         "min_order_value",
         "avg_rating",
+        "blank_cost",
+        "print_cost",
+        "margin",
     }
 )
 PROJECT_APPS = {
@@ -21,6 +24,7 @@ PROJECT_APPS = {
     "promocodes",
     "reviews",
     "newsletter",
+    "designs",
 }
 
 

@@ -1,0 +1,6 @@
+// Crew-neck tee silhouette in the 1000-unit mockup space.
+export const SHIRT_PATH =
+  "M400 120 L250 165 L110 300 L190 400 L275 355 L275 900 L725 900 " +
+  "L725 355 L810 400 L890 300 L750 165 L600 120 Q500 200 400 120 Z";
+
+export const COLLAR_PATH = "M400 120 Q500 200 600 120 Q500 225 400 120 Z";

@@ -1,3 +1,5 @@
+import type { DesignOptions } from "./design/types";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 export type Category = {
@@ -83,6 +85,31 @@ export async function fetchCollections(): Promise<Collection[]> {
   const res = await fetch(`${API_URL}/api/v1/collections/`);
   if (!res.ok) {
     throw new Error(`Failed to fetch collections: ${res.status}`);
+  }
+  return res.json();
+}
+
+// no-store: a build-time copy goes stale the moment the backend's options
+// change, and the tool cannot render against a shape it doesn't expect.
+export async function fetchDesignOptions(): Promise<DesignOptions> {
+  const res = await fetch(`${API_URL}/api/v1/designs/options/`, {
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch design options: ${res.status}`);
+  }
+  return res.json();
+}
+
+export type DesignPricing = { prices: Record<string, number> };
+
+// Admin-set (FR-DES-11): never served from a build-time copy.
+export async function fetchDesignPricing(): Promise<DesignPricing> {
+  const res = await fetch(`${API_URL}/api/v1/designs/pricing/`, {
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    throw new Error(`Failed to fetch design pricing: ${res.status}`);
   }
   return res.json();
 }

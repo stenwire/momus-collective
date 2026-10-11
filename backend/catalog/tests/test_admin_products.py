@@ -168,3 +168,43 @@ def test_non_admin_request_is_rejected():
     )
     resp = auth_client(user).get("/api/v1/admin/products/")
     assert resp.status_code == 403
+
+
+@pytest.mark.parametrize(
+    "colors",
+    [["Neon"], ["Black", "Hot Pink"], "Black", [1], ["Black", "Black"]],
+)
+def test_shirt_colours_must_be_the_seven_stocked(colors):
+    admin = make_admin()
+    category = make_category()
+    resp = auth_client(admin).post(
+        "/api/v1/admin/products/",
+        {
+            "slogan": "x",
+            "slug": "x",
+            "category": str(category.id),
+            "price": 500000,
+            "shirt_colors": colors,
+        },
+        format="json",
+    )
+    assert resp.status_code == 400
+    assert "shirt_colors" in resp.json()
+    assert not Product.objects.filter(slug="x").exists()
+
+
+def test_stocked_shirt_colours_are_accepted():
+    admin = make_admin()
+    category = make_category()
+    resp = auth_client(admin).post(
+        "/api/v1/admin/products/",
+        {
+            "slogan": "x",
+            "slug": "x",
+            "category": str(category.id),
+            "price": 500000,
+            "shirt_colors": ["Black", "Forest Green", "Deep Purple"],
+        },
+        format="json",
+    )
+    assert resp.status_code == 201
