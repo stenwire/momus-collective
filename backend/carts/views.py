@@ -1,13 +1,20 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
+from catalog.models import Product
 from designs.pricing import price_list
 
 from .models import CartItem
-from .serializers import AddItemSerializer, CartItemSerializer, QuantitySerializer
+from .serializers import (
+    AddItemSerializer,
+    CartItemSerializer,
+    MergeSerializer,
+    QuantitySerializer,
+)
 from .services import add_line, user_cart
 
 
@@ -52,3 +59,32 @@ def cart_item(request, pk):
         line.quantity = serializer.validated_data["quantity"]
         line.save(update_fields=["quantity"])
     return Response(cart_payload(cart))
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def cart_merge(request):
+    """FR-CART-01: a guest's localStorage lines join the server cart on
+    login. Never a replace: matching lines add up (capped), and a line that
+    can no longer be added is reported back rather than dropped silently."""
+    serializer = MergeSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    cart = user_cart(request.user)
+    lines = serializer.validated_data["items"]
+    products = Product.objects.in_bulk([line["product"] for line in lines])
+    skipped = []
+    for line in lines:
+        product = products.get(line["product"])
+        try:
+            if product is None:
+                raise ValidationError({"product": "This product no longer exists."})
+            add_line(
+                cart,
+                product=product,
+                size=line["size"],
+                color=line["color"],
+                quantity=line["quantity"],
+            )
+        except ValidationError as error:
+            skipped.append({"product": str(line["product"]), "reason": error.detail})
+    return Response({**cart_payload(cart), "skipped": skipped})

@@ -77,3 +77,15 @@ class AddItemSerializer(serializers.Serializer):
 
 class QuantitySerializer(serializers.Serializer):
     quantity = serializers.IntegerField(min_value=1, max_value=MAX_LINE_QUANTITY)
+
+
+class MergeLineSerializer(serializers.Serializer):
+    product = serializers.UUIDField()
+    size = serializers.CharField()
+    color = serializers.CharField(required=False, allow_blank=True, default="")
+    quantity = serializers.IntegerField(min_value=1, max_value=MAX_LINE_QUANTITY)
+
+
+class MergeSerializer(serializers.Serializer):
+    # A guest cart holds catalog lines only (D-075, D-082).
+    items = MergeLineSerializer(many=True, max_length=50)

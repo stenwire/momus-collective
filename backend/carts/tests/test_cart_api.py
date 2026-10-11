@@ -206,3 +206,74 @@ def test_cart_query_count_is_constant(product):
     with CaptureQueriesContext(connection) as many:
         client.get("/api/v1/cart/")
     assert len(many) == len(one)
+
+
+def merge(client, items):
+    return client.post("/api/v1/cart/merge/", {"items": items}, format="json")
+
+
+def test_merge_keeps_the_server_cart_and_adds_the_guest_lines(product):
+    category = product.category
+    other = Product.objects.create(
+        slogan="other", slug="other", category=category, price=900000
+    )
+    user = make_user()
+    client = client_for(user)
+    add(client, product=str(product.id), size="M", color="Black", quantity=2)
+    body = merge(
+        client,
+        [
+            {"product": str(product.id), "size": "M", "color": "Black", "quantity": 3},
+            {"product": str(other.id), "size": "L", "color": "", "quantity": 1},
+        ],
+    ).json()
+    lines = {(i["product"]["slogan"], i["size"]): i["quantity"] for i in body["items"]}
+    assert lines == {("touch grass", "M"): 5, ("other", "L"): 1}
+    assert body["skipped"] == []
+
+
+def test_merge_respects_the_line_cap(product):
+    client = client_for(make_user())
+    add(client, product=str(product.id), size="M", color="Black", quantity=8)
+    body = merge(
+        client,
+        [{"product": str(product.id), "size": "M", "color": "Black", "quantity": 5}],
+    ).json()
+    assert body["items"][0]["quantity"] == 10
+
+
+def test_merge_reports_lines_that_cannot_be_added(product):
+    import uuid
+
+    gone = Product.objects.create(
+        slogan="gone", slug="gone", category=product.category, price=1, is_active=False
+    )
+    client = client_for(make_user())
+    body = merge(
+        client,
+        [
+            {"product": str(product.id), "size": "M", "color": "Black", "quantity": 1},
+            {"product": str(gone.id), "size": "M", "color": "", "quantity": 1},
+            {"product": str(uuid.uuid4()), "size": "M", "color": "", "quantity": 1},
+            {"product": str(product.id), "size": "M", "color": "Neon", "quantity": 1},
+        ],
+    ).json()
+    assert len(body["items"]) == 1
+    assert len(body["skipped"]) == 3
+
+
+def test_merge_requires_a_signed_in_user(product):
+    resp = merge(
+        APIClient(),
+        [{"product": str(product.id), "size": "M", "color": "Black", "quantity": 1}],
+    )
+    assert resp.status_code == 401
+
+
+def test_merge_into_an_empty_server_cart_creates_it(product):
+    user = make_user()
+    merge(
+        client_for(user),
+        [{"product": str(product.id), "size": "S", "color": "White", "quantity": 2}],
+    )
+    assert CartItem.objects.get(cart__user=user).quantity == 2
