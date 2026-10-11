@@ -108,12 +108,37 @@ describe("cookie session api", () => {
     expect(refreshes).toHaveLength(1);
   });
 
-  it("signs out when the refresh is refused", async () => {
+  it("signs out when the refresh is refused and no session remains", async () => {
     signedIn();
-    fetchMock.mockResolvedValueOnce(json(401, {})).mockResolvedValueOnce(json(401, {}));
+    fetchMock
+      .mockResolvedValueOnce(json(401, {}))
+      .mockResolvedValueOnce(json(401, {}))
+      .mockResolvedValueOnce(json(200, { user: null, csrf: "c", retry: false }));
     const res = await authFetch("/api/v1/designs/");
     expect(res.status).toBe(401);
     expect(useAuthStore.getState().status).toBe("signed-out");
+  });
+
+  it("stays signed in when another tab already renewed the session", async () => {
+    signedIn();
+    fetchMock
+      .mockResolvedValueOnce(json(401, {}))
+      .mockResolvedValueOnce(json(401, {}))
+      .mockResolvedValueOnce(json(200, { user: testUser, csrf: "c3" }))
+      .mockResolvedValueOnce(json(200, { ok: true }));
+    const res = await authFetch("/api/v1/designs/");
+    expect(res.status).toBe(200);
+    expect(useAuthStore.getState()).toMatchObject({ status: "signed-in", csrf: "c3" });
+    expect(fetchMock.mock.calls[2][0]).toMatch(/\/auth\/session\/$/);
+  });
+
+  it("re-reads the session once when told another tab won the rotation", async () => {
+    fetchMock
+      .mockResolvedValueOnce(json(200, { user: null, csrf: "c1", retry: true }))
+      .mockResolvedValueOnce(json(200, { user: testUser, csrf: "c2", retry: false }));
+    await loadSession();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(useAuthStore.getState().status).toBe("signed-in");
   });
 
   it("logout posts with the CSRF token and signs out", async () => {

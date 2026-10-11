@@ -12,7 +12,7 @@ export class ApiError extends Error {
   }
 }
 
-type SessionBody = { user: SessionUser | null; csrf: string };
+type SessionBody = { user: SessionUser | null; csrf: string; retry?: boolean };
 
 // Credentialed so the httpOnly auth cookies ride along; every write carries
 // the CSRF token the session endpoint handed us.
@@ -38,7 +38,12 @@ function applySession(body: SessionBody) {
 }
 
 export async function loadSession(): Promise<void> {
-  applySession(await parse<SessionBody>(await request("/api/v1/auth/session/")));
+  const read = async () =>
+    parse<SessionBody>(await request("/api/v1/auth/session/"));
+  let body = await read();
+  // Another tab rotated the refresh token first; its cookies are ours now.
+  if (body.retry) body = await read();
+  applySession(body);
 }
 
 async function ensureCsrf() {
@@ -90,9 +95,11 @@ function refreshSession(): Promise<boolean> {
       applySession(await res.json());
       return true;
     })
-    .catch(() => {
-      useAuthStore.getState().signOut();
-      return false;
+    // Refused: possibly because another tab already rotated the token and
+    // set fresh cookies. Ask the session before deciding we're signed out.
+    .catch(async () => {
+      await loadSession().catch(() => useAuthStore.getState().signOut());
+      return useAuthStore.getState().status === "signed-in";
     })
     .finally(() => {
       refreshing = null;

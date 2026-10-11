@@ -223,3 +223,76 @@ def test_cors_allows_credentials_for_the_frontend_only():
     assert ours["Access-Control-Allow-Origin"] == settings.FRONTEND_URL
     evil = APIClient().get("/api/v1/auth/session/", HTTP_ORIGIN="https://evil.example")
     assert "Access-Control-Allow-Origin" not in evil
+
+
+def test_a_tab_refreshing_with_a_spent_token_does_not_log_out_the_other(user):
+    tab_a, csrf = browser()
+    spent = log_in(tab_a, csrf).cookies[REFRESH_COOKIE].value
+    renewed = tab_a.post("/api/v1/auth/session/refresh/", HTTP_X_CSRFTOKEN=csrf)
+    assert renewed.status_code == 200
+
+    # Tab B's request left with the old cookie before tab A's response landed.
+    tab_b = APIClient(enforce_csrf_checks=True)
+    tab_b.cookies[REFRESH_COOKIE] = spent
+    b_csrf = tab_b.get("/api/v1/auth/session/").json()["csrf"]
+    tab_b.cookies[REFRESH_COOKIE] = spent
+    late = tab_b.post("/api/v1/auth/session/refresh/", HTTP_X_CSRFTOKEN=b_csrf)
+    assert late.status_code == 401
+    # No Set-Cookie: the fresh cookies tab A received survive in the browser.
+    assert ACCESS_COOKIE not in late.cookies
+    assert REFRESH_COOKIE not in late.cookies
+
+
+def test_session_read_with_a_spent_token_asks_the_client_to_retry(user):
+    client, csrf = browser()
+    spent = log_in(client, csrf).cookies[REFRESH_COOKIE].value
+    client.post("/api/v1/auth/session/refresh/", HTTP_X_CSRFTOKEN=csrf)
+    other = APIClient()
+    other.cookies[REFRESH_COOKIE] = spent
+    body = other.get("/api/v1/auth/session/").json()
+    assert body["user"] is None
+    assert body["retry"] is True
+
+
+def test_session_read_with_a_bogus_token_does_not_ask_to_retry():
+    client = APIClient()
+    client.cookies[REFRESH_COOKIE] = "garbage"
+    body = client.get("/api/v1/auth/session/").json()
+    assert body == {"user": None, "csrf": body["csrf"], "retry": False}
+
+
+@pytest.mark.django_db(transaction=True)
+def test_concurrent_refreshes_spend_a_token_exactly_once():
+    import threading
+
+    from django.db import connection
+    from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
+
+    from accounts.session_views import _rotate
+
+    person = User.objects.create_user(
+        email="race@example.com", password=PASSWORD, first_name="R", phone="1"
+    )
+    raw = str(RefreshToken.for_user(person))
+    barrier = threading.Barrier(2)
+    results = []
+
+    def spend():
+        try:
+            barrier.wait()
+            results.append(_rotate(raw))
+        finally:
+            connection.close()
+
+    threads = [threading.Thread(target=spend) for _ in range(2)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+    assert sum(result is not None for result in results) == 1
+    assert (
+        BlacklistedToken.objects.filter(
+            token__jti=RefreshToken(raw, verify=False)["jti"]
+        ).count()
+        == 1
+    )
