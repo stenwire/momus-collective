@@ -43,9 +43,8 @@ def design(owner):
 
 def stored_files(design):
     storage = design_storage()
-    if not storage.exists(""):
-        return []
-    return [n for n in storage.listdir("")[1] if n.startswith(f"{design.id}-")]
+    prefix = str(design.id)
+    return storage.listdir(prefix)[1] if storage.exists(prefix) else []
 
 
 def export(client, design):
@@ -127,8 +126,7 @@ def test_a_design_deleted_before_the_task_runs_is_skipped(design):
     design_id = str(design.id)
     design.delete()
     generate_design_file(design_id)  # must not raise
-    storage = design_storage()
-    assert not storage.exists("") or storage.listdir("")[1] == []
+    assert not design_storage().exists(design_id)
 
 
 def test_an_edit_during_render_never_publishes_the_stale_file(
@@ -172,3 +170,13 @@ def test_re_export_after_an_edit_serves_the_new_config(owner, design):
     assert len(stored_files(design)) == 1
     resp = client.get(f"/api/v1/designs/{design.id}/file/")
     assert resp.status_code == 200
+
+
+def test_discarding_one_designs_files_leaves_others_alone(owner, design):
+    other = SavedDesign.objects.create(user=owner, name="y", config=CONFIG)
+    client = client_for(owner)
+    export(client, design)
+    export(client, other)
+    client.delete(f"/api/v1/designs/{design.id}/")
+    assert not design_storage().exists(str(design.id))
+    assert len(stored_files(other)) == 1
