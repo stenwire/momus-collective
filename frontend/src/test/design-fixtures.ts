@@ -8,9 +8,24 @@ export const designOptions: DesignOptions = {
   text_limits: { max_length: 80, max_lines: 4 },
   placements: [
     {
+      key: "upper_chest",
+      label: "Upper Chest",
+      box: { x: 350, y: 215, w: 300, h: 120 },
+    },
+    {
       key: "center_chest",
       label: "Center Chest",
       box: { x: 335, y: 300, w: 330, h: 240 },
+    },
+    {
+      key: "lower_chest",
+      label: "Lower Chest",
+      box: { x: 335, y: 560, w: 330, h: 150 },
+    },
+    {
+      key: "full_front",
+      label: "Full Front",
+      box: { x: 320, y: 230, w: 360, h: 480 },
     },
   ],
   shirt_colors: [
@@ -71,6 +86,8 @@ export function fakeContext() {
     }),
     stroke: vi.fn(),
     setTransform: vi.fn(),
+    setLineDash: vi.fn(),
+    strokeRect: vi.fn(),
     createLinearGradient: () => ({ addColorStop: vi.fn() }),
     measureText: (ch: string) => ({ width: ch.length * 10 }),
     fillText: vi.fn((ch: string) => calls.fillText.push(ch)),

@@ -108,4 +108,19 @@ describe("DesignTool", () => {
     expect(useDesignStore.getState().config?.text_color).toBe("Ink Black");
     expect(within(textColors).getAllByRole("button").map((b) => b.getAttribute("aria-label"))).toEqual(["Ink Black"]);
   });
+
+  it("offers exactly the four placements, Center Chest by default", async () => {
+    renderTool();
+    const group = await screen.findByRole("group", { name: "Placement" });
+    const buttons = within(group).getAllByRole("button");
+    expect(buttons.map((b) => b.textContent)).toEqual([
+      "Upper Chest",
+      "Center Chest",
+      "Lower Chest",
+      "Full Front",
+    ]);
+    expect(within(group).getByRole("button", { name: "Center Chest" })).toHaveAttribute("aria-pressed", "true");
+    await userEvent.click(within(group).getByRole("button", { name: "Full Front" }));
+    expect(useDesignStore.getState().config?.placement).toBe("full_front");
+  });
 });

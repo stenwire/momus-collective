@@ -16,6 +16,7 @@ export function drawDesign(
   ctx: CanvasRenderingContext2D,
   config: DesignConfig,
   options: DesignOptions,
+  { guide = false }: { guide?: boolean } = {},
 ) {
   const size = options.canvas_size;
   ctx.clearRect(0, 0, size, size);
@@ -38,6 +39,13 @@ export function drawDesign(
     options.placements.find((p) => p.key === config.placement) ??
     options.placements[0];
   const box = placement.box;
+  if (guide) {
+    ctx.setLineDash([12, 10]);
+    ctx.strokeStyle = "rgba(160,160,160,0.6)";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(box.x, box.y, box.w, box.h);
+    ctx.setLineDash([]);
+  }
   const measure = (ch: string, px: number) => {
     ctx.font = canvasFont(config.font, px);
     return ctx.measureText(ch).width;
@@ -66,10 +74,12 @@ export function ShirtCanvas({
   config,
   options,
   label,
+  guide = false,
 }: {
   config: DesignConfig;
   options: DesignOptions;
   label: string;
+  guide?: boolean;
 }) {
   const ref = useRef<HTMLCanvasElement>(null);
 
@@ -83,7 +93,7 @@ export function ShirtCanvas({
       canvas.width = Math.round(options.canvas_size * scale);
       canvas.height = canvas.width;
       ctx.setTransform(scale, 0, 0, scale, 0, 0);
-      drawDesign(ctx, config, options);
+      drawDesign(ctx, config, options, { guide });
     };
     render();
     // Canvas text never triggers a webfont load, so load it, then redraw.
@@ -96,7 +106,7 @@ export function ShirtCanvas({
       live = false;
       window.removeEventListener("resize", render);
     };
-  }, [config, options]);
+  }, [config, options, guide]);
 
   return (
     <canvas

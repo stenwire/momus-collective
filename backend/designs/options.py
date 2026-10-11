@@ -7,10 +7,24 @@ CANVAS_SIZE = 1000
 UNITS_PER_INCH = 30
 PRINT_DPI = 300
 
+# FR-DES-06: exactly these four, front only; no back, no free-drag.
+# Boxes are print areas: 10x4in, 11x8in, 11x5in and 12x16in.
 PLACEMENTS = {
+    "upper_chest": {
+        "label": "Upper Chest",
+        "box": {"x": 350, "y": 215, "w": 300, "h": 120},
+    },
     "center_chest": {
         "label": "Center Chest",
         "box": {"x": 335, "y": 300, "w": 330, "h": 240},
+    },
+    "lower_chest": {
+        "label": "Lower Chest",
+        "box": {"x": 335, "y": 560, "w": 330, "h": 150},
+    },
+    "full_front": {
+        "label": "Full Front",
+        "box": {"x": 320, "y": 230, "w": 360, "h": 480},
     },
 }
 

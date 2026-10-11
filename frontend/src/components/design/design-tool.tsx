@@ -42,6 +42,7 @@ export function DesignTool() {
           config={config}
           options={options}
           label={`Shirt mockup: ${config.text || "no text yet"}`}
+          guide
         />
       </div>
       <div className="flex w-full flex-col gap-5 md:w-80">
@@ -72,6 +73,12 @@ export function DesignTool() {
           colors={allowedTextColors(options, config.shirt_color)}
           value={config.text_color}
           onChange={(text_color) => update({ text_color })}
+        />
+        <OptionButtons
+          legend="Placement"
+          options={options.placements}
+          value={config.placement}
+          onChange={(placement) => update({ placement })}
         />
         <OptionButtons
           legend="Alignment"

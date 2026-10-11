@@ -131,3 +131,33 @@ def test_default_text_colour_contrasts_with_the_default_shirt():
     assert (
         defaults["text_color"] in data["text_colors_by_shirt"][defaults["shirt_color"]]
     )
+
+
+def test_placements_are_exactly_the_four_front_presets():
+    data = get_options().json()
+    assert [p["label"] for p in data["placements"]] == [
+        "Upper Chest",
+        "Center Chest",
+        "Lower Chest",
+        "Full Front",
+    ]
+    assert data["defaults"]["placement"] == "center_chest"
+
+
+def test_no_back_or_free_drag_placement_exists():
+    keys = {p["key"] for p in get_options().json()["placements"]}
+    assert not any("back" in k or "drag" in k or "free" in k for k in keys)
+
+
+def test_every_print_area_sits_on_the_shirt_body():
+    # Body spans x 275-725 below the 200-unit neckline, hem at 900.
+    for placement in get_options().json()["placements"]:
+        box = placement["box"]
+        assert 275 <= box["x"] and box["x"] + box["w"] <= 725, placement["key"]
+        assert 200 <= box["y"] and box["y"] + box["h"] <= 900, placement["key"]
+
+
+def test_print_areas_are_whole_inches():
+    for placement in get_options().json()["placements"]:
+        box = placement["box"]
+        assert box["w"] % UNITS_PER_INCH == 0 and box["h"] % UNITS_PER_INCH == 0
