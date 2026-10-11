@@ -1,0 +1,56 @@
+"use client";
+
+import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { fetchDesignOptions } from "@/lib/api";
+import { useDesignStore } from "@/lib/design/store";
+import { ShirtCanvas } from "./shirt-canvas";
+
+export function DesignTool() {
+  const { data: options, isError } = useQuery({
+    queryKey: ["design-options"],
+    queryFn: fetchDesignOptions,
+  });
+  const config = useDesignStore((s) => s.config);
+  const initialize = useDesignStore((s) => s.initialize);
+  const update = useDesignStore((s) => s.update);
+
+  useEffect(() => {
+    if (options && !config) initialize(options.defaults);
+  }, [options, config, initialize]);
+
+  if (isError) {
+    return (
+      <p className="px-4 text-zinc-400">
+        The design tool could not load. Refresh to try again.
+      </p>
+    );
+  }
+  if (!options || !config) {
+    return <p className="px-4 text-zinc-400">Loading the design tool…</p>;
+  }
+
+  return (
+    <div className="flex flex-col gap-6 px-4 pb-10 md:flex-row md:items-start">
+      <div className="w-full md:sticky md:top-4 md:max-w-xl md:flex-1">
+        <ShirtCanvas
+          config={config}
+          options={options}
+          label={`Shirt mockup: ${config.text || "no text yet"}`}
+        />
+      </div>
+      <div className="flex w-full flex-col gap-5 md:w-80">
+        <label className="flex flex-col gap-2 text-sm font-medium text-zinc-300">
+          Your slogan
+          <textarea
+            value={config.text}
+            onChange={(e) => update({ text: e.target.value })}
+            rows={3}
+            placeholder="Type something unhinged"
+            className="min-h-11 rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-base text-zinc-50 placeholder:text-zinc-500 focus:border-amber-400 focus:outline-none"
+          />
+        </label>
+      </div>
+    </div>
+  );
+}

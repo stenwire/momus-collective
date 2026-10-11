@@ -15,7 +15,7 @@ its own heading marks it "(Phase 2)" and the Out of Scope list repeats it.
 | M0 | Foundation | foundation | - | complete |
 | M1 | Data Models and Auth | FR-USR-01, FR-USR-02, FR-USR-06, FR-USR-07, NFR-04 | M0 | complete |
 | M2 | Catalog and Storefront | FR-CAT-01..07, FR-ADM-04, FR-ADM-05, FR-ADM-06, NFR-02, NFR-03, NFR-05 | M1 | complete |
-| M3 | Custom Design Tool | FR-DES-01..11, FR-USR-04, NFR-01 | M2 | not started |
+| M3 | Custom Design Tool | FR-DES-01..11, FR-USR-04, NFR-01 | M2 | in progress |
 | M4 | Cart, Checkout and Payment | FR-CART-01..09, FR-USR-03, FR-USR-05, FR-NOT-01 | M3 | not started |
 | M5 | Admin Pipeline, Notifications and Reviews | FR-ADM-01, FR-ADM-02, FR-ADM-03, FR-ADM-07, FR-ADM-08, FR-ADM-09, FR-ADM-10, FR-NOT-02, FR-NOT-03, FR-NOT-04, FR-REV-01..05, NFR-06, NFR-07 | M4 | not started |
 
@@ -149,7 +149,7 @@ custom design as a line item.
 
 | # | Criterion | State |
 |---|---|---|
-| 1 | Canvas renders a shirt mockup and re-renders live as the user types (FR-DES-01, FR-DES-07) | [ ] |
+| 1 | Canvas renders a shirt mockup and re-renders live as the user types (FR-DES-01, FR-DES-07) | [x] |
 | 2 | All 7 shirt colors select and update the mockup instantly (FR-DES-02) | [ ] |
 | 3 | Text input caps at 80 characters with a live counter (FR-DES-03) | [ ] |
 | 4 | 8-10 curated fonts selectable with previews, covering bold sans, condensed impact, script, monospace, serif and stencil (FR-DES-04) | [ ] |

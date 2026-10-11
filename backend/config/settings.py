@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "promocodes",
     "reviews",
     "newsletter",
+    "designs",
 ]
 
 AUTH_USER_MODEL = "accounts.User"

@@ -1,3 +1,5 @@
+import type { DesignOptions } from "./design/types";
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 export type Category = {
@@ -83,6 +85,14 @@ export async function fetchCollections(): Promise<Collection[]> {
   const res = await fetch(`${API_URL}/api/v1/collections/`);
   if (!res.ok) {
     throw new Error(`Failed to fetch collections: ${res.status}`);
+  }
+  return res.json();
+}
+
+export async function fetchDesignOptions(): Promise<DesignOptions> {
+  const res = await fetch(`${API_URL}/api/v1/designs/options/`);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch design options: ${res.status}`);
   }
   return res.json();
 }
