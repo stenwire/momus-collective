@@ -12,8 +12,11 @@ def make_user(email="buyer@example.com", password="correct-horse-battery"):
     )
 
 
-def test_login_is_throttled_after_the_configured_rate(settings):
-    settings.REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"]["auth-login"] = "3/min"
+def test_login_is_throttled_after_the_configured_rate(monkeypatch, settings):
+    # In place, as DRF holds this dict; setitem undoes it after the test.
+    monkeypatch.setitem(
+        settings.REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"], "auth-login", "3/min"
+    )
     make_user()
     client = APIClient()
     for _ in range(3):
@@ -29,8 +32,11 @@ def test_login_is_throttled_after_the_configured_rate(settings):
     assert throttled.status_code == 429
 
 
-def test_register_is_throttled_after_the_configured_rate(settings):
-    settings.REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"]["auth-register"] = "2/min"
+def test_register_is_throttled_after_the_configured_rate(monkeypatch, settings):
+    # In place, as DRF holds this dict; setitem undoes it after the test.
+    monkeypatch.setitem(
+        settings.REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"], "auth-register", "2/min"
+    )
     client = APIClient()
     for i in range(2):
         client.post(
@@ -54,8 +60,15 @@ def test_register_is_throttled_after_the_configured_rate(settings):
     assert throttled.status_code == 429
 
 
-def test_password_reset_request_is_throttled_after_the_configured_rate(settings):
-    settings.REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"]["auth-password-reset"] = "2/min"
+def test_password_reset_request_is_throttled_after_the_configured_rate(
+    monkeypatch, settings
+):
+    # In place, as DRF holds this dict; setitem undoes it after the test.
+    monkeypatch.setitem(
+        settings.REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"],
+        "auth-password-reset",
+        "2/min",
+    )
     make_user()
     client = APIClient()
     for _ in range(2):
@@ -69,11 +82,13 @@ def test_password_reset_request_is_throttled_after_the_configured_rate(settings)
     assert throttled.status_code == 429
 
 
-def test_login_throttle_is_scoped_per_endpoint_not_global(settings):
+def test_login_throttle_is_scoped_per_endpoint_not_global(monkeypatch, settings):
     """A client who exhausts the login scope can still hit an unrelated,
     unthrottled endpoint -- the limiter targets specific auth surfaces,
     not all traffic from that client."""
-    settings.REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"]["auth-login"] = "1/min"
+    monkeypatch.setitem(
+        settings.REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"], "auth-login", "1/min"
+    )
     make_user()
     client = APIClient()
     client.post(

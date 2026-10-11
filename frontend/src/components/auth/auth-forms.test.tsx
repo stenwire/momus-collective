@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useAuthStore } from "@/lib/auth/store";
 import { useDesignStore } from "@/lib/design/store";
+import { signedIn, signedOut, testUser } from "@/test/auth";
 import { designOptions } from "@/test/design-fixtures";
 import { AuthNav } from "./auth-nav";
 import { LogoutButton } from "./logout-button";
@@ -25,7 +26,7 @@ describe("auth forms", () => {
   beforeEach(() => {
     push.mockReset();
     search = "";
-    useAuthStore.setState({ tokens: null, email: null });
+    signedOut();
     fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
   });
@@ -34,12 +35,12 @@ describe("auth forms", () => {
 
   it("logs in and returns to the requested page", async () => {
     search = "next=/design";
-    fetchMock.mockResolvedValue(json(200, { access: "a", refresh: "r" }));
+    fetchMock.mockResolvedValue(json(200, { user: testUser, csrf: "c2" }));
     render(<LoginForm />);
     await userEvent.type(screen.getByLabelText("Email"), "me@example.com");
     await userEvent.type(screen.getByLabelText("Password"), "correct-horse");
     await userEvent.click(screen.getByRole("button", { name: "Log in" }));
-    expect(useAuthStore.getState().tokens).toEqual({ access: "a", refresh: "r" });
+    expect(useAuthStore.getState().status).toBe("signed-in");
     expect(push).toHaveBeenCalledWith("/design");
   });
 
@@ -59,7 +60,7 @@ describe("auth forms", () => {
 
   it("refuses an off-site next parameter", async () => {
     search = "next=//evil.com";
-    fetchMock.mockResolvedValue(json(200, { access: "a", refresh: "r" }));
+    fetchMock.mockResolvedValue(json(200, { user: testUser, csrf: "c2" }));
     render(<LoginForm />);
     await userEvent.type(screen.getByLabelText("Email"), "me@example.com");
     await userEvent.type(screen.getByLabelText("Password"), "correct-horse");
@@ -71,7 +72,7 @@ describe("auth forms", () => {
     search = "next=/design";
     fetchMock
       .mockResolvedValueOnce(json(201, { id: "1", email: "new@example.com" }))
-      .mockResolvedValueOnce(json(200, { access: "a", refresh: "r" }));
+      .mockResolvedValueOnce(json(200, { user: testUser, csrf: "c2" }));
     render(<RegisterForm />);
     await userEvent.type(screen.getByLabelText("First name"), "Ada");
     await userEvent.type(screen.getByLabelText("Email"), "new@example.com");
@@ -83,7 +84,7 @@ describe("auth forms", () => {
       first_name: "Ada",
       phone: "+2348000000000",
     });
-    expect(useAuthStore.getState().tokens).not.toBeNull();
+    expect(useAuthStore.getState().status).toBe("signed-in");
     expect(push).toHaveBeenCalledWith("/design");
   });
 
@@ -103,13 +104,13 @@ describe("auth forms", () => {
 
 describe("AuthNav", () => {
   it("offers Log in when signed out", () => {
-    useAuthStore.setState({ tokens: null });
+    signedOut();
     render(<AuthNav />);
     expect(screen.getByRole("link", { name: "Log in" })).toHaveAttribute("href", "/login");
   });
 
   it("links to My designs when signed in", () => {
-    useAuthStore.setState({ tokens: { access: "a", refresh: "r" }, email: "x" });
+    signedIn();
     render(<AuthNav />);
     expect(screen.getByRole("link", { name: "My designs" })).toHaveAttribute(
       "href",
@@ -119,13 +120,17 @@ describe("AuthNav", () => {
 });
 
 describe("LogoutButton", () => {
-  it("logs out, clearing tokens and the whole design draft", async () => {
-    useAuthStore.setState({ tokens: { access: "a", refresh: "r" }, email: "x" });
+  it("logs out on the server and clears the whole design draft", async () => {
+    signedIn();
+    const fetchMock = vi.fn().mockResolvedValue(json(204, {}));
+    vi.stubGlobal("fetch", fetchMock);
     const config = { ...designOptions.defaults, text: "private slogan" };
     useDesignStore.setState({ savedId: "d1", name: "mine", config, savedConfig: config });
     render(<LogoutButton />);
     await userEvent.click(screen.getByRole("button", { name: "Log out" }));
-    expect(useAuthStore.getState().tokens).toBeNull();
+    await vi.waitFor(() => expect(push).toHaveBeenCalledWith("/"));
+    expect(fetchMock.mock.calls[0][0]).toMatch(/\/auth\/session\/logout\/$/);
+    expect(useAuthStore.getState().status).toBe("signed-out");
     expect(useDesignStore.getState()).toMatchObject({
       config: null,
       savedId: null,
@@ -133,6 +138,6 @@ describe("LogoutButton", () => {
       name: "",
     });
     expect(localStorage.getItem("momus-design-draft")).not.toContain("private slogan");
-    expect(push).toHaveBeenCalledWith("/");
+    vi.unstubAllGlobals();
   });
 });

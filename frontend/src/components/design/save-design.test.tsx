@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { useAuthStore } from "@/lib/auth/store";
+import { signedIn, signedOut } from "@/test/auth";
 import { useDesignStore } from "@/lib/design/store";
 import { designOptions } from "@/test/design-fixtures";
 import { SaveDesign } from "./save-design";
@@ -16,7 +16,7 @@ describe("SaveDesign", () => {
   beforeEach(() => {
     localStorage.clear();
     useDesignStore.setState({ config, savedId: null, savedConfig: null, name: "" });
-    useAuthStore.setState({ tokens: null, email: null });
+    signedOut();
     fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
   });
@@ -40,7 +40,7 @@ describe("SaveDesign", () => {
   });
 
   it("saves a new design, then updates the same one", async () => {
-    useAuthStore.setState({ tokens: { access: "a", refresh: "r" } });
+    signedIn();
     fetchMock
       .mockResolvedValueOnce(json(201, { id: "d1", name: "touch grass", config }))
       .mockResolvedValueOnce(json(200, { id: "d1", name: "touch grass", config }));
@@ -53,7 +53,8 @@ describe("SaveDesign", () => {
     expect(url).toMatch(/\/api\/v1\/designs\/$/);
     expect(init.method).toBe("POST");
     expect(JSON.parse(init.body)).toEqual({ name: "touch grass", config });
-    expect((init.headers as Headers).get("Authorization")).toBe("Bearer a");
+    expect((init.headers as Headers).get("X-CSRFToken")).toBe("csrf-token");
+    expect(init.credentials).toBe("include");
     expect(useDesignStore.getState().savedId).toBe("d1");
 
     await userEvent.click(screen.getByRole("button", { name: "Save changes" }));
@@ -63,7 +64,7 @@ describe("SaveDesign", () => {
   });
 
   it("shows the server's validation message", async () => {
-    useAuthStore.setState({ tokens: { access: "a", refresh: "r" } });
+    signedIn();
     fetchMock.mockResolvedValueOnce(
       json(400, { config: { text_color: "Gold isn't readable on a White shirt." } }),
     );
@@ -80,7 +81,7 @@ describe("Add to cart", () => {
   beforeEach(() => {
     localStorage.clear();
     useDesignStore.setState({ config, savedId: null, savedConfig: null, name: "" });
-    useAuthStore.setState({ tokens: { access: "a", refresh: "r" }, email: "x" });
+    signedIn();
     fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
   });
@@ -123,7 +124,7 @@ describe("Add to cart", () => {
   });
 
   it("sends a guest to the account prompt instead", async () => {
-    useAuthStore.setState({ tokens: null });
+    signedOut();
     render(<SaveDesign config={config} />);
     await userEvent.click(screen.getByRole("button", { name: "Add to cart" }));
     expect(screen.getByRole("region", { name: "Save your design" })).toBeInTheDocument();

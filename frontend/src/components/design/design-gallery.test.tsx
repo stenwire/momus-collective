@@ -3,6 +3,7 @@ import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useAuthStore } from "@/lib/auth/store";
+import { signedIn, signedOut } from "@/test/auth";
 import { useDesignStore } from "@/lib/design/store";
 import { designOptions } from "@/test/design-fixtures";
 import { DesignGallery } from "./design-gallery";
@@ -42,7 +43,7 @@ describe("DesignGallery", () => {
     push.mockReset();
     replace.mockReset();
     designs = [design];
-    useAuthStore.setState({ tokens: { access: "a", refresh: "r" }, email: "x" });
+    signedIn();
     vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
     fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
       const method = init?.method ?? "GET";
@@ -106,7 +107,7 @@ describe("DesignGallery", () => {
   });
 
   it("sends a signed-out visitor to log in", async () => {
-    useAuthStore.setState({ tokens: null });
+    signedOut();
     renderGallery();
     expect(replace).toHaveBeenCalledWith("/login?next=/account/designs");
   });

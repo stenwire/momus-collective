@@ -1,6 +1,7 @@
-import { type Tokens, useAuthStore } from "./store";
+import { type SessionUser, useAuthStore } from "./store";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
 export class ApiError extends Error {
   constructor(
@@ -11,24 +12,46 @@ export class ApiError extends Error {
   }
 }
 
-async function post<T>(path: string, body: unknown): Promise<T> {
-  const res = await fetch(`${API_URL}${path}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
+type SessionBody = { user: SessionUser | null; csrf: string };
+
+// Credentialed so the httpOnly auth cookies ride along; every write carries
+// the CSRF token the session endpoint handed us.
+function request(path: string, init: RequestInit = {}) {
+  const headers = new Headers(init.headers);
+  const method = (init.method ?? "GET").toUpperCase();
+  const csrf = useAuthStore.getState().csrf;
+  if (!SAFE_METHODS.has(method) && csrf) headers.set("X-CSRFToken", csrf);
+  if (init.body && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+  return fetch(`${API_URL}${path}`, { ...init, headers, credentials: "include" });
+}
+
+async function parse<T>(res: Response): Promise<T> {
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new ApiError(res.status, data);
   return data as T;
 }
 
+function applySession(body: SessionBody) {
+  useAuthStore.getState().setSession(body.user, body.csrf);
+}
+
+export async function loadSession(): Promise<void> {
+  applySession(await parse<SessionBody>(await request("/api/v1/auth/session/")));
+}
+
+async function ensureCsrf() {
+  if (!useAuthStore.getState().csrf) await loadSession();
+}
+
 export async function login(email: string, password: string, rememberMe: boolean) {
-  const tokens = await post<Tokens>("/api/v1/auth/login/", {
-    email,
-    password,
-    remember_me: rememberMe,
+  await ensureCsrf();
+  const res = await request("/api/v1/auth/session/login/", {
+    method: "POST",
+    body: JSON.stringify({ email, password, remember_me: rememberMe }),
   });
-  useAuthStore.getState().signIn(tokens, email);
+  applySession(await parse<SessionBody>(res));
 }
 
 export type Registration = {
@@ -40,26 +63,35 @@ export type Registration = {
 };
 
 export async function register(details: Registration) {
-  await post("/api/v1/auth/register/", details);
+  await ensureCsrf();
+  await parse(
+    await request("/api/v1/auth/register/", {
+      method: "POST",
+      body: JSON.stringify(details),
+    }),
+  );
   await login(details.email, details.password, true);
+}
+
+export async function logout() {
+  await ensureCsrf();
+  await request("/api/v1/auth/session/logout/", { method: "POST" });
+  useAuthStore.getState().signOut();
 }
 
 // Refresh tokens rotate and are blacklisted after use, so concurrent 401s
 // must share one refresh rather than race to spend the same token.
 let refreshing: Promise<boolean> | null = null;
 
-function refreshTokens(): Promise<boolean> {
-  const { tokens, setTokens, signOut } = useAuthStore.getState();
-  if (!tokens) return Promise.resolve(false);
-  refreshing ??= post<Tokens>("/api/v1/auth/token/refresh/", {
-    refresh: tokens.refresh,
-  })
-    .then((next) => {
-      setTokens(next);
+function refreshSession(): Promise<boolean> {
+  refreshing ??= request("/api/v1/auth/session/refresh/", { method: "POST" })
+    .then(async (res) => {
+      if (!res.ok) throw new Error("refresh failed");
+      applySession(await res.json());
       return true;
     })
     .catch(() => {
-      signOut();
+      useAuthStore.getState().signOut();
       return false;
     })
     .finally(() => {
@@ -69,18 +101,11 @@ function refreshTokens(): Promise<boolean> {
 }
 
 export async function authFetch(path: string, init: RequestInit = {}) {
-  const send = () => {
-    const access = useAuthStore.getState().tokens?.access;
-    const headers = new Headers(init.headers);
-    if (access) headers.set("Authorization", `Bearer ${access}`);
-    if (init.body && !headers.has("Content-Type")) {
-      headers.set("Content-Type", "application/json");
-    }
-    return fetch(`${API_URL}${path}`, { ...init, headers });
-  };
-  const res = await send();
-  if (res.status !== 401 || !useAuthStore.getState().tokens) return res;
-  return (await refreshTokens()) ? send() : res;
+  const res = await request(path, init);
+  if (res.status !== 401 || useAuthStore.getState().status !== "signed-in") {
+    return res;
+  }
+  return (await refreshSession()) ? request(path, init) : res;
 }
 
 // Only same-site paths: "//evil.com", "/\\evil.com" (browsers read the

@@ -1,17 +1,16 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/lib/auth/store";
+import { logout } from "@/lib/auth/api";
 import { useDesignStore } from "@/lib/design/store";
 
 export function LogoutButton() {
-  const signOut = useAuthStore((s) => s.signOut);
   const router = useRouter();
   return (
     <button
       type="button"
-      onClick={() => {
-        signOut();
+      onClick={async () => {
+        await logout().catch(() => {});
         // The next person on this device must not see or edit this
         // account's design.
         useDesignStore.getState().reset();

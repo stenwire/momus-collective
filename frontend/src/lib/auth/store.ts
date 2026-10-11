@@ -1,25 +1,22 @@
 import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
 
-export type Tokens = { access: string; refresh: string };
+export type SessionUser = { email: string; first_name: string };
 
+// No tokens here: they live in httpOnly cookies no script can read (D-080).
+// The CSRF token is held in memory only, never persisted.
 type AuthState = {
-  tokens: Tokens | null;
-  email: string | null;
-  signIn: (tokens: Tokens, email: string) => void;
-  setTokens: (tokens: Tokens) => void;
+  status: "unknown" | "signed-in" | "signed-out";
+  user: SessionUser | null;
+  csrf: string | null;
+  setSession: (user: SessionUser | null, csrf: string | null) => void;
   signOut: () => void;
 };
 
-export const useAuthStore = create<AuthState>()(
-  persist(
-    (set) => ({
-      tokens: null,
-      email: null,
-      signIn: (tokens, email) => set({ tokens, email }),
-      setTokens: (tokens) => set({ tokens }),
-      signOut: () => set({ tokens: null, email: null }),
-    }),
-    { name: "momus-auth", storage: createJSONStorage(() => localStorage) },
-  ),
-);
+export const useAuthStore = create<AuthState>()((set) => ({
+  status: "unknown",
+  user: null,
+  csrf: null,
+  setSession: (user, csrf) =>
+    set({ user, csrf, status: user ? "signed-in" : "signed-out" }),
+  signOut: () => set({ user: null, status: "signed-out" }),
+}));
