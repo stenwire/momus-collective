@@ -71,3 +71,17 @@ export const saveOrderNotes = (id: string, notes: string) =>
     method: "PATCH",
     body: JSON.stringify({ notes }),
   });
+
+export type ModerationEntry = {
+  id: string;
+  order_number: string;
+  created_at: string;
+  customer: string;
+  designs: (OrderItem & { design_file_url: string | null })[];
+};
+
+export const fetchModerationQueue = () =>
+  adminCall<{ count: number; orders: ModerationEntry[] }>("/api/v1/admin/moderation/");
+
+export const approveDesign = (id: string) =>
+  adminCall<{ id: string; status: OrderStatus }>(`/api/v1/admin/moderation/${id}/approve/`, { method: "POST" });

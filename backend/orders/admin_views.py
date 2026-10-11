@@ -13,7 +13,7 @@ from config.permissions import IsStaffUser
 
 from .models import Order, OrderItem, OrderStatus
 from .serializers import item_payload
-from .status import BOARD, change_status
+from .status import BOARD, approve_design, change_status
 
 BOARD_LIMIT = 50
 
@@ -202,3 +202,44 @@ def admin_order_detail(request, pk):
         order.notes = serializer.validated_data["notes"]
         order.save(update_fields=["notes", "updated_at"])
     return Response(admin_detail(order))
+
+
+@api_view(["GET"])
+@permission_classes([IsStaffUser])
+def admin_moderation_queue(request):
+    """FR-ADM-07: orders whose custom designs await review, oldest first."""
+    orders = (
+        Order.objects.filter(status=OrderStatus.MODERATION)
+        .order_by("created_at")
+        .prefetch_related("items__product")
+    )
+    return Response(
+        {
+            "count": len(orders),
+            "orders": [
+                {
+                    "id": str(order.id),
+                    "order_number": order.order_number,
+                    "created_at": order.created_at.isoformat(),
+                    "customer": order.shipping_address.get("full_name", ""),
+                    "designs": [
+                        {
+                            **item_payload(item),
+                            "design_file_url": item.design_file_url or None,
+                        }
+                        for item in order.items.all()
+                        if item.design_config
+                    ],
+                }
+                for order in orders
+            ],
+        }
+    )
+
+
+@api_view(["POST"])
+@permission_classes([IsStaffUser])
+def admin_moderation_approve(request, pk):
+    get_object_or_404(Order, pk=pk)
+    order = approve_design(pk, by=request.user.email)
+    return Response({"id": str(order.id), "status": order.status})

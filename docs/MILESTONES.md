@@ -226,7 +226,7 @@ because every one of these acts on orders that M4 creates.
 | 2 | Kanban board shows Paid, Shirt Acquired, Printed, Out for Delivery, Delivered and Cancelled; dragging updates status and notifies the customer (FR-ADM-02) | [ ] |
 | 3 | A sortable list view is available alongside the board (FR-ADM-02) | [x] |
 | 4 | Order detail shows customer info, items, design file download, Paystack reference, status timeline and notes (FR-ADM-03) | [x] |
-| 5 | Custom designs enter a moderation queue before fulfillment; approval moves the order to Shirt Acquired (FR-ADM-07) | [ ] |
+| 5 | Custom designs enter a moderation queue before fulfillment; approval moves the order to Shirt Acquired (FR-ADM-07) | [x] |
 | 6 | Rejection captures a reason and notifies the customer with revise-or-refund options (FR-ADM-07, FR-NOT-03) | [ ] |
 | 7 | Analytics shows revenue by period, orders by status, top 10 products, category breakdown, custom vs catalog ratio, AOV and a 30-day trend (FR-ADM-08) | [ ] |
 | 8 | Admin manages promo codes with redemption and remaining-use tracking (FR-ADM-09) | [ ] |

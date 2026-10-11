@@ -41,6 +41,16 @@ urlpatterns = [
         name="admin-order-status",
     ),
     path(
+        "admin/moderation/",
+        admin_views.admin_moderation_queue,
+        name="admin-moderation",
+    ),
+    path(
+        "admin/moderation/<uuid:pk>/approve/",
+        admin_views.admin_moderation_approve,
+        name="admin-moderation-approve",
+    ),
+    path(
         "admin/delivery-settings/",
         views.admin_delivery_settings,
         name="admin-delivery-settings",

@@ -16,6 +16,13 @@ NUMBER_ATTEMPTS = 5
 
 
 def _create_order(session):
+    # FR-ADM-07: a custom design is reviewed before fulfilment starts.
+    paid_at = session.paid_at.isoformat()
+    history = [{"status": OrderStatus.PAID, "timestamp": paid_at}]
+    status = OrderStatus.PAID
+    if any(line.get("design_config") for line in session.lines):
+        status = OrderStatus.MODERATION
+        history.append({"status": status, "timestamp": paid_at})
     # The day's first orders have no rows to lock, so two can compute the
     # same number; the unique constraint catches it and we try the next.
     for attempt in range(NUMBER_ATTEMPTS):
@@ -31,15 +38,10 @@ def _create_order(session):
                     delivery_fee=session.delivery_fee,
                     discount=session.discount,
                     total=session.total,
-                    status=OrderStatus.PAID,
+                    status=status,
                     paystack_reference=session.reference,
                     paid_at=session.paid_at,
-                    status_history=[
-                        {
-                            "status": OrderStatus.PAID,
-                            "timestamp": session.paid_at.isoformat(),
-                        }
-                    ],
+                    status_history=history,
                 )
         except IntegrityError:
             if attempt == NUMBER_ATTEMPTS - 1:
