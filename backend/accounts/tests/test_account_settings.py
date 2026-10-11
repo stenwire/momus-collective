@@ -102,6 +102,35 @@ def test_email_change_confirm_rejects_another_users_token():
     assert victim.email == "victim@example.com"
 
 
+def test_email_change_confirm_returns_400_on_a_uniqueness_race(monkeypatch):
+    """The .exists() pre-check is TOCTOU: simulate another account taking
+    the target email in the window between that check and the save."""
+    user = make_user()
+    client = auth_client(user)
+    client.post(
+        "/api/v1/account/email/", {"new_email": "new@example.com"}, format="json"
+    )
+    token = mail.outbox[0].body.split("token=")[1].strip()
+
+    make_user("new@example.com")
+
+    class FakeQuerySet:
+        def exclude(self, **kwargs):
+            return self
+
+        def exists(self):
+            return False
+
+    monkeypatch.setattr(User.objects, "filter", lambda **kwargs: FakeQuerySet())
+
+    resp = client.post(
+        "/api/v1/account/email/confirm/", {"token": token}, format="json"
+    )
+    assert resp.status_code == 400
+    user.refresh_from_db()
+    assert user.email == "buyer@example.com"
+
+
 def test_password_change_requires_the_current_password():
     user = make_user()
     client = auth_client(user)
