@@ -1,35 +1,28 @@
 # Verification Report
 
 **Milestone:** M3 - Custom Design Tool
-**Scope:** Re-run against `d4493a5`: all 18 M3 tasks (T-301..T-318),
-confirming the four findings of the prior M3 run are closed (T-315..T-318)
-and auditing the code those fixes added (`catalog/admin_serializers.py`,
-`designs/tasks.py`, `designs/storage.py`, `designs/views.py`,
-`lib/design/store.ts`, `logout-button.tsx`). Plus every cross-cutting
-checklist item M3 code touches, as in the prior run.
+**Scope:** M3 at `cb0ead8` (previously verified PASS through T-320) plus the
+uncommitted T-321 change that moves browser auth to httpOnly cookies with
+CSRF: `config/authentication.py`, `accounts/session_views.py`, settings
+(CORS credentials, CSRF trusted origins, cookie flags), the frontend auth
+store, `authFetch`, `AuthBootstrap`, logout, and the M1 rate-limit test
+isolation fix. Plus every cross-cutting check M3 code touches.
 **Date:** 2026-10-11
 **Blockers:** 0
-**Major:** 0
-**Minor:** 2
+**Major:** 1
+**Minor:** 1
 **Verdict:** PASS
-**Dimensions not verified:** BLD-01 (`pnpm build` writes `.next/`, which
-this skill forbids; the T-317 implement run built every route). BLD-07 (the
-branch is not pushed, so no CI run exists for M3 yet). EFF-08 (Lighthouse not
-re-run). SEC-01/02/03/07 and SPC-07..13 are M4/M5 scope. CI-SEC-01..05 are
-verified at M0 and not re-run per milestone.
+**Dimensions not verified:** BLD-01 (`pnpm build` writes `.next/`; the T-321
+implement run built and served every route). BLD-07 for the T-321 change
+(not yet pushed; PR #6's last CI run, before T-321, passed every check).
+EFF-08 (Lighthouse not re-run). M4/M5-scope checks as before.
 
 ## Findings
 
 | # | Severity | Dimension | Location | Finding | Remediation |
 |---|---|---|---|---|---|
-| 1 | minor | 7. Client contract (API-02) | `backend/catalog/admin_serializers.py:37` | T-315 tightened validation on the existing v1 field `shirt_colors`, which API-02 (a `[user]` rule, D-011) forbids within v1. D-077 records why: every rejected value was already invalid under SPC-03, and no client writes the field. The reasoning holds, but it is an exception to a rule the user set, and only the user can accept that. | T-319: the user ratifies D-077, or the validation moves behind a v2 admin products route. |
-| 2 | minor | 2. Efficiency | `backend/designs/storage.py:22` | `discard_design_files` lists the entire `DESIGN_FILES_ROOT` directory on every config edit and delete to find one design's files. That is O(all stored files) per edit, and would be costly against S3 once storage is swapped (D-074). | T-320: store each design's files under a per-design prefix (`<id>/<digest>.png`) and list only that prefix. |
-
-Prior-run findings, re-confirmed closed by opening the files:
-1 (major) closed: `catalog/admin_serializers.py:37-49` validates against `SHIRT_COLORS`.
-2 closed: `designs/tasks.py:14-28` skips a missing design, publishes only if `config=config` still matches, otherwise deletes its own file.
-3 closed: `logout-button.tsx:17` calls `reset()`, which clears config, saved id, saved config and name (`store.ts:38-39`).
-4 closed: D-078 recorded in `docs/TODO.md`.
+| 1 | major | 1. Security and input trust (session correctness) | `backend/accounts/session_views.py:99-104`, `frontend/src/lib/auth/api.ts:93-94` | Cookies are shared by every tab. When two tabs refresh at once with the same refresh token, one rotates it and sets new cookies; the other's request carries the now-spent token, gets a 401, and its response calls `clear_auth_cookies`, deleting the cookies the first tab just set. The user is logged out everywhere. The frontend then signs out without checking whether another tab already renewed the session. Two tabs left open past the 15-minute access lifetime make this realistic. | T-322: do not clear cookies on a failed refresh (a spent token is harmless to leave); on refresh failure, the frontend re-reads `GET /auth/session/`, which carries whatever cookies another tab set, before declaring the user signed out. Test the two-tab race. |
+| 2 | minor | 1. Security and input trust | `backend/accounts/session_views.py:52-57` | `_rotate` validates the refresh token and then blacklists it as two separate steps. Two simultaneous requests can both pass validation and each mint a new token family, so rotation does not strictly spend a token once. SimpleJWT's stock endpoint shares the pattern. | T-323: spend the token atomically (create the `BlacklistedToken` row inside a transaction and treat an existing row as already spent), with a test. |
 
 ## Commands run
 
@@ -37,18 +30,20 @@ Prior-run findings, re-confirmed closed by opening the files:
 $ cd backend && uv run python -c "import sys;print(sys.prefix)"
 /Users/Apple/Desktop/Lab/playground/sten_lab/momus-collective/backend/.venv
 $ cd backend && uv run pytest -q
-267 passed, 1 warning in 26.91s
+285 passed, 1 warning in 31.72s
+$ cd backend && uv run pytest -q accounts/tests/test_session.py
+17 passed, 1 warning in 5.83s
 $ cd backend && uv run ruff check .
 All checks passed!
 $ cd backend && uv run ruff format --check .
-113 files already formatted
+116 files already formatted
 $ cd backend && uv run python manage.py check
 System check identified no issues (0 silenced).
 $ cd backend && uv run python manage.py makemigrations --check --dry-run
 No changes detected
 $ pnpm --dir frontend test        (pnpm 11.21.0 via npx)
- Test Files  20 passed (20)
-      Tests  112 passed (112)
+ Test Files  21 passed (21)
+      Tests  117 passed (117)
 $ pnpm --dir frontend typecheck
 ✓ Types generated successfully
 $ pnpm --dir frontend lint
@@ -57,26 +52,31 @@ exit 0
 $ rg -n "sk_live|sk_test|PAYSTACK_SECRET_KEY\s*=\s*[\"']" --glob '!*.md'
 (no output)
 $ PRO-01..08 greps
-frontend/src/lib/format.ts:2:  style: "currency",
+frontend/src/lib/format.ts:2:  style: "currency",      (known false positive)
 frontend/src/lib/format.ts:3:  currency: "NGN",
-(PRO-03's known Intl.NumberFormat false positive; all others empty)
-$ DRY-07 scan over the 76 .py/.ts/.tsx/.yml files changed since main
-76 files; violations: 0   (scanner proven in the prior run on a 6-line block)
-$ grep confirmations of the four prior findings (see above)
-catalog/admin_serializers.py:37  def validate_shirt_colors(self, value):
-designs/tasks.py:23  published = SavedDesign.objects.filter(id=design.id, config=config).update(
-logout-button.tsx:17  useDesignStore.getState().reset();
-docs/TODO.md: 1 row "| D-078 "
+$ rg -n "localStorage" frontend/src --glob '!*.test.*'
+frontend/src/lib/design/store.ts:43   (design draft only, no auth data)
+frontend/src/components/auth/auth-bootstrap.tsx:12   (removes legacy tokens)
 ```
+
+Read-checks performed by opening the files: `config/authentication.py`
+(Bearer wins; cookie path enforces CSRF; an invalid cookie is anonymous),
+`accounts/session_views.py` (no token in any response body; refresh cookie
+path-scoped; `remember` claim honoured on rotation), `config/settings.py`
+(credentials CORS limited to the explicit allowlist; CSRF trusted origins
+mirror it; Secure by default), `frontend/src/lib/auth/api.ts` (credentials
+included; CSRF header on unsafe methods only), `auth-bootstrap.tsx`,
+`logout-button.tsx`, `accounts/tests/test_rate_limiting.py` (the
+`monkeypatch.setitem` restore).
 
 ## Dimension summary
 
 | Dimension | Result | Notes |
 |---|---|---|
-| 1. Security and input trust | pass | Prior findings 2 and 3 closed. Admin endpoints `IsStaffUser` with 401/403 tests; prices server-computed; design text sanitized on write and at render; print files private, owner or staff only; no secret, no fallback default. |
-| 2. Efficiency | pass, 1 minor | Constant-query design list; pricing 2 queries; rendering in Celery. Finding 2. |
-| 3. DRY and layering | pass | Catalog colours now share `designs/options.py` (DRY-06 closed); pricing in one module (DRY-03); DRY-07 0 violations. |
-| 4. Tests | pass | Backend `267 passed`, frontend `112 passed`, non-zero; known-failure checks recorded for the race guard and the money scan. |
-| 5. Spec conformance | pass | SPC-03 now holds for catalog products as well as the tool; SPC-04/05/06/16 hold; D-078 records the thumbnail choice. |
-| 6. Build and types | pass (partial) | Typecheck, lint, ruff, checks and migrations clean; backend env is `backend/.venv`. BLD-01 and BLD-07 not verified here. |
-| 7. Client contract and acceptance | pass, 1 minor | Routes under `/api/v1/`; frontend reads only declared fields; `/design` server-rendered. Finding 1 (API-02 exception pending user ratification). All 18 M3 tasks and 14 DoD rows are `[x]` with proof. |
+| 1. Security and input trust | pass, 1 major, 1 minor | Tokens are unreadable by page script (httpOnly), never in a response body, and the refresh cookie travels only to the session endpoints. Every cookie-authenticated write needs the CSRF token, with foreign origins refused, which SEC-09 now covers for real. Credentialed CORS is limited to the allowlist. Session login keeps the `auth-login` throttle (SEC-08). Findings 1 and 2. |
+| 2. Efficiency | pass | No change to query counts; one session request per full page load. |
+| 3. DRY and layering | pass | Cookie helpers in one module; session views reuse the existing credential serializer and `issue_token_pair`. |
+| 4. Tests | pass | Backend `285 passed` (17 new session tests, CSRF enforcement proven by a known-failure run in T-321), frontend `117 passed`. The test-isolation leak in `test_rate_limiting.py` is fixed, so the suite no longer runs at a silently lowered login rate. |
+| 5. Spec conformance | pass | No change to the design tool; NFR-04 CSRF on forms is now actually enforced for browser writes. |
+| 6. Build and types | pass (partial) | Typecheck, lint, ruff, checks and migrations clean. BLD-01/BLD-07 as in the header. |
+| 7. Client contract and acceptance | pass | The session endpoints are additive; no existing v1 endpoint, field or status code changed. Bearer clients keep working (tested). |
