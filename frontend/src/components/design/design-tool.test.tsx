@@ -75,4 +75,17 @@ describe("DesignTool", () => {
     await userEvent.paste("zero\u200bwidth\u0007");
     expect(useDesignStore.getState().config?.text).toBe("zerowidth");
   });
+
+  it("previews each font in its own face and switches on press", async () => {
+    renderTool();
+    const anton = await screen.findByRole("button", { name: "Anton" });
+    expect(anton).toHaveStyle({ fontFamily: "'Anton'" });
+    expect(screen.getByRole("button", { name: "Archivo Black" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    await userEvent.click(anton);
+    expect(useDesignStore.getState().config?.font).toBe("anton");
+    expect(anton).toHaveAttribute("aria-pressed", "true");
+  });
 });

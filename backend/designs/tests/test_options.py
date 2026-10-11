@@ -48,3 +48,36 @@ def test_shirt_colors_are_exactly_the_seven_the_prd_names():
 def test_every_shirt_color_has_a_hex_value():
     for color in get_options().json()["shirt_colors"]:
         assert len(color["hex"]) == 7 and color["hex"].startswith("#")
+
+
+def test_offers_eight_to_ten_fonts_covering_every_named_style():
+    fonts = get_options().json()["fonts"]
+    assert 8 <= len(fonts) <= 10
+    styles = {f["style"] for f in fonts}
+    assert {
+        "bold_sans",
+        "condensed",
+        "script",
+        "monospace",
+        "serif",
+        "stencil",
+    } <= styles
+
+
+def test_default_font_is_the_bold_sans():
+    data = get_options().json()
+    default = next(f for f in data["fonts"] if f["key"] == data["defaults"]["font"])
+    assert default["style"] == "bold_sans"
+
+
+def test_every_font_file_ships_and_loads():
+    from pathlib import Path
+
+    from PIL import ImageFont
+
+    from designs.options import FONTS
+
+    fonts_dir = Path(__file__).resolve().parent.parent / "fonts"
+    for font in FONTS.values():
+        loaded = ImageFont.truetype(str(fonts_dir / font["file"]), 48)
+        assert loaded.getlength("momus") > 0

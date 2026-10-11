@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { canvasFont } from "@/lib/design/fonts";
 import { layoutText } from "@/lib/design/layout";
 import { sanitizeDesignText } from "@/lib/design/sanitize";
 import { COLLAR_PATH, SHIRT_PATH } from "@/lib/design/shirt-path";
 import type { DesignConfig, DesignOptions } from "@/lib/design/types";
 
-const FONT_FAMILY = "sans-serif";
 const FONT_PX_RATIO = 0.12;
 
 function hexFor(colors: { name: string; hex: string }[], name: string) {
@@ -40,7 +40,7 @@ export function drawDesign(
     options.placements[0];
   const box = placement.box;
   const measure = (ch: string, px: number) => {
-    ctx.font = `${px}px ${FONT_FAMILY}`;
+    ctx.font = canvasFont(config.font, px);
     return ctx.measureText(ch).width;
   };
   const lines = layoutText(
@@ -53,7 +53,7 @@ export function drawDesign(
   ctx.fillStyle = hexFor(options.text_colors, config.text_color);
   ctx.textBaseline = "alphabetic";
   for (const line of lines) {
-    ctx.font = `${line.fontPx}px ${FONT_FAMILY}`;
+    ctx.font = canvasFont(config.font, line.fontPx);
     let x = line.x;
     for (const ch of Array.from(line.text)) {
       ctx.fillText(ch, x, line.baseline);
@@ -86,8 +86,16 @@ export function ShirtCanvas({
       drawDesign(ctx, config, options);
     };
     render();
+    // Canvas text never triggers a webfont load, so load it, then redraw.
+    let live = true;
+    document.fonts
+      ?.load(canvasFont(config.font, 40))
+      .then(() => live && render());
     window.addEventListener("resize", render);
-    return () => window.removeEventListener("resize", render);
+    return () => {
+      live = false;
+      window.removeEventListener("resize", render);
+    };
   }, [config, options]);
 
   return (

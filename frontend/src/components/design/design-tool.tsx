@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { fetchDesignOptions } from "@/lib/api";
 import { useDesignStore } from "@/lib/design/store";
+import { FontPicker } from "./font-picker";
 import { ShirtCanvas } from "./shirt-canvas";
 import { SloganInput } from "./slogan-input";
 import { SwatchPicker } from "./swatch-picker";
@@ -46,6 +47,11 @@ export function DesignTool() {
           value={config.text}
           limits={options.text_limits}
           onChange={(text) => update({ text })}
+        />
+        <FontPicker
+          fonts={options.fonts}
+          value={config.font}
+          onChange={(font) => update({ font })}
         />
         <SwatchPicker
           legend="Shirt color"

@@ -18,10 +18,16 @@ export const designOptions: DesignOptions = {
     { name: "White", hex: "#f5f5f2" },
     { name: "Navy", hex: "#1c2541" },
   ],
+  fonts: [
+    { key: "archivo_black", label: "Archivo Black", style: "bold_sans" },
+    { key: "anton", label: "Anton", style: "condensed" },
+    { key: "pacifico", label: "Pacifico", style: "script" },
+  ],
   text_colors: [{ name: "Off White", hex: "#f4f1ea" }],
   defaults: {
     shirt_color: "Black",
     text: "",
+    font: "archivo_black",
     text_color: "Off White",
     placement: "center_chest",
   },

@@ -18,9 +18,57 @@ PLACEMENTS = {
 # print stays legible at; the PRD names no line limit (D-068).
 TEXT_LIMITS = {"max_length": 80, "max_lines": 4}
 
+# FR-DES-04: 8-10 apparel fonts covering the six named styles. Files live
+# in designs/fonts/ with their licenses; the frontend loads the same
+# families through next/font.
+FONTS = {
+    "archivo_black": {
+        "label": "Archivo Black",
+        "style": "bold_sans",
+        "file": "ArchivoBlack-Regular.ttf",
+    },
+    "anton": {"label": "Anton", "style": "condensed", "file": "Anton-Regular.ttf"},
+    "bebas_neue": {
+        "label": "Bebas Neue",
+        "style": "condensed",
+        "file": "BebasNeue-Regular.ttf",
+    },
+    "permanent_marker": {
+        "label": "Permanent Marker",
+        "style": "script",
+        "file": "PermanentMarker-Regular.ttf",
+    },
+    "pacifico": {
+        "label": "Pacifico",
+        "style": "script",
+        "file": "Pacifico-Regular.ttf",
+    },
+    "space_mono": {
+        "label": "Space Mono",
+        "style": "monospace",
+        "file": "SpaceMono-Bold.ttf",
+    },
+    "dm_serif_display": {
+        "label": "DM Serif Display",
+        "style": "serif",
+        "file": "DMSerifDisplay-Regular.ttf",
+    },
+    "abril_fatface": {
+        "label": "Abril Fatface",
+        "style": "serif",
+        "file": "AbrilFatface-Regular.ttf",
+    },
+    "stardos_stencil": {
+        "label": "Stardos Stencil",
+        "style": "stencil",
+        "file": "StardosStencil-Bold.ttf",
+    },
+}
+
 DEFAULT_CONFIG = {
     "shirt_color": "Black",
     "text": "",
+    "font": "archivo_black",
     "placement": "center_chest",
 }
 
@@ -48,6 +96,10 @@ def public_options():
         "text_limits": TEXT_LIMITS,
         "placements": [{"key": k, **v} for k, v in PLACEMENTS.items()],
         "shirt_colors": [{"name": k, "hex": v} for k, v in SHIRT_COLORS.items()],
+        "fonts": [
+            {"key": k, "label": v["label"], "style": v["style"]}
+            for k, v in FONTS.items()
+        ],
         "text_colors": [{"name": k, "hex": v} for k, v in TEXT_COLORS.items()],
         "defaults": {**DEFAULT_CONFIG, "text_color": DEFAULT_TEXT_COLOR},
     }

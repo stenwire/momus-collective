@@ -42,4 +42,10 @@ describe("drawDesign", () => {
     drawDesign(ctx, { ...designOptions.defaults, text: "a\u202eb" }, designOptions);
     expect(calls.fillText.join("")).toBe("ab");
   });
+
+  it("draws the text in the selected font", () => {
+    const { ctx } = fakeContext();
+    drawDesign(ctx, { ...designOptions.defaults, text: "hi", font: "anton" }, designOptions);
+    expect(ctx.font).toMatch(/^400 [\d.]+px 'Anton'$/);
+  });
 });
