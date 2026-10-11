@@ -154,3 +154,28 @@ export async function deletePromoCode(id: string): Promise<void> {
   const res = await authFetch(`/api/v1/admin/promo-codes/${id}/`, { method: "DELETE" });
   if (!res.ok) throw new ApiError(res.status, await res.json().catch(() => ({})));
 }
+
+export type CustomerRow = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  order_count: number;
+  total_spent: number;
+  last_order_at: string | null;
+  joined_at: string;
+};
+
+export type CustomerDetail = CustomerRow & {
+  notification_pref: "email" | "whatsapp" | "both";
+  is_verified: boolean;
+  orders: AdminRow[];
+};
+
+export function fetchCustomers({ search, ordering, page }: { search: string; ordering: string; page: number }) {
+  const params = new URLSearchParams({ ordering, page: String(page) });
+  if (search) params.set("search", search);
+  return adminCall<{ count: number; next: string | null; results: CustomerRow[] }>(`/api/v1/admin/customers/?${params}`);
+}
+
+export const fetchCustomer = (id: string) => adminCall<CustomerDetail>(`/api/v1/admin/customers/${id}/`);

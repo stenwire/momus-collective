@@ -230,7 +230,7 @@ because every one of these acts on orders that M4 creates.
 | 6 | Rejection captures a reason and notifies the customer with revise-or-refund options (FR-ADM-07, FR-NOT-03) | [x] |
 | 7 | Analytics shows revenue by period, orders by status, top 10 products, category breakdown, custom vs catalog ratio, AOV and a 30-day trend (FR-ADM-08) | [x] |
 | 8 | Admin manages promo codes with redemption and remaining-use tracking (FR-ADM-09) | [x] |
-| 9 | Customer list shows name, email, phone, order count, total spent and last order date (FR-ADM-10) | [ ] |
+| 9 | Customer list shows name, email, phone, order count, total spent and last order date (FR-ADM-10) | [x] |
 | 10 | Status changes notify by the customer's `notification_pref` — email, WhatsApp or both (FR-NOT-02) | [ ] |
 | 11 | Newsletter capture in footer and homepage stores subscribers in the database (FR-NOT-04) | [ ] |
 | 12 | Only verified purchasers can review; reviews carry the Verified Purchase badge (FR-REV-01, FR-REV-02) | [ ] |
