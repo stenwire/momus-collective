@@ -43,10 +43,12 @@ export function CartLines({
   cart,
   onQuantity,
   onRemove,
+  showTotals = true,
 }: {
   cart: CartData;
   onQuantity: (id: string, quantity: number) => void;
   onRemove: (id: string) => void;
+  showTotals?: boolean;
 }) {
   if (cart.items.length === 0) {
     return <p className="text-sm text-zinc-400">Your bag is empty.</p>;
@@ -105,6 +107,7 @@ export function CartLines({
           );
         })}
       </ul>
+      {showTotals ? (
       <dl className="grid grid-cols-2 gap-y-1 text-sm">
         <dt className="text-zinc-400">Subtotal</dt>
         <dd className="text-right text-zinc-50">{formatNaira(cart.subtotal)}</dd>
@@ -113,6 +116,7 @@ export function CartLines({
         <dt className="font-semibold text-zinc-50">Total</dt>
         <dd className="text-right font-semibold text-amber-400">{formatNaira(cart.subtotal)}</dd>
       </dl>
+      ) : null}
     </div>
   );
 }

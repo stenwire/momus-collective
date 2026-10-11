@@ -46,3 +46,12 @@ const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export function emailError(email: string): string | undefined {
   return EMAIL.test(email.trim()) ? undefined : "Enter an email for your receipt and tracking link.";
 }
+
+export type Quote = {
+  lines: { title: string; size: string; color: string; quantity: number; unit_price: number; line_total: number }[];
+  subtotal: number;
+  delivery_fee: number;
+  discount: number;
+  total: number;
+  notes: string[];
+};

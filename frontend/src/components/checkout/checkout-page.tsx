@@ -3,15 +3,23 @@
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useId, useState } from "react";
+import { errorMessages } from "@/lib/auth/api";
 import { useSignedIn } from "@/lib/auth/use-signed-in";
+import { useGuestCart } from "@/lib/cart/guest-store";
 import { useCart } from "@/lib/cart/use-cart";
-import { fetchCheckoutOptions, fetchSavedAddresses } from "@/lib/checkout/api";
+import {
+  fetchCheckoutOptions,
+  fetchQuote,
+  fetchSavedAddresses,
+  guestItems,
+} from "@/lib/checkout/api";
 import {
   EMPTY_SHIPPING,
   emailError,
   type Shipping,
   shippingErrors,
 } from "@/lib/checkout/types";
+import { formatNaira } from "@/lib/format";
 import { CartLines } from "../cart/cart-lines";
 import { ShippingForm } from "./shipping-form";
 
@@ -37,6 +45,7 @@ export function CheckoutPage() {
     queryFn: fetchSavedAddresses,
     enabled: signedIn === true,
   });
+  const guestLines = useGuestCart((s) => s.lines);
   const [shipping, setShipping] = useState<Shipping>(EMPTY_SHIPPING);
   // FR-CART-05: a guest gives an email; the phone comes from shipping.
   const [email, setEmail] = useState("");
@@ -44,6 +53,14 @@ export function CheckoutPage() {
   const emailErrorId = useId();
   const [touched, setTouched] = useState(false);
   const [status, setStatus] = useState("");
+  // The server's numbers are the only ones shown or charged (SEC-06).
+  const quoteBody = signedIn ? {} : { items: guestItems(guestLines) };
+  const quote = useQuery({
+    queryKey: ["checkout-quote", signedIn, quoteBody, cart.item_count, cart.subtotal],
+    queryFn: () => fetchQuote(quoteBody),
+    enabled: ready && cart.items.length > 0,
+    retry: false,
+  });
 
   if (!ready || !options.data) {
     return <p className="px-4 text-zinc-400">Loading checkout…</p>;
@@ -67,6 +84,10 @@ export function CheckoutPage() {
     setTouched(true);
     const invalid =
       Object.keys(shippingErrors(shipping)).length > 0 || (guest && emailError(email));
+    if (!quote.data) {
+      setStatus("Your total couldn't be worked out. Check your bag.");
+      return;
+    }
     if (invalid) {
       setStatus("Check the highlighted delivery details.");
       return;
@@ -113,7 +134,30 @@ export function CheckoutPage() {
       </Section>
       <div className="flex flex-col gap-8">
         <Section title="Order summary">
-          <CartLines cart={cart} onQuantity={setQuantity} onRemove={remove} />
+          <CartLines cart={cart} onQuantity={setQuantity} onRemove={remove} showTotals={false} />
+          {quote.isError ? (
+            <p role="alert" className="text-sm text-red-400">
+              {errorMessages(quote.error).join(" ")}
+            </p>
+          ) : null}
+          {quote.data ? (
+            <dl className="grid grid-cols-2 gap-y-1 text-sm">
+              <dt className="text-zinc-400">Subtotal</dt>
+              <dd className="text-right text-zinc-50">{formatNaira(quote.data.subtotal)}</dd>
+              <dt className="text-zinc-400">Delivery</dt>
+              <dd className="text-right text-zinc-50">
+                {quote.data.delivery_fee ? formatNaira(quote.data.delivery_fee) : "Calculated from your address"}
+              </dd>
+              {quote.data.discount ? (
+                <>
+                  <dt className="text-zinc-400">Discount</dt>
+                  <dd className="text-right text-emerald-400">−{formatNaira(quote.data.discount)}</dd>
+                </>
+              ) : null}
+              <dt className="font-semibold text-zinc-50">Total</dt>
+              <dd className="text-right font-semibold text-amber-400">{formatNaira(quote.data.total)}</dd>
+            </dl>
+          ) : null}
         </Section>
         <Section title="Payment">
           <p className="text-sm text-zinc-400">
@@ -124,7 +168,7 @@ export function CheckoutPage() {
             onClick={pay}
             className="min-h-11 rounded-md bg-amber-400 px-6 font-medium text-black hover:bg-amber-300"
           >
-            Pay now
+            {quote.data ? `Pay ${formatNaira(quote.data.total)}` : "Pay now"}
           </button>
           <p role="status" className="text-sm text-amber-300">
             {status}

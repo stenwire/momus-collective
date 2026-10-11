@@ -22,9 +22,20 @@ const address = {
 };
 const json = (body: unknown) => ({ ok: true, status: 200, json: async () => body }) as Response;
 
-function api(serverCart?: unknown) {
-  return vi.fn(async (url: string) => {
+const serverQuote = {
+  lines: [],
+  subtotal: 1500000,
+  delivery_fee: 0,
+  discount: 0,
+  total: 1500000,
+  notes: [],
+};
+
+function api(serverCart?: unknown, quote: unknown = serverQuote, quoteStatus = 200) {
+  return vi.fn<(url: string, init?: RequestInit) => Promise<Response>>(async (url) => {
     if (url.includes("/checkout/options/")) return json(options);
+    if (url.includes("/checkout/quote/"))
+      return { ok: quoteStatus < 400, status: quoteStatus, json: async () => quote } as Response;
     if (url.includes("/addresses/")) return json([address]);
     if (url.includes("/cart/")) return json(serverCart);
     return json({});
@@ -105,7 +116,7 @@ describe("CheckoutPage", () => {
     useGuestCart.getState().add({ product, size: "M", color: "Black", quantity: 1 });
     vi.stubGlobal("fetch", api());
     renderCheckout();
-    await userEvent.click(await screen.findByRole("button", { name: "Pay now" }));
+    await userEvent.click(await screen.findByRole("button", { name: /^Pay/ }));
     expect(screen.getByRole("status")).toHaveTextContent("Check the highlighted delivery details.");
     expect(screen.getByText("Enter the recipient's full name.")).toBeInTheDocument();
     const name = screen.getByLabelText("Full name");
@@ -113,15 +124,21 @@ describe("CheckoutPage", () => {
     expect(name).toHaveAccessibleDescription("Enter the recipient's full name.");
   });
 
-  it("edits the cart from checkout", async () => {
+  it("edits the cart from checkout and re-quotes the total", async () => {
     signedOut();
     useGuestCart.getState().add({ product, size: "M", color: "Black", quantity: 1 });
-    vi.stubGlobal("fetch", api());
+    const fetchMock = api();
+    vi.stubGlobal("fetch", fetchMock);
     renderCheckout();
     const summary = await screen.findByRole("region", { name: "Order summary" });
     await userEvent.click(within(summary).getByRole("button", { name: "Increase quantity of touch grass" }));
     expect(useGuestCart.getState().lines[0].quantity).toBe(2);
-    expect(summary).toHaveTextContent("₦30,000");
+    expect(within(summary).getByLabelText("Quantity of touch grass")).toHaveTextContent("2");
+    await vi.waitFor(() => {
+      const quotes = fetchMock.mock.calls.filter(([url]) => String(url).includes("/checkout/quote/"));
+      const last = JSON.parse(quotes[quotes.length - 1][1]!.body as string);
+      expect(last.items[0].quantity).toBe(2);
+    });
   });
 
   it("an empty bag sends you shopping", async () => {
@@ -137,7 +154,7 @@ describe("CheckoutPage", () => {
     vi.stubGlobal("fetch", api());
     renderCheckout();
     const email = await screen.findByLabelText("Email");
-    await userEvent.click(screen.getByRole("button", { name: "Pay now" }));
+    await userEvent.click(screen.getByRole("button", { name: /^Pay/ }));
     expect(email).toHaveAccessibleDescription("Enter an email for your receipt and tracking link.");
     await userEvent.type(email, "guest@example.com");
     expect(email).toHaveAttribute("aria-invalid", "false");
@@ -158,5 +175,28 @@ describe("CheckoutPage", () => {
     renderCheckout();
     await screen.findByLabelText("Full name");
     expect(screen.queryByLabelText("Email")).not.toBeInTheDocument();
+  });
+
+  it("shows the server's totals and puts the total on the pay button", async () => {
+    signedOut();
+    useGuestCart.getState().add({ product: { ...product, price: 1 }, size: "M", color: "Black", quantity: 1 });
+    const fetchMock = api(undefined, { ...serverQuote, subtotal: 1500000, total: 1500000 });
+    vi.stubGlobal("fetch", fetchMock);
+    renderCheckout();
+    expect(await screen.findByRole("button", { name: "Pay ₦15,000" })).toBeInTheDocument();
+    const quoteCall = fetchMock.mock.calls.find(([url]) => String(url).includes("/checkout/quote/"))!;
+    const sent = JSON.parse(quoteCall[1]!.body as string);
+    expect(sent).toEqual({ items: [{ product: "p1", size: "M", color: "Black", quantity: 1 }] });
+  });
+
+  it("surfaces a refused quote, such as an archived product", async () => {
+    signedOut();
+    useGuestCart.getState().add({ product, size: "M", color: "Black", quantity: 1 });
+    vi.stubGlobal(
+      "fetch",
+      api(undefined, { items: "“touch grass” is no longer available. Remove it to continue." }, 400),
+    );
+    renderCheckout();
+    expect(await screen.findByRole("alert")).toHaveTextContent("is no longer available");
   });
 });
