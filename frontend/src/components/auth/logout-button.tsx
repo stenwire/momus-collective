@@ -12,9 +12,9 @@ export function LogoutButton() {
       type="button"
       onClick={() => {
         signOut();
-        // The next person on this device must not keep editing this
-        // account's saved design.
-        useDesignStore.setState({ savedId: null, name: "" });
+        // The next person on this device must not see or edit this
+        // account's design.
+        useDesignStore.getState().reset();
         router.push("/");
       }}
       className="min-h-11 rounded-md border border-zinc-700 px-4 text-sm text-zinc-300 hover:border-zinc-500"

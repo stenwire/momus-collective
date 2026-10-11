@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useAuthStore } from "@/lib/auth/store";
 import { useDesignStore } from "@/lib/design/store";
+import { designOptions } from "@/test/design-fixtures";
 import { AuthNav } from "./auth-nav";
 import { LogoutButton } from "./logout-button";
 import { LoginForm } from "./login-form";
@@ -118,13 +119,20 @@ describe("AuthNav", () => {
 });
 
 describe("LogoutButton", () => {
-  it("logs out, clearing tokens and the link to a saved design", async () => {
+  it("logs out, clearing tokens and the whole design draft", async () => {
     useAuthStore.setState({ tokens: { access: "a", refresh: "r" }, email: "x" });
-    useDesignStore.setState({ savedId: "d1", name: "mine" });
+    const config = { ...designOptions.defaults, text: "private slogan" };
+    useDesignStore.setState({ savedId: "d1", name: "mine", config, savedConfig: config });
     render(<LogoutButton />);
     await userEvent.click(screen.getByRole("button", { name: "Log out" }));
     expect(useAuthStore.getState().tokens).toBeNull();
-    expect(useDesignStore.getState().savedId).toBeNull();
+    expect(useDesignStore.getState()).toMatchObject({
+      config: null,
+      savedId: null,
+      savedConfig: null,
+      name: "",
+    });
+    expect(localStorage.getItem("momus-design-draft")).not.toContain("private slogan");
     expect(push).toHaveBeenCalledWith("/");
   });
 });

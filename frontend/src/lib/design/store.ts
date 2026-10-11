@@ -12,6 +12,7 @@ type DesignState = {
   setName: (name: string) => void;
   markSaved: (id: string, name: string, config: DesignConfig) => void;
   load: (id: string, name: string, config: DesignConfig) => void;
+  reset: () => void;
 };
 
 // The draft survives a reload or a detour through /register (FR-DES-08).
@@ -34,6 +35,8 @@ export const useDesignStore = create<DesignState>()(
         set({ savedId, name, savedConfig }),
       load: (savedId, name, config) =>
         set({ savedId, name, config, savedConfig: config }),
+      reset: () =>
+        set({ config: null, savedId: null, savedConfig: null, name: "" }),
     }),
     {
       name: "momus-design-draft",
