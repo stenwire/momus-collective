@@ -130,4 +130,33 @@ describe("CheckoutPage", () => {
     renderCheckout();
     expect(await screen.findByRole("link", { name: "Find something to wear" })).toHaveAttribute("href", "/shop");
   });
+
+  it("asks a guest for an email and checks it before paying", async () => {
+    signedOut();
+    useGuestCart.getState().add({ product, size: "M", color: "Black", quantity: 1 });
+    vi.stubGlobal("fetch", api());
+    renderCheckout();
+    const email = await screen.findByLabelText("Email");
+    await userEvent.click(screen.getByRole("button", { name: "Pay now" }));
+    expect(email).toHaveAccessibleDescription("Enter an email for your receipt and tracking link.");
+    await userEvent.type(email, "guest@example.com");
+    expect(email).toHaveAttribute("aria-invalid", "false");
+  });
+
+  it("does not ask a signed-in customer for an email", async () => {
+    signedIn();
+    vi.stubGlobal(
+      "fetch",
+      api({
+        items: [
+          { id: "l1", kind: "product", product, design: null, size: "M", color: "Black", quantity: 1, unit_price: 1500000, line_total: 1500000 },
+        ],
+        item_count: 1,
+        subtotal: 1500000,
+      }),
+    );
+    renderCheckout();
+    await screen.findByLabelText("Full name");
+    expect(screen.queryByLabelText("Email")).not.toBeInTheDocument();
+  });
 });

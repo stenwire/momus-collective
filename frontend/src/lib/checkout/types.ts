@@ -40,3 +40,9 @@ export function shippingErrors(s: Shipping): Partial<Record<keyof Shipping, stri
   if (!s.lga.trim()) errors.lga = "Choose or enter the LGA.";
   return errors;
 }
+
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export function emailError(email: string): string | undefined {
+  return EMAIL.test(email.trim()) ? undefined : "Enter an email for your receipt and tracking link.";
+}
