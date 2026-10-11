@@ -9,7 +9,7 @@ from carts.models import SavedDesign
 from .options import public_options
 from .pricing import price_list
 from .serializers import SavedDesignSerializer
-from .storage import design_file_name, design_storage, discard_design_file
+from .storage import design_file_name, design_storage, discard_design_files
 from .tasks import generate_design_file
 
 
@@ -50,13 +50,13 @@ class SavedDesignViewSet(viewsets.ModelViewSet):
         # A print file rendered from the old config must never ship.
         new_config = serializer.validated_data.get("config")
         if new_config is not None and new_config != serializer.instance.config:
-            discard_design_file(serializer.instance.id)
+            discard_design_files(serializer.instance.id)
             serializer.save(design_file_url="")
         else:
             serializer.save()
 
     def perform_destroy(self, instance):
-        discard_design_file(instance.id)
+        discard_design_files(instance.id)
         instance.delete()
 
     @action(detail=True, methods=["post"])
@@ -89,7 +89,7 @@ def design_file(request, pk):
         design.user_id == request.user.id or request.user.is_staff
     ):
         raise Http404
-    storage, name = design_storage(), design_file_name(design.id)
+    storage, name = design_storage(), design_file_name(design.id, design.config)
     if not design.design_file_url or not storage.exists(name):
         raise Http404
     return FileResponse(
