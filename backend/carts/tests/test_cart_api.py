@@ -277,3 +277,11 @@ def test_merge_into_an_empty_server_cart_creates_it(product):
         [{"product": str(product.id), "size": "S", "color": "White", "quantity": 2}],
     )
     assert CartItem.objects.get(cart__user=user).quantity == 2
+
+
+def test_an_archived_product_is_marked_unavailable_in_the_cart(product):
+    client = client_for(make_user())
+    add(client, product=str(product.id), size="M", color="Black")
+    assert client.get("/api/v1/cart/").json()["items"][0]["available"] is True
+    Product.objects.filter(id=product.id).update(is_active=False)
+    assert client.get("/api/v1/cart/").json()["items"][0]["available"] is False

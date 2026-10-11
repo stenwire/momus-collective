@@ -12,6 +12,7 @@ class CartItemSerializer(serializers.ModelSerializer):
     design = serializers.SerializerMethodField()
     unit_price = serializers.SerializerMethodField()
     line_total = serializers.SerializerMethodField()
+    available = serializers.SerializerMethodField()
 
     class Meta:
         model = CartItem
@@ -25,7 +26,13 @@ class CartItemSerializer(serializers.ModelSerializer):
             "quantity",
             "unit_price",
             "line_total",
+            "available",
         ]
+
+    def get_available(self, item):
+        # An archived product stays visible so the customer can remove it;
+        # checkout refuses it (T-407).
+        return item.product.is_active if item.product_id else True
 
     def get_kind(self, item):
         return "product" if item.product_id else "design"

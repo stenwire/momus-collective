@@ -19,6 +19,7 @@ export type CartLine = {
   quantity: number;
   unit_price: number;
   line_total: number;
+  available?: boolean;
 };
 
 export type CartData = {

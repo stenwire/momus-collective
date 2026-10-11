@@ -127,4 +127,11 @@ describe("CartLines", () => {
     renderLines({ items: [], item_count: 0, subtotal: 0 });
     expect(screen.getByText("Your bag is empty.")).toBeInTheDocument();
   });
+
+  it("marks a line that's no longer available", () => {
+    renderLines({ ...cart, items: [{ ...cart.items[0], available: false }] });
+    expect(screen.getByText("No longer available — remove to check out")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Increase quantity of touch grass" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Remove touch grass" })).toBeEnabled();
+  });
 });

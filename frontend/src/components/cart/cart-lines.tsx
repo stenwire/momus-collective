@@ -80,7 +80,13 @@ export function CartLines({
                   Size {line.size}
                   {line.color ? ` · ${line.color}` : ""}
                 </p>
-                <p className="text-sm text-amber-400">{formatNaira(line.unit_price)}</p>
+                {line.available === false ? (
+                  <p className="text-sm font-medium text-red-400">
+                    No longer available — remove to check out
+                  </p>
+                ) : (
+                  <p className="text-sm text-amber-400">{formatNaira(line.unit_price)}</p>
+                )}
                 <div className="mt-1 flex items-center gap-2">
                   <button
                     type="button"
@@ -98,7 +104,7 @@ export function CartLines({
                     type="button"
                     className={STEP}
                     aria-label={`Increase quantity of ${title}`}
-                    disabled={line.quantity >= MAX_LINE_QUANTITY}
+                    disabled={line.quantity >= MAX_LINE_QUANTITY || line.available === false}
                     onClick={() => onQuantity(line.id, line.quantity + 1)}
                   >
                     +
