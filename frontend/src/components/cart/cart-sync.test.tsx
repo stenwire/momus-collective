@@ -3,6 +3,7 @@ import { act, render, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useAuthStore } from "@/lib/auth/store";
 import { useGuestCart } from "@/lib/cart/guest-store";
+import { useCartNotice } from "@/lib/cart/notice-store";
 import { signedIn, signedOut } from "@/test/auth";
 import { CartSync } from "./cart-sync";
 
@@ -62,5 +63,24 @@ describe("CartSync", () => {
     await new Promise((r) => setTimeout(r, 10));
     expect(useGuestCart.getState().lines).toHaveLength(1);
     expect(useAuthStore.getState().status).toBe("signed-in");
+  });
+
+  it("names the lines the server couldn't take, with the reason", async () => {
+    signedOut();
+    useCartNotice.setState({ dropped: [] });
+    const merged = {
+      items: [],
+      item_count: 0,
+      subtotal: 0,
+      skipped: [{ product: "p1", reason: { product: "This product is no longer available." } }],
+    };
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(json(merged)));
+    renderSync();
+    act(() => signedIn());
+    await waitFor(() =>
+      expect(useCartNotice.getState().dropped).toEqual([
+        { title: "touch grass", reason: "This product is no longer available." },
+      ]),
+    );
   });
 });
