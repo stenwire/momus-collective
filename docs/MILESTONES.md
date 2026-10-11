@@ -190,7 +190,7 @@ server-side total computation both live here.
 | 4 | Cart is a right drawer on desktop, bottom sheet on mobile, with a count badge (FR-CART-03) | [x] |
 | 5 | Single-page checkout with Shipping, Order Summary and Payment; cart editable from checkout (FR-CART-04) | [x] |
 | 6 | Guest checkout completes with email and phone, then offers account creation (FR-CART-05) | [x] |
-| 7 | Paystack Inline handles card, bank transfer and USSD; failed payments show a clear error and allow retry (FR-CART-06) | [ ] |
+| 7 | Paystack Inline handles card, bank transfer and USSD; failed payments show a clear error and allow retry (FR-CART-06). USSD waived by the user (D-092); card and transfer proven live | [x] |
 | 8 | The webhook verifies HMAC-SHA512 over the raw body against `x-paystack-signature` in constant time, rejecting with `401` **before touching order state** — tests cover unsigned and wrong-signature (FR-CART-06) | [x] |
 | 9 | A replayed valid webhook does not create or confirm a second order — test passes | [x] |
 | 10 | Promo codes validate expiry, max uses, per-user uses and minimum order value at redemption — test passes (FR-CART-07) | [x] |

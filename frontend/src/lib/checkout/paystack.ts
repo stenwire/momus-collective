@@ -77,7 +77,7 @@ export type PopupOutcome =
   | { kind: "cancelled" }
   | { kind: "error"; message: string };
 
-// FR-CART-06: Paystack Inline offers card, bank transfer and USSD.
+// FR-CART-06: Paystack Inline offers card and bank transfer (D-092).
 export async function openPaystack(start: CheckoutStart): Promise<PopupOutcome> {
   await loadPaystack();
   const Popup = window.PaystackPop;

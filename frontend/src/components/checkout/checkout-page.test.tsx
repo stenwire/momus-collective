@@ -280,7 +280,7 @@ describe("CheckoutPage", () => {
       if (url.includes("/checkout/options/")) return json(options);
       if (url.includes("/checkout/quote/")) return json({ ...serverQuote, delivery_fee: 300000, total: 1800000 });
       if (url.endsWith("/checkout/"))
-        return json({ reference: "MOMPAY-1", amount: 1800000, email: "g@example.com", public_key: "pk", channels: ["card", "bank_transfer", "ussd"] });
+        return json({ reference: "MOMPAY-1", amount: 1800000, email: "g@example.com", public_key: "pk", channels: ["card", "bank_transfer"] });
       if (url.includes("/checkout/verify/"))
         return { ok: verifyStatus < 400, status: verifyStatus, json: async () => (verifyStatus < 400 ? { status: "paid", order_number: "MOM-20261011-001", tracking_token: "tok" } : { detail: "Payment didn't go through; you weren't charged. Try again." }) } as Response;
       return json({});

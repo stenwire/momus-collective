@@ -69,7 +69,7 @@ def test_start_freezes_the_server_quote_for_paystack(product):
     # 2 x 10,000 plus the Eti-Osa cross-lagoon band (seeded at 3,000).
     assert body["amount"] == session.total == 2000000 + 300000
     assert body["public_key"] == "pk_test_local"
-    assert body["channels"] == ["card", "bank_transfer", "ussd"]
+    assert body["channels"] == ["card", "bank_transfer"]
     assert session.status == "pending"
     assert session.shipping_address["lga"] == "Eti-Osa"
     assert session.lines[0]["unit_price"] == 1000000

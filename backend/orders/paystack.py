@@ -4,7 +4,8 @@ import requests
 from django.conf import settings
 
 API = "https://api.paystack.co"
-CHANNELS = ["card", "bank_transfer", "ussd"]
+# USSD is off in the Paystack dashboard and not requested (D-092).
+CHANNELS = ["card", "bank_transfer"]
 
 
 class PaystackError(Exception):

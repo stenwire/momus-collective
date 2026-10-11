@@ -6,7 +6,7 @@ const start: CheckoutStart = {
   amount: 2300000,
   email: "g@example.com",
   public_key: "pk_test_x",
-  channels: ["card", "bank_transfer", "ussd"],
+  channels: ["card", "bank_transfer"],
 };
 
 function fakePopup(react: (t: Record<string, (...a: unknown[]) => void>) => void) {
@@ -36,7 +36,7 @@ describe("openPaystack", () => {
       email: "g@example.com",
       amount: 2300000,
       reference: "MOMPAY-abc",
-      channels: ["card", "bank_transfer", "ussd"],
+      channels: ["card", "bank_transfer"],
     });
   });
 

@@ -275,7 +275,7 @@ export function CheckoutPage() {
         </Section>
         <Section title="Payment">
           <p className="text-sm text-zinc-400">
-            Pay securely with card, bank transfer or USSD through Paystack.
+            Pay securely with card or bank transfer through Paystack.
           </p>
           <button
             type="button"
