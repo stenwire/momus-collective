@@ -17,7 +17,8 @@ function renderTool() {
 
 describe("DesignTool", () => {
   beforeEach(() => {
-    useDesignStore.setState({ config: null });
+    localStorage.clear();
+    useDesignStore.setState({ config: null, savedId: null, name: "" });
     vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
     vi.stubGlobal(
       "fetch",

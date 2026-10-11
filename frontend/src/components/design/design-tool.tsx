@@ -8,6 +8,7 @@ import { useDesignStore } from "@/lib/design/store";
 import { DesignPreview } from "./design-preview";
 import { FontPicker } from "./font-picker";
 import { OptionButtons } from "./option-buttons";
+import { SaveDesign } from "./save-design";
 import { ShirtCanvas } from "./shirt-canvas";
 import { SloganInput } from "./slogan-input";
 import { SwatchPicker } from "./swatch-picker";
@@ -25,8 +26,8 @@ export function DesignTool() {
   const closePreview = useCallback(() => setPreviewing(false), []);
 
   useEffect(() => {
-    if (options && !config) initialize(options.defaults);
-  }, [options, config, initialize]);
+    if (options) initialize(options.defaults);
+  }, [options, initialize]);
 
   if (isError) {
     return (
@@ -61,6 +62,9 @@ export function DesignTool() {
         >
           Preview
         </button>
+        <div className="mt-4">
+          <SaveDesign config={config} />
+        </div>
       </div>
       <div className="flex w-full flex-col gap-5 md:w-80">
         <TemplatePicker

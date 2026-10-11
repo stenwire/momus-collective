@@ -92,8 +92,13 @@ export function safeNext(next: string | null, fallback = "/"): string {
 export function errorMessages(error: unknown): string[] {
   if (!(error instanceof ApiError)) return ["Something went wrong. Try again."];
   if (error.status === 429) return ["Too many attempts. Wait a minute and retry."];
-  const messages = Object.values(error.body).flatMap((value) =>
-    Array.isArray(value) ? value.map(String) : [String(value)],
-  );
+  const messages = flatten(error.body);
   return messages.length ? messages : ["Something went wrong. Try again."];
+}
+
+// DRF nests errors per field, e.g. {config: {text_color: ["..."]}}.
+function flatten(value: unknown): string[] {
+  if (Array.isArray(value)) return value.flatMap(flatten);
+  if (value && typeof value === "object") return Object.values(value).flatMap(flatten);
+  return value == null || value === "" ? [] : [String(value)];
 }

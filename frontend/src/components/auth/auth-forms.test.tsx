@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useAuthStore } from "@/lib/auth/store";
+import { useDesignStore } from "@/lib/design/store";
 import { AuthNav } from "./auth-nav";
 import { LoginForm } from "./login-form";
 import { RegisterForm } from "./register-form";
@@ -105,10 +106,12 @@ describe("AuthNav", () => {
     expect(screen.getByRole("link", { name: "Log in" })).toHaveAttribute("href", "/login");
   });
 
-  it("logs out and clears the tokens", async () => {
+  it("logs out, clearing tokens and the link to a saved design", async () => {
     useAuthStore.setState({ tokens: { access: "a", refresh: "r" }, email: "x" });
+    useDesignStore.setState({ savedId: "d1", name: "mine" });
     render(<AuthNav />);
     await userEvent.click(screen.getByRole("button", { name: "Log out" }));
     expect(useAuthStore.getState().tokens).toBeNull();
+    expect(useDesignStore.getState().savedId).toBeNull();
   });
 });

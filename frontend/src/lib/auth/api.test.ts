@@ -104,6 +104,11 @@ describe("errorMessages", () => {
     ]);
   });
 
+  it("flattens nested errors such as a design config's", () => {
+    const error = new ApiError(400, { config: { text: ["Too long."], font: "Nope." } });
+    expect(errorMessages(error)).toEqual(["Too long.", "Nope."]);
+  });
+
   it("explains throttling", () => {
     expect(errorMessages(new ApiError(429, {}))[0]).toMatch(/Too many attempts/);
   });

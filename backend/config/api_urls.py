@@ -11,9 +11,11 @@ from catalog.admin_views import (
     AdminCollectionViewSet,
     AdminProductViewSet,
 )
+from designs.views import SavedDesignViewSet
 
 router = DefaultRouter()
 router.register("addresses", AddressViewSet, basename="address")
+router.register("designs", SavedDesignViewSet, basename="design")
 router.register("admin/products", AdminProductViewSet, basename="admin-product")
 router.register("admin/categories", AdminCategoryViewSet, basename="admin-category")
 router.register(
