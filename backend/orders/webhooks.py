@@ -11,8 +11,7 @@ from rest_framework.decorators import (
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from .models import CheckoutSession
-from .payments import AmountMismatch, settle
+from .tasks import settle_charge
 
 
 def signature_valid(raw_body, signature):
@@ -30,7 +29,8 @@ def signature_valid(raw_body, signature):
 @permission_classes([AllowAny])
 def paystack_webhook(request):
     """FR-CART-06. The signature is checked against the raw body before
-    anything is parsed or any order state is read or written (SEC-01/02)."""
+    anything is parsed or any order state is read or written (SEC-01/02).
+    A broker outage is a 500, so Paystack retries the event."""
     raw = request._request.body
     if not signature_valid(raw, request.headers.get("x-paystack-signature", "")):
         return Response({"detail": "Invalid signature."}, status=401)
@@ -41,12 +41,9 @@ def paystack_webhook(request):
     data = event.get("data") or {}
     if event.get("event") != "charge.success":
         return Response(status=200)
-    reference = data.get("reference", "")
-    if not CheckoutSession.objects.filter(reference=reference).exists():
-        return Response(status=200)
-    try:
-        settle(reference, data)
-    except AmountMismatch:
-        # Acknowledged so Paystack stops retrying; never marked paid.
-        return Response(status=200)
+    # EFF-07: settled off the request path. Only what settle reads is
+    # queued; the payload's customer details never reach the broker.
+    settle_charge.delay(
+        {k: data.get(k) for k in ("reference", "status", "amount", "currency")}
+    )
     return Response(status=200)

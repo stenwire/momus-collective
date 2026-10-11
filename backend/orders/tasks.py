@@ -3,6 +3,7 @@ from datetime import date
 from celery import shared_task
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
+from django.db import DatabaseError
 from django.template.loader import render_to_string
 from django.utils import timezone
 
@@ -94,3 +95,19 @@ def order_paid(order_id):
             render_order_item_file(str(item.id), item.design_config)
     if order.confirmation_sent_at is None:
         send_order_confirmation(order)
+
+
+@shared_task(autoretry_for=(DatabaseError,), retry_backoff=True, max_retries=5)
+def settle_charge(data):
+    """A verified `charge.success` from the webhook. `settle` is idempotent
+    and row-locked, so Paystack's retries and the browser's verify are safe."""
+    from .models import CheckoutSession
+    from .payments import AmountMismatch, settle
+
+    reference = data.get("reference") or ""
+    if not CheckoutSession.objects.filter(reference=reference).exists():
+        return
+    try:
+        settle(reference, data)
+    except AmountMismatch:
+        pass  # Never marked paid; the amount Paystack took isn't the quote.

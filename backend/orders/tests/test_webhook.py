@@ -185,3 +185,69 @@ def test_webhook_racing_verify_settles_once():
     for thread in threads:
         thread.join()
     assert sorted(transitions) == [False, False, False, True]
+
+
+def test_webhook_settles_off_the_request_path_without_customer_details(
+    session, monkeypatch
+):
+    from orders import tasks
+
+    queued = []
+    monkeypatch.setattr(tasks.settle_charge, "delay", queued.append)
+    body = json.dumps(
+        {
+            "event": "charge.success",
+            "data": {
+                "reference": session.reference,
+                "amount": 1300000,
+                "currency": "NGN",
+                "status": "success",
+                "customer": {"email": "g@example.com", "phone": "+2348000000000"},
+            },
+        }
+    ).encode()
+    with CaptureQueriesContext(connection) as queries:
+        resp = post(body, sign(body))
+    assert resp.status_code == 200
+    assert len(queries) == 0
+    assert queued == [
+        {
+            "reference": session.reference,
+            "status": "success",
+            "amount": 1300000,
+            "currency": "NGN",
+        }
+    ]
+    session.refresh_from_db()
+    assert session.status == "pending"
+
+
+def test_webhook_broker_outage_is_a_500_so_paystack_retries(session, monkeypatch):
+    from orders import tasks
+
+    def down(data):
+        raise ConnectionError("broker down")
+
+    monkeypatch.setattr(tasks.settle_charge, "delay", down)
+    body = event(session.reference)
+    client = APIClient(raise_request_exception=False)
+    resp = client.post(
+        URL, body, content_type="application/json", HTTP_X_PAYSTACK_SIGNATURE=sign(body)
+    )
+    assert resp.status_code == 500
+
+
+def test_settle_charge_ignores_unknown_references_and_bad_amounts(session):
+    from orders.tasks import settle_charge
+
+    settle_charge({"reference": "MOMPAY-unknown", "status": "success"})
+    settle_charge(
+        {
+            "reference": session.reference,
+            "status": "success",
+            "amount": 1,
+            "currency": "NGN",
+        }
+    )
+    session.refresh_from_db()
+    assert session.status == "pending"
