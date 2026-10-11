@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { fetchDesignOptions } from "@/lib/api";
 import { useDesignStore } from "@/lib/design/store";
 import { ShirtCanvas } from "./shirt-canvas";
+import { SwatchPicker } from "./swatch-picker";
 
 export function DesignTool() {
   const { data: options, isError } = useQuery({
@@ -50,6 +51,12 @@ export function DesignTool() {
             className="min-h-11 rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-base text-zinc-50 placeholder:text-zinc-500 focus:border-amber-400 focus:outline-none"
           />
         </label>
+        <SwatchPicker
+          legend="Shirt color"
+          colors={options.shirt_colors}
+          value={config.shirt_color}
+          onChange={(shirt_color) => update({ shirt_color })}
+        />
       </div>
     </div>
   );

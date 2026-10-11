@@ -18,6 +18,12 @@ describe("drawDesign", () => {
     expect(calls.fillStyles[0]).toBe("#0b0b0c");
   });
 
+  it("repaints the shirt when the color changes", () => {
+    const { ctx, calls } = fakeContext();
+    drawDesign(ctx, { ...designOptions.defaults, shirt_color: "White" }, designOptions);
+    expect(calls.fillStyles[0]).toBe("#f5f5f2");
+  });
+
   it("draws every character of the slogan in the text color", () => {
     const { ctx, calls } = fakeContext();
     drawDesign(ctx, { ...designOptions.defaults, text: "hi you" }, designOptions);

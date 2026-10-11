@@ -20,7 +20,16 @@ DEFAULT_CONFIG = {
     "placement": "center_chest",
 }
 
-SHIRT_COLORS = {"Black": "#0b0b0c"}
+# SPC-03: exactly these seven, in this order.
+SHIRT_COLORS = {
+    "Black": "#0b0b0c",
+    "White": "#f5f5f2",
+    "Navy": "#1c2541",
+    "Charcoal": "#36393f",
+    "Maroon": "#5c1a24",
+    "Forest Green": "#1f3d2b",
+    "Deep Purple": "#3b2352",
+}
 
 TEXT_COLORS = {"Off White": "#f4f1ea"}
 

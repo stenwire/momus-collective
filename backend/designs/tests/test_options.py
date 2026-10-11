@@ -30,3 +30,21 @@ def test_defaults_name_options_that_exist():
 
 def test_mockup_units_scale_to_300_dpi():
     assert PRINT_DPI / UNITS_PER_INCH == 10
+
+
+def test_shirt_colors_are_exactly_the_seven_the_prd_names():
+    names = [c["name"] for c in get_options().json()["shirt_colors"]]
+    assert names == [
+        "Black",
+        "White",
+        "Navy",
+        "Charcoal",
+        "Maroon",
+        "Forest Green",
+        "Deep Purple",
+    ]
+
+
+def test_every_shirt_color_has_a_hex_value():
+    for color in get_options().json()["shirt_colors"]:
+        assert len(color["hex"]) == 7 and color["hex"].startswith("#")

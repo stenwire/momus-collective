@@ -12,7 +12,11 @@ export const designOptions: DesignOptions = {
       box: { x: 335, y: 300, w: 330, h: 240 },
     },
   ],
-  shirt_colors: [{ name: "Black", hex: "#0b0b0c" }],
+  shirt_colors: [
+    { name: "Black", hex: "#0b0b0c" },
+    { name: "White", hex: "#f5f5f2" },
+    { name: "Navy", hex: "#1c2541" },
+  ],
   text_colors: [{ name: "Off White", hex: "#f4f1ea" }],
   defaults: {
     shirt_color: "Black",

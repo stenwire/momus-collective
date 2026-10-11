@@ -47,4 +47,14 @@ describe("DesignTool", () => {
       screen.getByRole("img", { name: "Shirt mockup: touch grass" }),
     ).toBeInTheDocument();
   });
+
+  it("switches the shirt color when a swatch is pressed", async () => {
+    renderTool();
+    const navy = await screen.findByRole("button", { name: "Navy" });
+    expect(navy).toHaveAttribute("aria-pressed", "false");
+    await userEvent.click(navy);
+    expect(useDesignStore.getState().config?.shirt_color).toBe("Navy");
+    expect(navy).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("group", { name: /Shirt color: Navy/ })).toBeInTheDocument();
+  });
 });
