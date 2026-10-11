@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views, webhooks
+from . import admin_views, views, webhooks
 
 urlpatterns = [
     path("checkout/options/", views.checkout_options, name="checkout-options"),
@@ -26,6 +26,14 @@ urlpatterns = [
         name="paystack-webhook",
     ),
     path("checkout/delivery/", views.delivery_info, name="checkout-delivery"),
+    path(
+        "admin/orders/board/", admin_views.admin_order_board, name="admin-order-board"
+    ),
+    path(
+        "admin/orders/<uuid:pk>/status/",
+        admin_views.admin_order_status,
+        name="admin-order-status",
+    ),
     path(
         "admin/delivery-settings/",
         views.admin_delivery_settings,
