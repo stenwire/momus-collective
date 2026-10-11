@@ -3,8 +3,13 @@ from django.conf import settings
 from django.core.files.base import ContentFile
 from django.utils import timezone
 
-from .render import render_design_png
-from .storage import design_file_name, design_storage, order_item_file_name
+from .render import render_design_png, render_preview_png
+from .storage import (
+    design_file_name,
+    design_storage,
+    order_item_file_name,
+    order_item_preview_name,
+)
 
 
 @shared_task
@@ -32,6 +37,10 @@ def generate_design_file(design_id):
 def render_order_item_file(item_id, config):
     """The print file for one ordered custom shirt, from the config frozen
     at checkout, so later edits to the saved design can't change it."""
-    storage, name = design_storage(), order_item_file_name(item_id)
-    if not storage.exists(name):
-        storage.save(name, ContentFile(render_design_png(config)))
+    storage = design_storage()
+    for name, render in (
+        (order_item_file_name(item_id), render_design_png),
+        (order_item_preview_name(item_id), render_preview_png),
+    ):
+        if not storage.exists(name):
+            storage.save(name, ContentFile(render(config)))

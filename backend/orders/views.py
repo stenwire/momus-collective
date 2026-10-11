@@ -199,3 +199,23 @@ def order_track(request, token):
         Order.objects.prefetch_related("items__product"), tracking_token=token
     )
     return Response(order_payload(order, delivery_settings()))
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def order_item_preview(request, token, item_id):
+    """The email's design thumbnail. The tracking token is the credential,
+    as for the tracking page, so a guessed item id alone opens nothing."""
+    from django.http import FileResponse, Http404
+
+    from designs.storage import design_storage, order_item_preview_name
+
+    item = get_object_or_404(
+        OrderItem, pk=item_id, order__tracking_token=token, design_config__isnull=False
+    )
+    storage, name = design_storage(), order_item_preview_name(item.id)
+    if not storage.exists(name):
+        raise Http404
+    response = FileResponse(storage.open(name, "rb"), content_type="image/png")
+    response["Cache-Control"] = "private, max-age=86400"
+    return response

@@ -6,6 +6,9 @@ import { useGuestCart } from "@/lib/cart/guest-store";
 import { signedIn, signedOut } from "@/test/auth";
 import { CheckoutPage } from "./checkout-page";
 
+const replace = vi.fn();
+vi.mock("next/navigation", () => ({ useRouter: () => ({ replace }) }));
+
 const product = { id: "p1", slug: "tg", slogan: "touch grass", image: null, price: 1500000 };
 const options = { states: ["Abia", "Lagos", "Oyo"], lagos_lgas: ["Eti-Osa", "Ikeja"] };
 const address = {
@@ -56,6 +59,8 @@ function renderCheckout() {
 describe("CheckoutPage", () => {
   beforeEach(() => {
     localStorage.clear();
+    sessionStorage.clear();
+    replace.mockClear();
     useGuestCart.setState({ lines: [] });
   });
 
@@ -277,7 +282,7 @@ describe("CheckoutPage", () => {
       if (url.endsWith("/checkout/"))
         return json({ reference: "MOMPAY-1", amount: 1800000, email: "g@example.com", public_key: "pk", channels: ["card", "bank_transfer", "ussd"] });
       if (url.includes("/checkout/verify/"))
-        return { ok: verifyStatus < 400, status: verifyStatus, json: async () => (verifyStatus < 400 ? { status: "paid" } : { detail: "Payment didn't go through; you weren't charged. Try again." }) } as Response;
+        return { ok: verifyStatus < 400, status: verifyStatus, json: async () => (verifyStatus < 400 ? { status: "paid", order_number: "MOM-20261011-001", tracking_token: "tok" } : { detail: "Payment didn't go through; you weren't charged. Try again." }) } as Response;
       return json({});
     });
   }
@@ -299,6 +304,14 @@ describe("CheckoutPage", () => {
     const urls = fetchMock.mock.calls.map(([u]) => u);
     expect(urls.some((u) => u.endsWith("/checkout/verify/"))).toBe(true);
     expect(useGuestCart.getState().lines).toEqual([]);
+    expect(replace).toHaveBeenCalledWith("/checkout/confirmation/tok");
+    // The guest's details travel to the confirmation page's account offer.
+    expect(JSON.parse(sessionStorage.getItem("momus-guest-details")!)).toEqual({
+      email: "g@example.com",
+      first_name: "Ada",
+      last_name: "Lovelace",
+      phone: "+2348000000000",
+    });
     window.PaystackPop = undefined;
   });
 

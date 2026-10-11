@@ -178,8 +178,12 @@ DEFAULT_FROM_EMAIL = env(
     "DEFAULT_FROM_EMAIL", default="no-reply@momuscollective.example"
 )
 
-# Resend integration lands with the transactional-email task in a later
-# milestone; console output is enough to prove the send path fires today.
+# Required, no fallback (D-025). Empty prints mail to the console instead
+# of sending it, for local work.
+RESEND_API_KEY = env("RESEND_API_KEY")
 EMAIL_BACKEND = env(
-    "EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend"
+    "EMAIL_BACKEND",
+    default="config.email.ResendEmailBackend"
+    if RESEND_API_KEY
+    else "django.core.mail.backends.console.EmailBackend",
 )

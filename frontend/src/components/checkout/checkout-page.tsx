@@ -2,6 +2,7 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useId, useState } from "react";
 import { errorMessages } from "@/lib/auth/api";
 import { useSignedIn } from "@/lib/auth/use-signed-in";
@@ -19,6 +20,7 @@ import {
   type Shipping,
   shippingErrors,
 } from "@/lib/checkout/types";
+import { saveGuestDetails } from "@/lib/checkout/guest-details";
 import { openPaystack, startCheckout, verifyPayment } from "@/lib/checkout/paystack";
 import { formatNaira } from "@/lib/format";
 import { CartLines } from "../cart/cart-lines";
@@ -60,6 +62,7 @@ export function CheckoutPage() {
   const [paying, setPaying] = useState(false);
   const [paidReference, setPaidReference] = useState<string | null>(null);
   const queryClient = useQueryClient();
+  const router = useRouter();
   // The server's numbers are the only ones shown or charged (SEC-06).
   // The delivery band needs a state, and in Lagos an LGA too.
   const area =
@@ -138,11 +141,16 @@ export function CheckoutPage() {
         return;
       }
       setStatus("Confirming your payment…");
-      await verifyPayment(outcome.reference);
+      const paid = await verifyPayment(outcome.reference);
       setPaidReference(outcome.reference);
+      if (guest) {
+        const [first_name, ...rest] = shipping.full_name.trim().split(/\s+/);
+        saveGuestDetails({ email: email.trim(), first_name, last_name: rest.join(" "), phone: shipping.phone });
+      }
       useGuestCart.getState().clear();
       await queryClient.invalidateQueries({ queryKey: ["cart"] });
       setStatus("Payment confirmed. Thank you!");
+      if (paid.tracking_token) router.replace(`/checkout/confirmation/${paid.tracking_token}`);
     } catch (error) {
       setStatus(errorMessages(error).join(" "));
     } finally {

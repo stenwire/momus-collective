@@ -47,7 +47,7 @@ def _create_order(session):
 
 
 def fulfil(session):
-    from designs.tasks import render_order_item_file
+    from .tasks import order_paid
 
     order = _create_order(session)
     # Keyed by str: the session stores ids as strings, in_bulk returns UUIDs.
@@ -82,10 +82,6 @@ def fulfil(session):
                 f"{settings.BACKEND_URL}/api/v1/orders/items/{item.id}/design-file/"
             )
             item.save(update_fields=["design_file_url"])
-            config = line["design_config"]
-            transaction.on_commit(
-                lambda i=str(item.id), c=config: render_order_item_file.delay(i, c)
-            )
         if line["product_id"]:
             Product.objects.filter(id=line["product_id"]).update(
                 total_orders=F("total_orders") + line["quantity"]
@@ -101,4 +97,7 @@ def fulfil(session):
         CartItem.objects.filter(cart__user=session.user).delete()
     session.order = order
     session.save(update_fields=["order"])
+    # Robust: the payment and order are committed by now, so a broker
+    # outage is logged rather than failing the customer's confirmation.
+    transaction.on_commit(lambda: order_paid.delay(str(order.id)), robust=True)
     return order

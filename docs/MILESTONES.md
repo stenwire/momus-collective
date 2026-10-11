@@ -189,7 +189,7 @@ server-side total computation both live here.
 | 3 | Cart items show thumbnail, slogan or Custom Design preview, size, color, quantity controls, unit price and remove (FR-CART-02) | [x] |
 | 4 | Cart is a right drawer on desktop, bottom sheet on mobile, with a count badge (FR-CART-03) | [x] |
 | 5 | Single-page checkout with Shipping, Order Summary and Payment; cart editable from checkout (FR-CART-04) | [x] |
-| 6 | Guest checkout completes with email and phone, then offers account creation (FR-CART-05) | [ ] |
+| 6 | Guest checkout completes with email and phone, then offers account creation (FR-CART-05) | [x] |
 | 7 | Paystack Inline handles card, bank transfer and USSD; failed payments show a clear error and allow retry (FR-CART-06) | [ ] |
 | 8 | The webhook verifies HMAC-SHA512 over the raw body against `x-paystack-signature` in constant time, rejecting with `401` **before touching order state** — tests cover unsigned and wrong-signature (FR-CART-06) | [x] |
 | 9 | A replayed valid webhook does not create or confirm a second order — test passes | [x] |
@@ -197,7 +197,7 @@ server-side total computation both live here.
 | 11 | Delivery fees apply per state band with a configurable free-delivery threshold (FR-CART-08) | [x] |
 | 12 | Order totals are recomputed server-side; a client-supplied price is rejected or ignored — test passes | [x] |
 | 13 | Order numbers follow `MOM-YYYYMMDD-NNN` (FR-CART-09) | [x] |
-| 14 | Confirmation page and email both show order number, summary, estimated delivery and tracking link (FR-CART-09, FR-NOT-01) | [ ] |
+| 14 | Confirmation page and email both show order number, summary, estimated delivery and tracking link (FR-CART-09, FR-NOT-01) | [x] |
 | 15 | The guest tracking link is unguessable, not the sequential order number | [x] |
 | 16 | Order history lists orders reverse-chronologically and expands to full detail (FR-USR-03) | [ ] |
 | 17 | Wishlist adds from a product card heart and moves items to cart (FR-USR-05) | [ ] |

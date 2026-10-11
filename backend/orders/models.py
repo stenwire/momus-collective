@@ -62,6 +62,7 @@ class Order(models.Model):
     paid_at = models.DateTimeField(null=True, blank=True)
     status_history = models.JSONField(default=list)
     notes = models.TextField(blank=True)
+    confirmation_sent_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

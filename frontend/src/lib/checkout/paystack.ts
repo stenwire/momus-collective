@@ -58,7 +58,12 @@ export const startCheckout = (body: unknown) =>
   post<CheckoutStart>("/api/v1/checkout/", body);
 
 export const verifyPayment = (reference: string) =>
-  post<{ reference: string; status: string }>("/api/v1/checkout/verify/", { reference });
+  post<{
+    reference: string;
+    status: string;
+    order_number: string | null;
+    tracking_token: string | null;
+  }>("/api/v1/checkout/verify/", { reference });
 
 export type PopupOutcome =
   | { kind: "success"; reference: string }

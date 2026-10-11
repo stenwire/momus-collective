@@ -118,3 +118,20 @@ def render_design_png(config):
     buffer = io.BytesIO()
     image.save(buffer, format="PNG", dpi=(options.PRINT_DPI, options.PRINT_DPI))
     return buffer.getvalue()
+
+
+def render_preview_png(config, size=240):
+    """A small shirt-coloured thumbnail with the print area in place, for
+    emails, which can't run the canvas preview."""
+    scale = size / options.CANVAS_SIZE
+    box = options.PLACEMENTS[config["placement"]]["box"]
+    text = Image.open(io.BytesIO(render_design_png(config)))
+    text = text.resize(
+        (max(1, round(box["w"] * scale)), max(1, round(box["h"] * scale))),
+        Image.LANCZOS,
+    )
+    image = Image.new("RGB", (size, size), options.SHIRT_COLORS[config["shirt_color"]])
+    image.paste(text, (round(box["x"] * scale), round(box["y"] * scale)), text)
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG", optimize=True)
+    return buffer.getvalue()

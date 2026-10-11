@@ -14,6 +14,11 @@ urlpatterns = [
     ),
     path("orders/track/<str:token>/", views.order_track, name="order-track"),
     path(
+        "orders/track/<str:token>/items/<uuid:item_id>/preview/",
+        views.order_item_preview,
+        name="order-item-preview",
+    ),
+    path(
         "payments/paystack/webhook/",
         webhooks.paystack_webhook,
         name="paystack-webhook",

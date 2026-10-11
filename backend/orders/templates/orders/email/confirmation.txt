@@ -1,0 +1,23 @@
+{% autoescape off %}Thank you for your order.
+
+Order {{ order.order_number }}
+{% for line in items %}
+- {{ line.title }}{% if line.item.design_config %}: "{{ line.item.slogan_text }}"{% endif %} ({{ line.item.size }}{% if line.item.color %}, {{ line.item.color }}{% endif %}) x{{ line.item.quantity }}  {{ line.line_total }}{% endfor %}
+
+Subtotal: {{ subtotal }}
+Delivery: {{ delivery }}{% if discount %}
+Discount: -{{ discount }}{% endif %}
+Total paid: {{ total }}
+
+Shipping to:
+{{ address.full_name }}
+{{ address.address_line_1 }}{% if address.address_line_2 %}
+{{ address.address_line_2 }}{% endif %}
+{{ address.city }}, {% if address.lga %}{{ address.lga }}, {% endif %}{{ address.state }}
+
+Estimated delivery: {{ window }}
+
+Track your order: {{ tracking_url }}
+
+momus collective
+{% endautoescape %}

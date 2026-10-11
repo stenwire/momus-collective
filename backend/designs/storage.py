@@ -32,3 +32,7 @@ def discard_design_files(design_id):
 
 def order_item_file_name(item_id):
     return f"orders/{item_id}.png"
+
+
+def order_item_preview_name(item_id):
+    return f"orders/{item_id}-preview.png"

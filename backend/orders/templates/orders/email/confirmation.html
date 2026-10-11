@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<body style="margin:0;padding:0;background:#0b0b0c;color:#f4f4f5;font-family:Helvetica,Arial,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#0b0b0c;">
+    <tr><td align="center" style="padding:24px 16px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;">
+        <tr><td style="font-size:22px;font-weight:bold;padding-bottom:4px;">Thank you for your order.</td></tr>
+        <tr><td style="color:#a1a1aa;font-size:14px;padding-bottom:20px;">Order {{ order.order_number }}</td></tr>
+        {% for line in items %}
+        <tr><td style="padding:8px 0;border-top:1px solid #27272a;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
+            <td width="72" valign="top">{% if line.image %}<img src="{{ line.image }}" width="64" height="64" alt="{{ line.item.slogan_text }}" style="display:block;border-radius:6px;">{% endif %}</td>
+            <td valign="top" style="font-size:14px;">
+              <div style="font-weight:bold;">{{ line.title }}</div>
+              {% if line.item.design_config %}<div style="color:#a1a1aa;">&ldquo;{{ line.item.slogan_text }}&rdquo;</div>{% endif %}
+              <div style="color:#a1a1aa;">{{ line.item.size }}{% if line.item.color %} &middot; {{ line.item.color }}{% endif %} &middot; Qty {{ line.item.quantity }}</div>
+            </td>
+            <td valign="top" align="right" style="font-size:14px;">{{ line.line_total }}</td>
+          </tr></table>
+        </td></tr>
+        {% endfor %}
+        <tr><td style="padding:12px 0;border-top:1px solid #27272a;font-size:14px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+            <tr><td style="color:#a1a1aa;">Subtotal</td><td align="right">{{ subtotal }}</td></tr>
+            <tr><td style="color:#a1a1aa;">Delivery</td><td align="right">{{ delivery }}</td></tr>
+            {% if discount %}<tr><td style="color:#a1a1aa;">Discount</td><td align="right">&minus;{{ discount }}</td></tr>{% endif %}
+            <tr><td style="font-weight:bold;padding-top:4px;">Total paid</td><td align="right" style="font-weight:bold;padding-top:4px;">{{ total }}</td></tr>
+          </table>
+        </td></tr>
+        <tr><td style="padding:12px 0;border-top:1px solid #27272a;font-size:14px;line-height:1.5;">
+          <div style="font-weight:bold;">Shipping to</div>
+          {{ address.full_name }}<br>{{ address.address_line_1 }}<br>
+          {% if address.address_line_2 %}{{ address.address_line_2 }}<br>{% endif %}
+          {{ address.city }}, {% if address.lga %}{{ address.lga }}, {% endif %}{{ address.state }}
+        </td></tr>
+        <tr><td style="padding:12px 0;font-size:14px;">Estimated delivery: <strong>{{ window }}</strong></td></tr>
+        <tr><td style="padding:8px 0 24px;">
+          <a href="{{ tracking_url }}" style="display:inline-block;background:#fbbf24;color:#000;text-decoration:none;font-weight:bold;padding:12px 20px;border-radius:6px;">Track your order</a>
+        </td></tr>
+        <tr><td style="color:#71717a;font-size:12px;">momus collective</td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>
