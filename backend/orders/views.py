@@ -248,3 +248,31 @@ def order_history(request):
     return paginator.get_paginated_response(
         [order_payload(order, delivery, include_shipping=True) for order in page]
     )
+
+
+def _tracked(token):
+    return get_object_or_404(Order, tracking_token=token)
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+@throttle_classes([ScopedRateThrottle])
+@scoped("order-track")
+def order_refund_request(request, token):
+    """FR-NOT-03: after a rejection the customer may ask for a refund."""
+    from .moderation import request_refund
+
+    request_refund(_tracked(token).pk)
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+@throttle_classes([ScopedRateThrottle])
+@scoped("order-track")
+def order_item_revise(request, token, item_id):
+    """FR-NOT-03: the customer's revised design goes back for review."""
+    from .moderation import revise_design
+
+    revise_design(_tracked(token).pk, item_id, request.data.get("config"))
+    return Response(status=status.HTTP_204_NO_CONTENT)

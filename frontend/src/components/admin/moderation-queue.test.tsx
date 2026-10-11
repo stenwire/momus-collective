@@ -26,18 +26,44 @@ const entry = (n: number): ModerationEntry => ({
       design_file_url: `http://api.test/api/v1/orders/items/i${n}/design-file/`,
     },
   ],
+  rejection: null,
 });
 
-function api(entries: ModerationEntry[], approveStatus = 200) {
+const REASONS = [
+  { key: "offensive", label: "Offensive content" },
+  { key: "copyright", label: "Copyright concerns" },
+  { key: "unprintable", label: "Unprintable design" },
+];
+
+function api(entries: ModerationEntry[], approveStatus = 200, waiting: ModerationEntry[] = []) {
   let queue = [...entries];
+  let held = [...waiting];
   const fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
+    if (init?.method === "POST" && url.endsWith("/reject/")) {
+      const entry = queue.find((e) => url.includes(`/${e.id}/`))!;
+      const { reason, details } = JSON.parse(String(init.body));
+      queue = queue.filter((e) => e !== entry);
+      held = [
+        ...held,
+        { ...entry, rejection: { reason, reason_label: REASONS.find((r) => r.key === reason)!.label, details, rejected_at: "2026-10-12T09:00:00Z", customer_choice: "" } },
+      ];
+      return { ok: true, status: 200, json: async () => ({}) } as Response;
+    }
+    if (init?.method === "POST" && url.endsWith("/refunded/")) {
+      held = held.filter((e) => !url.includes(`/${e.id}/`));
+      return { ok: true, status: 200, json: async () => ({ status: "refunded" }) } as Response;
+    }
     if (init?.method === "POST") {
       if (approveStatus >= 400)
         return { ok: false, status: approveStatus, json: async () => ({ status: "This order isn't awaiting moderation." }) } as Response;
       queue = queue.filter((e) => !url.includes(`/${e.id}/`));
       return { ok: true, status: 200, json: async () => ({ status: "shirt_acquired" }) } as Response;
     }
-    return { ok: true, status: 200, json: async () => ({ count: queue.length, orders: queue }) } as Response;
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({ count: queue.length, orders: queue, waiting: held, reasons: REASONS }),
+    } as Response;
   });
   vi.stubGlobal("fetch", fetchMock);
   return fetchMock;
@@ -81,5 +107,35 @@ describe("ModerationQueue", () => {
     renderQueue();
     await userEvent.click(await screen.findByRole("button", { name: "Approve MOM-20261011-001" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("isn't awaiting moderation");
+  });
+
+  it("rejects with a reason, telling the admin the customer was emailed", async () => {
+    const fetchMock = api([entry(1)]);
+    renderQueue();
+    await userEvent.click(await screen.findByRole("button", { name: "Reject MOM-20261011-001" }));
+    const submit = screen.getByRole("button", { name: "Reject and email the customer" });
+    expect(submit).toBeDisabled();
+    await userEvent.selectOptions(screen.getByLabelText("Reason"), "unprintable");
+    await userEvent.type(screen.getByLabelText(/Details for the customer/), "The text is too small.");
+    await userEvent.click(submit);
+    expect(await screen.findByText("Rejected MOM-20261011-001; the customer has been emailed.")).toBeInTheDocument();
+    const call = fetchMock.mock.calls.find(([u]) => u.endsWith("/reject/"))!;
+    expect(JSON.parse(String(call[1]!.body))).toEqual({ reason: "unprintable", details: "The text is too small." });
+    const waiting = await screen.findByRole("region", { name: "Waiting on the customer" });
+    expect(within(waiting).getByText(/Unprintable design. The text is too small./)).toBeInTheDocument();
+    expect(within(waiting).getByText(/Waiting for the customer to revise/)).toBeInTheDocument();
+  });
+
+  it("marks a refund once the customer asked for one", async () => {
+    const asked: ModerationEntry = {
+      ...entry(2),
+      rejection: { reason: "offensive", reason_label: "Offensive content", details: "", rejected_at: "2026-10-12T09:00:00Z", customer_choice: "refund" },
+    };
+    api([], 200, [asked]);
+    renderQueue();
+    const waiting = await screen.findByRole("region", { name: "Waiting on the customer" });
+    expect(within(waiting).getByText(/asked for a refund. Refund it in the Paystack dashboard/)).toBeInTheDocument();
+    await userEvent.click(within(waiting).getByRole("button", { name: "Mark MOM-20261011-002 refunded" }));
+    expect(await screen.findByText("Marked MOM-20261011-002 as refunded.")).toBeInTheDocument();
   });
 });

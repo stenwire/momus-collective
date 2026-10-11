@@ -1,0 +1,10 @@
+{% autoescape off %}We can't print your design for order {{ order.order_number }} as it is.
+
+Reason: {{ reason }}{% if details %}
+{{ details }}{% endif %}
+
+You can revise your design and send it back to us, or ask for a full refund. Choose on your order page:
+{{ tracking_url }}
+
+momus collective
+{% endautoescape %}

@@ -78,10 +78,32 @@ export type ModerationEntry = {
   created_at: string;
   customer: string;
   designs: (OrderItem & { design_file_url: string | null })[];
+  rejection: {
+    reason: string;
+    reason_label: string;
+    details: string;
+    rejected_at: string;
+    customer_choice: "" | "refund";
+  } | null;
 };
 
-export const fetchModerationQueue = () =>
-  adminCall<{ count: number; orders: ModerationEntry[] }>("/api/v1/admin/moderation/");
+export type ModerationQueueData = {
+  count: number;
+  orders: ModerationEntry[];
+  waiting: ModerationEntry[];
+  reasons: { key: string; label: string }[];
+};
+
+export const fetchModerationQueue = () => adminCall<ModerationQueueData>("/api/v1/admin/moderation/");
+
+export const rejectDesign = (id: string, reason: string, details: string) =>
+  adminCall<{ id: string; status: OrderStatus }>(`/api/v1/admin/moderation/${id}/reject/`, {
+    method: "POST",
+    body: JSON.stringify({ reason, details }),
+  });
+
+export const markRefunded = (id: string) =>
+  adminCall<{ id: string; status: OrderStatus }>(`/api/v1/admin/moderation/${id}/refunded/`, { method: "POST" });
 
 export const approveDesign = (id: string) =>
   adminCall<{ id: string; status: OrderStatus }>(`/api/v1/admin/moderation/${id}/approve/`, { method: "POST" });

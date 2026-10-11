@@ -11,9 +11,10 @@ from rest_framework.response import Response
 
 from config.permissions import IsStaffUser
 
-from .models import Order, OrderItem, OrderStatus
+from .models import Order, OrderItem, OrderStatus, RejectionReason
+from .moderation import approve_design, mark_refunded, reject_design
 from .serializers import item_payload
-from .status import BOARD, approve_design, change_status
+from .status import BOARD, change_status
 
 BOARD_LIMIT = 50
 
@@ -204,42 +205,83 @@ def admin_order_detail(request, pk):
     return Response(admin_detail(order))
 
 
+def _moderation_entry(order):
+    return {
+        "id": str(order.id),
+        "order_number": order.order_number,
+        "created_at": order.created_at.isoformat(),
+        "customer": order.shipping_address.get("full_name", ""),
+        "designs": [
+            {**item_payload(item), "design_file_url": item.design_file_url or None}
+            for item in order.items.all()
+            if item.design_config
+        ],
+        "rejection": {
+            "reason": order.rejection_reason,
+            "reason_label": order.get_rejection_reason_display(),
+            "details": order.rejection_details,
+            "rejected_at": order.rejected_at.isoformat(),
+            "customer_choice": order.customer_choice,
+        }
+        if order.rejected_at
+        else None,
+    }
+
+
 @api_view(["GET"])
 @permission_classes([IsStaffUser])
 def admin_moderation_queue(request):
-    """FR-ADM-07: orders whose custom designs await review, oldest first."""
-    orders = (
+    """FR-ADM-07: designs awaiting review, oldest first, then rejected ones
+    waiting on the customer to revise or take a refund."""
+    orders = list(
         Order.objects.filter(status=OrderStatus.MODERATION)
         .order_by("created_at")
         .prefetch_related("items__product")
     )
+    review = [o for o in orders if not o.rejected_at]
+    waiting = [o for o in orders if o.rejected_at]
     return Response(
         {
-            "count": len(orders),
-            "orders": [
-                {
-                    "id": str(order.id),
-                    "order_number": order.order_number,
-                    "created_at": order.created_at.isoformat(),
-                    "customer": order.shipping_address.get("full_name", ""),
-                    "designs": [
-                        {
-                            **item_payload(item),
-                            "design_file_url": item.design_file_url or None,
-                        }
-                        for item in order.items.all()
-                        if item.design_config
-                    ],
-                }
-                for order in orders
-            ],
+            "count": len(review),
+            "orders": [_moderation_entry(o) for o in review],
+            "waiting": [_moderation_entry(o) for o in waiting],
+            "reasons": [{"key": k, "label": v} for k, v in RejectionReason.choices],
         }
     )
+
+
+def _moderation_action(request, pk, action, **kwargs):
+    get_object_or_404(Order, pk=pk)
+    order = action(pk, by=request.user.email, **kwargs)
+    return Response({"id": str(order.id), "status": order.status})
 
 
 @api_view(["POST"])
 @permission_classes([IsStaffUser])
 def admin_moderation_approve(request, pk):
-    get_object_or_404(Order, pk=pk)
-    order = approve_design(pk, by=request.user.email)
-    return Response({"id": str(order.id), "status": order.status})
+    return _moderation_action(request, pk, approve_design)
+
+
+class RejectSerializer(serializers.Serializer):
+    reason = serializers.CharField()
+    details = serializers.CharField(required=False, allow_blank=True, max_length=500)
+
+
+@api_view(["POST"])
+@permission_classes([IsStaffUser])
+def admin_moderation_reject(request, pk):
+    serializer = RejectSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    return _moderation_action(
+        request,
+        pk,
+        reject_design,
+        reason=serializer.validated_data["reason"],
+        details=serializer.validated_data.get("details", ""),
+    )
+
+
+@api_view(["POST"])
+@permission_classes([IsStaffUser])
+def admin_moderation_refunded(request, pk):
+    return _moderation_action(request, pk, mark_refunded)

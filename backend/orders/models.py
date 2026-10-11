@@ -20,6 +20,19 @@ class OrderStatus(models.TextChoices):
     REFUNDED = "refunded", "Refunded"
 
 
+class RejectionReason(models.TextChoices):
+    """FR-ADM-07's three reasons."""
+
+    OFFENSIVE = "offensive", "Offensive content"
+    COPYRIGHT = "copyright", "Copyright concerns"
+    UNPRINTABLE = "unprintable", "Unprintable design"
+
+
+class CustomerChoice(models.TextChoices):
+    NONE = "", "None"
+    REFUND = "refund", "Refund requested"
+
+
 # What the customer sees as progress; moderation happens within "Paid".
 CUSTOMER_PIPELINE = [
     OrderStatus.PAID,
@@ -79,6 +92,16 @@ class Order(models.Model):
     paid_at = models.DateTimeField(null=True, blank=True)
     status_history = models.JSONField(default=list)
     notes = models.TextField(blank=True)
+    # A rejected design waits in moderation for the customer to revise it or
+    # ask for a refund (FR-ADM-07, FR-NOT-03).
+    rejection_reason = models.CharField(
+        max_length=20, choices=RejectionReason.choices, blank=True
+    )
+    rejection_details = models.TextField(blank=True)
+    rejected_at = models.DateTimeField(null=True, blank=True)
+    customer_choice = models.CharField(
+        max_length=10, choices=CustomerChoice.choices, blank=True
+    )
     confirmation_sent_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

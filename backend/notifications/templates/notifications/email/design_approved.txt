@@ -1,0 +1,7 @@
+{% autoescape off %}Good news: your design for order {{ order.order_number }} is approved.
+
+We're getting your shirt ready to print. Follow its progress here:
+{{ tracking_url }}
+
+momus collective
+{% endautoescape %}

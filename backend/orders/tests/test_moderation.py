@@ -133,3 +133,200 @@ def test_the_customer_sees_review_in_progress(user, monkeypatch):
     data = APIClient().get(f"/api/v1/orders/track/{order.tracking_token}/").json()
     assert (data["status"], data["pipeline_step"]) == ("moderation", 0)
     assert timezone.now() - timedelta(minutes=1) < order.created_at
+
+
+# T-506: rejection, the customer's choice, and FR-NOT-03's messages.
+
+from django.core import mail  # noqa: E402
+
+from designs.storage import design_storage, order_item_file_name  # noqa: E402
+
+
+@pytest.fixture
+def capture(django_capture_on_commit_callbacks):
+    def run(fn):
+        with django_capture_on_commit_callbacks(execute=True):
+            return fn()
+
+    return run
+
+
+def reject(staff, order, reason="unprintable", details="The text is too small."):
+    return client_for(staff).post(
+        f"{QUEUE}{order.id}/reject/",
+        {"reason": reason, "details": details},
+        format="json",
+    )
+
+
+def customer_mail(order):
+    return [m for m in mail.outbox if order.order_number in m.subject]
+
+
+def test_rejection_authz(user, monkeypatch):
+    order = custom_order(user, monkeypatch)
+    for client, code in ((APIClient(), 401), (client_for(user), 403)):
+        resp = client.post(f"{QUEUE}{order.id}/reject/", {"reason": "offensive"})
+        assert resp.status_code == code
+        assert client.post(f"{QUEUE}{order.id}/refunded/").status_code == code
+    order.refresh_from_db()
+    assert order.rejected_at is None
+
+
+def test_a_rejection_records_the_reason_and_tells_the_customer(
+    user, monkeypatch, staff, capture
+):
+    order = custom_order(user, monkeypatch)
+    mail.outbox.clear()
+    assert capture(lambda: reject(staff, order)).status_code == 200
+    order.refresh_from_db()
+    assert order.status == "moderation"
+    assert (order.rejection_reason, order.rejection_details) == (
+        "unprintable",
+        "The text is too small.",
+    )
+    assert order.status_history[-1]["note"] == "Design rejected: Unprintable design"
+    queue = client_for(staff).get(QUEUE).json()
+    assert queue["count"] == 0 and queue["orders"] == []
+    [waiting] = queue["waiting"]
+    assert waiting["rejection"]["reason_label"] == "Unprintable design"
+    assert waiting["rejection"]["customer_choice"] == ""
+    assert [r["key"] for r in queue["reasons"]] == [
+        "offensive",
+        "copyright",
+        "unprintable",
+    ]
+    [email] = customer_mail(order)
+    assert email.to == ["ada@example.com"]
+    assert "Reason: Unprintable design" in email.body
+    assert "The text is too small." in email.body
+    assert f"/track/{order.tracking_token}" in email.body
+    track = APIClient().get(f"/api/v1/orders/track/{order.tracking_token}/").json()
+    assert track["design_review"] == {
+        "reason_label": "Unprintable design",
+        "details": "The text is too small.",
+        "customer_choice": "",
+    }
+
+
+def test_a_rejection_needs_a_listed_reason_and_a_waiting_order(
+    user, monkeypatch, staff
+):
+    order = custom_order(user, monkeypatch)
+    assert reject(staff, order, reason="ugly").status_code == 400
+    assert reject(staff, order).status_code == 200
+    assert reject(staff, order).status_code == 400
+    assert client_for(staff).post(approve_url(order)).status_code == 400
+
+
+def test_approval_tells_the_customer_once(user, monkeypatch, staff, capture):
+    order = custom_order(user, monkeypatch)
+    mail.outbox.clear()
+    capture(lambda: client_for(staff).post(approve_url(order)))
+    [email] = customer_mail(order)
+    assert email.subject == f"Your design is approved: order {order.order_number}"
+    from notifications.tasks import design_outcome
+
+    design_outcome(str(order.id), "approved")
+    assert len(customer_mail(order)) == 1
+
+
+def refund_request(order):
+    return APIClient().post(
+        f"/api/v1/orders/track/{order.tracking_token}/refund-request/"
+    )
+
+
+def test_the_customer_can_ask_for_a_refund_and_the_admin_records_it(
+    user, monkeypatch, staff
+):
+    order = custom_order(user, monkeypatch)
+    assert refund_request(order).status_code == 400
+    reject(staff, order)
+    assert refund_request(order).status_code == 204
+    assert refund_request(order).status_code == 204
+    order.refresh_from_db()
+    assert order.customer_choice == "refund"
+    assert [h.get("note") for h in order.status_history].count(
+        "Customer asked for a refund"
+    ) == 1
+    waiting = client_for(staff).get(QUEUE).json()["waiting"][0]
+    assert waiting["rejection"]["customer_choice"] == "refund"
+    resp = client_for(staff).post(f"{QUEUE}{order.id}/refunded/")
+    assert resp.json()["status"] == "refunded"
+    track = APIClient().get(f"/api/v1/orders/track/{order.tracking_token}/").json()
+    assert (track["status"], track["pipeline_step"]) == ("refunded", None)
+    assert "design_review" not in track
+
+
+def revise(order, item, config):
+    return APIClient().post(
+        f"/api/v1/orders/track/{order.tracking_token}/items/{item.id}/revise/",
+        {"config": config},
+        format="json",
+    )
+
+
+def test_a_revision_replaces_the_design_and_goes_back_for_review(
+    user, monkeypatch, staff, capture, settings, tmp_path
+):
+    settings.DESIGN_FILES_ROOT = tmp_path / "files"
+    order = custom_order(user, monkeypatch)
+    item = order.items.get()
+    capture(
+        lambda: __import__("orders.tasks", fromlist=["x"]).order_paid(str(order.id))
+    )
+    before = design_storage().open(order_item_file_name(item.id)).read()
+    capture(lambda: reject(staff, order))
+    new = {**CONFIG, "text": "BIGGER TEXT", "font_size": "large"}
+    assert capture(lambda: revise(order, item, new)).status_code == 204
+    item.refresh_from_db()
+    order.refresh_from_db()
+    assert (item.design_config["text"], item.slogan_text) == (
+        "BIGGER TEXT",
+        "BIGGER TEXT",
+    )
+    assert order.rejected_at is None and order.rejection_reason == ""
+    assert order.status_history[-1]["note"] == "Design revised by the customer"
+    after = design_storage().open(order_item_file_name(item.id)).read()
+    assert after != before
+    queue = client_for(staff).get(QUEUE).json()
+    assert queue["count"] == 1 and queue["waiting"] == []
+    mail.outbox.clear()
+    capture(lambda: reject(staff, order, details="Still too small."))
+    assert len(customer_mail(order)) == 1
+
+
+@pytest.mark.parametrize(
+    "change",
+    # Navy takes Gold text, so only the colour change itself is refused.
+    [{"shirt_color": "Navy"}, {"font": "comic-sans"}, {"text": ""}],
+)
+def test_a_revision_must_be_a_valid_design_on_the_same_shirt(
+    user, monkeypatch, staff, change
+):
+    order = custom_order(user, monkeypatch)
+    item = order.items.get()
+    reject(staff, order)
+    assert revise(order, item, {**CONFIG, **change}).status_code == 400
+    item.refresh_from_db()
+    assert item.design_config["text"] == CONFIG["text"]
+
+
+def test_revisions_only_when_rejected_and_not_refunding(
+    user, monkeypatch, staff, product
+):
+    order = custom_order(user, monkeypatch, with_catalog=product)
+    design_item = order.items.get(design_config__isnull=False)
+    catalog_item = order.items.get(design_config__isnull=True)
+    assert revise(order, design_item, CONFIG).status_code == 400
+    reject(staff, order)
+    assert revise(order, catalog_item, CONFIG).status_code == 400
+    refund_request(order)
+    assert revise(order, design_item, CONFIG).status_code == 400
+    wrong = APIClient().post(
+        f"/api/v1/orders/track/nope/items/{design_item.id}/revise/",
+        {"config": CONFIG},
+        format="json",
+    )
+    assert wrong.status_code == 404

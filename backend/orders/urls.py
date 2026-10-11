@@ -51,6 +51,26 @@ urlpatterns = [
         name="admin-moderation-approve",
     ),
     path(
+        "admin/moderation/<uuid:pk>/reject/",
+        admin_views.admin_moderation_reject,
+        name="admin-moderation-reject",
+    ),
+    path(
+        "admin/moderation/<uuid:pk>/refunded/",
+        admin_views.admin_moderation_refunded,
+        name="admin-moderation-refunded",
+    ),
+    path(
+        "orders/track/<str:token>/refund-request/",
+        views.order_refund_request,
+        name="order-refund-request",
+    ),
+    path(
+        "orders/track/<str:token>/items/<uuid:item_id>/revise/",
+        views.order_item_revise,
+        name="order-item-revise",
+    ),
+    path(
         "admin/delivery-settings/",
         views.admin_delivery_settings,
         name="admin-delivery-settings",

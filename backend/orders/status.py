@@ -37,23 +37,3 @@ def change_status(order_id, status, by, note=""):
         order.status_history = [*order.status_history, entry]
         order.save(update_fields=["status", "status_history", "updated_at"])
     return order, True
-
-
-def approve_design(order_id, by):
-    """FR-ADM-07: an approved design proceeds to Shirt Acquired."""
-    with transaction.atomic():
-        order = Order.objects.select_for_update().get(pk=order_id)
-        if order.status != OrderStatus.MODERATION:
-            raise ValidationError({"status": "This order isn't awaiting moderation."})
-        order.status = OrderStatus.SHIRT_ACQUIRED
-        order.status_history = [
-            *order.status_history,
-            {
-                "status": order.status,
-                "timestamp": timezone.now().isoformat(),
-                "by": by,
-                "note": "Design approved",
-            },
-        ]
-        order.save(update_fields=["status", "status_history", "updated_at"])
-    return order

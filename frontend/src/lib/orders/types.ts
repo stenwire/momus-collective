@@ -41,6 +41,7 @@ export type Order = {
   estimated_delivery: { earliest: string; latest: string };
   tracking_url: string;
   shipping_address?: Record<string, string>;
+  design_review?: { reason_label: string; details: string; customer_choice: "" | "refund" };
 };
 
 const day = new Intl.DateTimeFormat("en-NG", {
