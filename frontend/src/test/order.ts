@@ -32,6 +32,8 @@ export const order: Order = {
   delivery_fee: 0,
   discount: 240000,
   total: 2160000,
+  payment_fee: 0,
+  amount_paid: 2160000,
   estimated_delivery: { earliest: "2026-10-12", latest: "2026-10-14" },
   tracking_url: "http://localhost:3000/track/tok",
 };

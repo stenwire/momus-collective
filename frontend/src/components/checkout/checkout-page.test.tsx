@@ -315,6 +315,16 @@ describe("CheckoutPage", () => {
     window.PaystackPop = undefined;
   });
 
+  it("tells the customer they bear Paystack's fee", async () => {
+    signedOut();
+    useGuestCart.getState().add({ product, size: "M", color: "Black", quantity: 1 });
+    vi.stubGlobal("fetch", payApi());
+    renderCheckout();
+    expect(
+      await screen.findByText(/Paystack's processing fee is paid by you and added in the payment window/),
+    ).toBeInTheDocument();
+  });
+
   it("explains a cancelled payment and lets the customer try again", async () => {
     signedOut();
     useGuestCart.getState().add({ product, size: "M", color: "Black", quantity: 1 });

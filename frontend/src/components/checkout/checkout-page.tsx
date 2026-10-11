@@ -277,6 +277,10 @@ export function CheckoutPage() {
           <p className="text-sm text-zinc-400">
             Pay securely with card or bank transfer through Paystack.
           </p>
+          <p className="text-sm text-zinc-400">
+            Paystack&apos;s processing fee is paid by you and added in the payment window, so the
+            amount there will be slightly higher than this total.
+          </p>
           <button
             type="button"
             onClick={pay}

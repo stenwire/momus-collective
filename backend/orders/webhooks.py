@@ -44,6 +44,10 @@ def paystack_webhook(request):
     # EFF-07: settled off the request path. Only what settle reads is
     # queued; the payload's customer details never reach the broker.
     settle_charge.delay(
-        {k: data.get(k) for k in ("reference", "status", "amount", "currency")}
+        {
+            k: data[k]
+            for k in ("reference", "status", "amount", "requested_amount", "currency")
+            if k in data
+        }
     )
     return Response(status=200)

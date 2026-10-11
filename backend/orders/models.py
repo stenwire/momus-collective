@@ -79,6 +79,8 @@ class Order(models.Model):
     paid_at = models.DateTimeField(null=True, blank=True)
     status_history = models.JSONField(default=list)
     notes = models.TextField(blank=True)
+    # Paystack's charge, when the dashboard passes it to the customer (D-098).
+    payment_fee = models.PositiveIntegerField(default=0)
     confirmation_sent_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -188,6 +190,7 @@ class CheckoutSession(models.Model):
     delivery_fee = models.PositiveIntegerField()
     discount = models.PositiveIntegerField(default=0)
     total = models.PositiveIntegerField()
+    payment_fee = models.PositiveIntegerField(default=0)
     promo_code = models.CharField(max_length=32, blank=True)
     status = models.CharField(
         max_length=10, choices=Status.choices, default=Status.PENDING
