@@ -64,6 +64,38 @@ export const designOptions: DesignOptions = {
     { key: "wide", label: "Wide", em: 0.08 },
     { key: "extra_wide", label: "Extra Wide", em: 0.2 },
   ],
+  template_styles: [
+    { key: "bold_statement", label: "Bold Statement" },
+    { key: "disclaimer", label: "Disclaimer Style" },
+  ],
+  templates: [
+    {
+      key: "say-it-louder",
+      name: "Say It Louder",
+      style: "bold_statement",
+      config: {
+        text: "SAY IT LOUDER",
+        font: "archivo_black",
+        font_size: "extra_large",
+        alignment: "center",
+        letter_spacing: "normal",
+        placement: "center_chest",
+      },
+    },
+    {
+      key: "trust-me",
+      name: "Trust Me",
+      style: "disclaimer",
+      config: {
+        text: "Trust me\n(I googled it)",
+        font: "anton",
+        font_size: "large",
+        alignment: "left",
+        letter_spacing: "wide",
+        placement: "full_front",
+      },
+    },
+  ],
   defaults: {
     shirt_color: "Black",
     text: "",

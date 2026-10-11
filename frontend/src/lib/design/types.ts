@@ -19,6 +19,16 @@ export type DesignConfig = {
 
 export type KeyedOption = { key: string; label: string };
 
+export type DesignTemplate = {
+  key: string;
+  name: string;
+  style: string;
+  config: Pick<
+    DesignConfig,
+    "text" | "font" | "font_size" | "alignment" | "letter_spacing" | "placement"
+  >;
+};
+
 export type TextLimits = { max_length: number; max_lines: number };
 
 export type DesignOptions = {
@@ -34,5 +44,7 @@ export type DesignOptions = {
   font_sizes: (KeyedOption & { ratio: number })[];
   alignments: KeyedOption[];
   letter_spacings: (KeyedOption & { em: number })[];
+  template_styles: KeyedOption[];
+  templates: DesignTemplate[];
   defaults: DesignConfig;
 };

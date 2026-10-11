@@ -11,6 +11,7 @@ import { OptionButtons } from "./option-buttons";
 import { ShirtCanvas } from "./shirt-canvas";
 import { SloganInput } from "./slogan-input";
 import { SwatchPicker } from "./swatch-picker";
+import { TemplatePicker } from "./template-picker";
 
 export function DesignTool() {
   const { data: options, isError } = useQuery({
@@ -62,6 +63,10 @@ export function DesignTool() {
         </button>
       </div>
       <div className="flex w-full flex-col gap-5 md:w-80">
+        <TemplatePicker
+          options={options}
+          onPick={(template) => update(template.config)}
+        />
         <SloganInput
           value={config.text}
           limits={options.text_limits}

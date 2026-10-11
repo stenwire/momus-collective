@@ -21,6 +21,8 @@ export type Measure = (char: string, fontPx: number) => number;
 // Mirrored by backend/designs/render.py; change both or neither.
 export const LINE_HEIGHT = 1.2;
 export const BASELINE = 0.85;
+// A line wholly in parentheses is a disclaimer aside (FR-DES-10).
+export const PARENTHETICAL_SCALE = 0.5;
 const SHRINK = 0.9;
 const MAX_SHRINKS = 30;
 
@@ -72,15 +74,20 @@ function wrapAll(
   maxWidth: number,
   measure: Measure,
 ) {
-  return text.split("\n").flatMap((paragraph) =>
-    wrapParagraph(paragraph, fontPx, spacingEm, maxWidth, measure).map(
+  return text.split("\n").flatMap((paragraph) => {
+    const trimmed = paragraph.trim();
+    const px =
+      trimmed.length > 1 && trimmed.startsWith("(") && trimmed.endsWith(")")
+        ? fontPx * PARENTHETICAL_SCALE
+        : fontPx;
+    return wrapParagraph(paragraph, px, spacingEm, maxWidth, measure).map(
       (line) => ({
         text: line,
-        fontPx,
-        width: textWidth(line, fontPx, spacingEm, measure),
+        fontPx: px,
+        width: textWidth(line, px, spacingEm, measure),
       }),
-    ),
-  );
+    );
+  });
 }
 
 export function layoutText(

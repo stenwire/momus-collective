@@ -158,7 +158,7 @@ custom design as a line item.
 | 7 | Preview button shows a clean mockup without controls (FR-DES-07) | [x] |
 | 8 | Logged-in users save designs with full config; guests are prompted to register (FR-DES-08) | [ ] |
 | 9 | Adding to cart generates a PNG or SVG at 300 DPI minimum with transparent background — test asserts the resolution (FR-DES-09) | [ ] |
-| 10 | 10-15 templates across Bold Statement, Minimalist, Stacked Text and Disclaimer Style (FR-DES-10) | [ ] |
+| 10 | 10-15 templates across Bold Statement, Minimalist, Stacked Text and Disclaimer Style (FR-DES-10) | [x] |
 | 11 | Custom pricing computes server-side as blank + print + margin, varying by shirt color (FR-DES-11) | [ ] |
 | 12 | Saved-design gallery supports edit, add to cart, duplicate and delete (FR-USR-04) | [ ] |
 | 13 | The tool is fully usable at 360px with touch targets at least 44x44px (NFR-01) | [ ] |

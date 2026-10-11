@@ -63,4 +63,15 @@ describe("layoutText", () => {
     expect(line.baseline).toBeGreaterThan(top);
     expect(line.baseline).toBeLessThan(top + slot);
   });
+
+  it("renders a parenthetical line at half size", () => {
+    const [main, aside] = layoutText("NOT ARGUING\n(explaining)", box, center, measure);
+    expect(main.fontPx).toBe(40);
+    expect(aside.fontPx).toBe(20);
+  });
+
+  it("keeps parentheses mid-line at full size", () => {
+    const [line] = layoutText("hi (there) you", box, center, measure);
+    expect(line.fontPx).toBe(40);
+  });
 });

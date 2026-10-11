@@ -147,4 +147,28 @@ describe("DesignTool", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(screen.getByLabelText("Your slogan")).toBeInTheDocument();
   });
+
+  it("applies a template's layout but keeps the user's colours", async () => {
+    renderTool();
+    await userEvent.click(await screen.findByRole("button", { name: "Navy" }));
+    await userEvent.click(screen.getByRole("button", { name: "Use template: Trust Me" }));
+    const config = useDesignStore.getState().config;
+    expect(config).toMatchObject({
+      text: "Trust me\n(I googled it)",
+      font: "anton",
+      font_size: "large",
+      alignment: "left",
+      letter_spacing: "wide",
+      placement: "full_front",
+      shirt_color: "Navy",
+      text_color: "Off White",
+    });
+    expect(screen.getByLabelText("Your slogan")).toHaveValue("Trust me\n(I googled it)");
+  });
+
+  it("groups templates under their style", async () => {
+    renderTool();
+    const group = await screen.findByRole("group", { name: "Disclaimer Style" });
+    expect(within(group).getByRole("button", { name: "Use template: Trust Me" })).toBeInTheDocument();
+  });
 });

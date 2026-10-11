@@ -135,6 +135,138 @@ LETTER_SPACINGS = {
 }
 
 
+# FR-DES-10. A template sets everything but the colours, so applying one
+# never makes the user's chosen text unreadable on their shirt.
+TEMPLATE_STYLES = {
+    "bold_statement": "Bold Statement",
+    "minimalist": "Minimalist",
+    "stacked_text": "Stacked Text",
+    "disclaimer": "Disclaimer Style",
+}
+
+
+def _template(
+    name, style, text, font, size, placement, align="center", spacing="normal"
+):
+    return {
+        "name": name,
+        "style": style,
+        "config": {
+            "text": text,
+            "font": font,
+            "font_size": size,
+            "alignment": align,
+            "letter_spacing": spacing,
+            "placement": placement,
+        },
+    }
+
+
+TEMPLATES = [
+    _template(
+        "Say It Louder",
+        "bold_statement",
+        "SAY IT LOUDER",
+        "archivo_black",
+        "extra_large",
+        "center_chest",
+    ),
+    _template(
+        "Not Today",
+        "bold_statement",
+        "NOT TODAY",
+        "anton",
+        "extra_large",
+        "full_front",
+        spacing="wide",
+    ),
+    _template(
+        "Certified Menace",
+        "bold_statement",
+        "CERTIFIED MENACE",
+        "stardos_stencil",
+        "large",
+        "center_chest",
+        spacing="wide",
+    ),
+    _template(
+        "Unbothered",
+        "minimalist",
+        "unbothered.",
+        "space_mono",
+        "small",
+        "upper_chest",
+        align="left",
+    ),
+    _template(
+        "Overthinking",
+        "minimalist",
+        "overthinking",
+        "dm_serif_display",
+        "medium",
+        "upper_chest",
+    ),
+    _template(
+        "Filtered Out",
+        "minimalist",
+        "dressed up, filtered out",
+        "bebas_neue",
+        "small",
+        "lower_chest",
+        spacing="extra_wide",
+    ),
+    _template(
+        "Eat Sleep Scroll",
+        "stacked_text",
+        "EAT\nSLEEP\nSCROLL",
+        "anton",
+        "large",
+        "center_chest",
+    ),
+    _template(
+        "War Bad Naps Good",
+        "stacked_text",
+        "WAR BAD\nNAPS\nGOOD",
+        "archivo_black",
+        "extra_large",
+        "full_front",
+        align="left",
+    ),
+    _template(
+        "Main Character",
+        "stacked_text",
+        "main\ncharacter\nenergy",
+        "pacifico",
+        "large",
+        "center_chest",
+    ),
+    _template(
+        "Not Arguing",
+        "disclaimer",
+        "I'M NOT ARGUING\n(I'm explaining why I'm right)",
+        "archivo_black",
+        "large",
+        "center_chest",
+    ),
+    _template(
+        "Overthinker",
+        "disclaimer",
+        "PROFESSIONAL\nOVERTHINKER\n(unpaid)",
+        "permanent_marker",
+        "large",
+        "center_chest",
+    ),
+    _template(
+        "Trust Me",
+        "disclaimer",
+        "Trust me\n(I googled it)",
+        "abril_fatface",
+        "extra_large",
+        "full_front",
+    ),
+]
+
+
 def _luminance(hex_color):
     def channel(value):
         c = int(value, 16) / 255
@@ -177,6 +309,10 @@ def public_options():
             for k, v in FONT_SIZES.items()
         ],
         "alignments": [{"key": k, "label": v} for k, v in ALIGNMENTS.items()],
+        "template_styles": [{"key": k, "label": v} for k, v in TEMPLATE_STYLES.items()],
+        "templates": [
+            {"key": t["name"].lower().replace(" ", "-"), **t} for t in TEMPLATES
+        ],
         "letter_spacings": [
             {"key": k, "label": v["label"], "em": v["em"]}
             for k, v in LETTER_SPACINGS.items()

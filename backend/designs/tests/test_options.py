@@ -161,3 +161,51 @@ def test_print_areas_are_whole_inches():
     for placement in get_options().json()["placements"]:
         box = placement["box"]
         assert box["w"] % UNITS_PER_INCH == 0 and box["h"] % UNITS_PER_INCH == 0
+
+
+def test_ten_to_fifteen_templates_spread_across_all_four_styles():
+    data = get_options().json()
+    templates = data["templates"]
+    assert 10 <= len(templates) <= 15
+    assert [s["label"] for s in data["template_styles"]] == [
+        "Bold Statement",
+        "Minimalist",
+        "Stacked Text",
+        "Disclaimer Style",
+    ]
+    for style in data["template_styles"]:
+        assert sum(t["style"] == style["key"] for t in templates) >= 2
+
+
+def test_every_template_is_a_valid_design():
+    from designs.sanitize import sanitize_design_text
+
+    data = get_options().json()
+    keys = lambda name: {o["key"] for o in data[name]}  # noqa: E731
+    for template in data["templates"]:
+        config = template["config"]
+        assert config["font"] in keys("fonts")
+        assert config["font_size"] in keys("font_sizes")
+        assert config["alignment"] in keys("alignments")
+        assert config["letter_spacing"] in keys("letter_spacings")
+        assert config["placement"] in keys("placements")
+        assert sanitize_design_text(config["text"]) == config["text"]
+        assert len(config["text"]) <= data["text_limits"]["max_length"]
+
+
+def test_templates_leave_colours_to_the_user():
+    for template in get_options().json()["templates"]:
+        assert "shirt_color" not in template["config"]
+        assert "text_color" not in template["config"]
+
+
+def test_disclaimer_templates_end_with_a_parenthetical_line():
+    for template in get_options().json()["templates"]:
+        if template["style"] == "disclaimer":
+            last = template["config"]["text"].split("\n")[-1]
+            assert last.startswith("(") and last.endswith(")")
+
+
+def test_template_keys_are_unique():
+    keys = [t["key"] for t in get_options().json()["templates"]]
+    assert len(keys) == len(set(keys))
