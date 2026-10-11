@@ -11,7 +11,6 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from accounts.models import Address, User
 from carts.models import CartItem, SavedDesign
 from carts.services import add_line, user_cart
-from catalog.models import Category, Product
 from designs.storage import design_storage, order_item_file_name
 from designs.tests.test_saved_designs import CONFIG
 from orders import paystack
@@ -28,24 +27,6 @@ def keys(settings, tmp_path):
     settings.PAYSTACK_PUBLIC_KEY = "pk_test_fulfil"
     settings.DESIGN_FILES_ROOT = tmp_path / "design-files"
     settings.BACKEND_URL = "http://api.test"
-
-
-@pytest.fixture
-def product():
-    category = Category.objects.create(name="Test Category", slug="test-category")
-    return Product.objects.create(
-        slogan="touch grass", slug="tg", category=category, price=1000000
-    )
-
-
-@pytest.fixture
-def user():
-    return User.objects.create_user(
-        email="ada@example.com",
-        password="correct-horse-battery",
-        first_name="A",
-        phone="1",
-    )
 
 
 def client_for(user):
@@ -74,12 +55,8 @@ def start(client, **body):
 
 
 def guest_start(product, **extra):
-    return start(
-        APIClient(),
-        items=[{"product": str(product.id), "size": "M", "color": "", "quantity": 2}],
-        email="guest@example.com",
-        **extra,
-    )
+    items = [{"product": str(product.id), "size": "M", "color": "", "quantity": 2}]
+    return start(APIClient(), **{"items": items, "email": "guest@example.com", **extra})
 
 
 def pay(monkeypatch, start_body):

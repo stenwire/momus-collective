@@ -1,5 +1,8 @@
 """FR-CART-08: flat delivery fees by band, free above a threshold."""
 
+from datetime import timedelta
+
+from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
 from .locations import LAGOS_LGAS, NIGERIAN_STATES
@@ -45,4 +48,19 @@ def public_delivery_info(settings):
             OUTSIDE: settings.outside_lagos_fee,
         },
         "free_delivery_threshold": settings.free_delivery_threshold,
+    }
+
+
+def estimated_delivery(order, settings):
+    """Calendar days from payment, by the order's own snapshot address."""
+    start = timezone.localdate(order.paid_at or order.created_at)
+    lagos = order.shipping_address.get("state") == "Lagos"
+    low, high = (
+        (settings.lagos_days_min, settings.lagos_days_max)
+        if lagos
+        else (settings.outside_days_min, settings.outside_days_max)
+    )
+    return {
+        "earliest": (start + timedelta(days=low)).isoformat(),
+        "latest": (start + timedelta(days=high)).isoformat(),
     }

@@ -1,22 +1,25 @@
 from django.conf import settings
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers, status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 
 from config.permissions import IsStaffUser
+from config.throttling import scoped
 
 from . import paystack
 from .checkout import cart_lines, guest_lines, quote
 from .delivery import delivery_settings, public_delivery_info
 from .locations import LAGOS_LGAS, NIGERIAN_STATES
-from .models import CheckoutSession, DeliverySettings, OrderItem
+from .models import CheckoutSession, DeliverySettings, Order, OrderItem
 from .payments import AmountMismatch, open_session, settle
 from .serializers import (
     CheckoutRequestSerializer,
     QuoteRequestSerializer,
+    order_payload,
     quote_payload,
 )
 
@@ -183,3 +186,16 @@ def order_item_design_file(request, pk):
         as_attachment=True,
         filename=f"{item.order.order_number}-{item.id}.png",
     )
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+@throttle_classes([ScopedRateThrottle])
+@scoped("order-track")
+def order_track(request, token):
+    """SEC-13: the guest's link is the unguessable token; the sequential
+    order number alone opens nothing."""
+    order = get_object_or_404(
+        Order.objects.prefetch_related("items__product"), tracking_token=token
+    )
+    return Response(order_payload(order, delivery_settings()))

@@ -102,6 +102,8 @@ class OrderItem(models.Model):
     quantity = models.PositiveIntegerField(validators=[MinValueValidator(1)])
     unit_price = models.PositiveIntegerField(validators=[MinValueValidator(1)])
     design_file_url = models.URLField(blank=True)
+    # Frozen at checkout: the saved design stays editable afterwards.
+    design_config = models.JSONField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.quantity}x {self.slogan_text}"

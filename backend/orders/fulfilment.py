@@ -75,6 +75,7 @@ def fulfil(session):
             color=line["color"],
             quantity=line["quantity"],
             unit_price=line["unit_price"],
+            design_config=line.get("design_config"),
         )
         if line.get("design_config"):
             item.design_file_url = (

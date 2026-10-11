@@ -12,6 +12,7 @@ urlpatterns = [
         views.order_item_design_file,
         name="order-item-design-file",
     ),
+    path("orders/track/<str:token>/", views.order_track, name="order-track"),
     path(
         "payments/paystack/webhook/",
         webhooks.paystack_webhook,
