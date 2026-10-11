@@ -129,3 +129,59 @@ def test_webhook_ignores_cookies_and_csrf(session):
         URL, body, content_type="application/json", HTTP_X_PAYSTACK_SIGNATURE=sign(body)
     )
     assert resp.status_code == 200
+
+
+def test_webhook_replay_changes_nothing_after_the_first(session):
+    body = event(session.reference)
+    signature = sign(body)
+    assert post(body, signature).status_code == 200
+    session.refresh_from_db()
+    first_paid_at = session.paid_at
+    for _ in range(3):
+        assert post(body, signature).status_code == 200
+    session.refresh_from_db()
+    assert session.status == "paid"
+    assert session.paid_at == first_paid_at
+
+
+def test_settle_reports_the_paid_transition_exactly_once(session):
+    from orders.payments import settle
+
+    data = {"status": "success", "amount": 1300000, "currency": "NGN"}
+    assert settle(session.reference, data)[1] is True
+    assert settle(session.reference, data)[1] is False
+    assert settle(session.reference, data)[1] is False
+
+
+@pytest.mark.django_db(transaction=True)
+def test_webhook_racing_verify_settles_once():
+    import threading
+
+    from orders.payments import settle
+
+    racing = CheckoutSession.objects.create(
+        email="g@example.com",
+        phone="1",
+        shipping_address={},
+        lines=[],
+        subtotal=1,
+        delivery_fee=0,
+        total=1300000,
+    )
+    data = {"status": "success", "amount": 1300000, "currency": "NGN"}
+    barrier = threading.Barrier(4)
+    transitions = []
+
+    def run():
+        try:
+            barrier.wait()
+            transitions.append(settle(racing.reference, data)[1])
+        finally:
+            connection.close()
+
+    threads = [threading.Thread(target=run) for _ in range(4)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+    assert sorted(transitions) == [False, False, False, True]

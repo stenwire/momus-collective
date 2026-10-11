@@ -52,16 +52,18 @@ class AmountMismatch(Exception):
 
 
 def settle(reference, paystack_data):
-    """Records Paystack's verdict on a session. Idempotent: a session that
-    is already paid is returned untouched, however often this runs."""
+    """Records Paystack's verdict on a session and returns (session,
+    newly_paid). Exactly one call ever sees newly_paid: the row lock makes
+    a replayed webhook, or a webhook racing the browser's verify, find the
+    session already paid and change nothing (T-412)."""
     with transaction.atomic():
         session = CheckoutSession.objects.select_for_update().get(reference=reference)
         if session.status == CheckoutSession.Status.PAID:
-            return session
+            return session, False
         if paystack_data.get("status") != "success":
             session.status = CheckoutSession.Status.FAILED
             session.save(update_fields=["status"])
-            return session
+            return session, False
         if (
             paystack_data.get("amount") != session.total
             or paystack_data.get("currency") != "NGN"
@@ -70,4 +72,4 @@ def settle(reference, paystack_data):
         session.status = CheckoutSession.Status.PAID
         session.paid_at = timezone.now()
         session.save(update_fields=["status", "paid_at"])
-        return session
+        return session, True

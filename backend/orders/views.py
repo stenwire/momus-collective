@@ -137,7 +137,7 @@ def checkout_verify(request):
     session = get_object_or_404(CheckoutSession, reference=reference)
     if session.status != CheckoutSession.Status.PAID:
         try:
-            session = settle(reference, paystack.verify_transaction(reference))
+            session, _ = settle(reference, paystack.verify_transaction(reference))
         except paystack.PaystackError:
             return Response(
                 {"detail": "We couldn't confirm your payment yet. Please try again."},
