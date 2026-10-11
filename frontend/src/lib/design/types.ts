@@ -10,9 +10,14 @@ export type DesignConfig = {
   shirt_color: string;
   text: string;
   font: string;
+  font_size: string;
   text_color: string;
+  alignment: string;
+  letter_spacing: string;
   placement: string;
 };
+
+export type KeyedOption = { key: string; label: string };
 
 export type TextLimits = { max_length: number; max_lines: number };
 
@@ -25,5 +30,9 @@ export type DesignOptions = {
   shirt_colors: NamedColor[];
   fonts: FontOption[];
   text_colors: NamedColor[];
+  text_colors_by_shirt: Record<string, string[]>;
+  font_sizes: (KeyedOption & { ratio: number })[];
+  alignments: KeyedOption[];
+  letter_spacings: (KeyedOption & { em: number })[];
   defaults: DesignConfig;
 };

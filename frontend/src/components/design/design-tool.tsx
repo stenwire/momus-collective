@@ -3,8 +3,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { fetchDesignOptions } from "@/lib/api";
+import { allowedTextColors, withShirtColor } from "@/lib/design/config";
 import { useDesignStore } from "@/lib/design/store";
 import { FontPicker } from "./font-picker";
+import { OptionButtons } from "./option-buttons";
 import { ShirtCanvas } from "./shirt-canvas";
 import { SloganInput } from "./slogan-input";
 import { SwatchPicker } from "./swatch-picker";
@@ -53,11 +55,35 @@ export function DesignTool() {
           value={config.font}
           onChange={(font) => update({ font })}
         />
+        <OptionButtons
+          legend="Text size"
+          options={options.font_sizes}
+          value={config.font_size}
+          onChange={(font_size) => update({ font_size })}
+        />
         <SwatchPicker
           legend="Shirt color"
           colors={options.shirt_colors}
           value={config.shirt_color}
-          onChange={(shirt_color) => update({ shirt_color })}
+          onChange={(shirt) => update(withShirtColor(config, shirt, options))}
+        />
+        <SwatchPicker
+          legend="Text color"
+          colors={allowedTextColors(options, config.shirt_color)}
+          value={config.text_color}
+          onChange={(text_color) => update({ text_color })}
+        />
+        <OptionButtons
+          legend="Alignment"
+          options={options.alignments}
+          value={config.alignment}
+          onChange={(alignment) => update({ alignment })}
+        />
+        <OptionButtons
+          legend="Letter spacing"
+          options={options.letter_spacings}
+          value={config.letter_spacing}
+          onChange={(letter_spacing) => update({ letter_spacing })}
         />
       </div>
     </div>

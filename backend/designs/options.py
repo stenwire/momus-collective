@@ -69,6 +69,9 @@ DEFAULT_CONFIG = {
     "shirt_color": "Black",
     "text": "",
     "font": "archivo_black",
+    "font_size": "medium",
+    "alignment": "center",
+    "letter_spacing": "normal",
     "placement": "center_chest",
 }
 
@@ -83,9 +86,62 @@ SHIRT_COLORS = {
     "Deep Purple": "#3b2352",
 }
 
-TEXT_COLORS = {"Off White": "#f4f1ea"}
+# FR-DES-05: a 10-colour palette; each shirt offers only the colours that
+# clear WCAG's 3:1 graphics contrast against it (D-071).
+TEXT_COLORS = {
+    "Off White": "#f4f1ea",
+    "Ink Black": "#111111",
+    "Gold": "#e0b23a",
+    "Crimson": "#d7263d",
+    "Cobalt": "#2a5bd7",
+    "Mint": "#7ed6b2",
+    "Hot Pink": "#ff5ca8",
+    "Safety Orange": "#e8590c",
+    "Lime": "#c6f432",
+    "Royal Purple": "#6a2c91",
+}
+MIN_TEXT_CONTRAST = 3.0
 
 DEFAULT_TEXT_COLOR = "Off White"
+
+# Size is a fraction of the placement box's width, before shrink-to-fit.
+FONT_SIZES = {
+    "small": {"label": "Small", "ratio": 0.08},
+    "medium": {"label": "Medium", "ratio": 0.12},
+    "large": {"label": "Large", "ratio": 0.16},
+    "extra_large": {"label": "Extra Large", "ratio": 0.22},
+}
+
+ALIGNMENTS = {"center": "Center", "left": "Left", "right": "Right"}
+
+LETTER_SPACINGS = {
+    "normal": {"label": "Normal", "em": 0},
+    "wide": {"label": "Wide", "em": 0.08},
+    "extra_wide": {"label": "Extra Wide", "em": 0.2},
+}
+
+
+def _luminance(hex_color):
+    def channel(value):
+        c = int(value, 16) / 255
+        return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+
+    r, g, b = (channel(hex_color[i : i + 2]) for i in (1, 3, 5))
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+
+def contrast_ratio(hex_a, hex_b):
+    high, low = sorted((_luminance(hex_a), _luminance(hex_b)), reverse=True)
+    return (high + 0.05) / (low + 0.05)
+
+
+def text_colors_for(shirt_color):
+    shirt_hex = SHIRT_COLORS[shirt_color]
+    return [
+        name
+        for name, hex_value in TEXT_COLORS.items()
+        if contrast_ratio(shirt_hex, hex_value) >= MIN_TEXT_CONTRAST
+    ]
 
 
 def public_options():
@@ -101,5 +157,15 @@ def public_options():
             for k, v in FONTS.items()
         ],
         "text_colors": [{"name": k, "hex": v} for k, v in TEXT_COLORS.items()],
+        "text_colors_by_shirt": {name: text_colors_for(name) for name in SHIRT_COLORS},
+        "font_sizes": [
+            {"key": k, "label": v["label"], "ratio": v["ratio"]}
+            for k, v in FONT_SIZES.items()
+        ],
+        "alignments": [{"key": k, "label": v} for k, v in ALIGNMENTS.items()],
+        "letter_spacings": [
+            {"key": k, "label": v["label"], "em": v["em"]}
+            for k, v in LETTER_SPACINGS.items()
+        ],
         "defaults": {**DEFAULT_CONFIG, "text_color": DEFAULT_TEXT_COLOR},
     }

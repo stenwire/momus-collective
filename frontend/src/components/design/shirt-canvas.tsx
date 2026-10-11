@@ -1,13 +1,12 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { layoutParamsFor } from "@/lib/design/config";
 import { canvasFont } from "@/lib/design/fonts";
 import { layoutText } from "@/lib/design/layout";
 import { sanitizeDesignText } from "@/lib/design/sanitize";
 import { COLLAR_PATH, SHIRT_PATH } from "@/lib/design/shirt-path";
 import type { DesignConfig, DesignOptions } from "@/lib/design/types";
-
-const FONT_PX_RATIO = 0.12;
 
 function hexFor(colors: { name: string; hex: string }[], name: string) {
   return colors.find((c) => c.name === name)?.hex ?? "#000000";
@@ -43,10 +42,11 @@ export function drawDesign(
     ctx.font = canvasFont(config.font, px);
     return ctx.measureText(ch).width;
   };
+  const { ratio, spacingEm, align } = layoutParamsFor(config, options);
   const lines = layoutText(
     sanitizeDesignText(config.text, options.text_limits),
     box,
-    { fontPx: box.w * FONT_PX_RATIO, spacingEm: 0, align: "center" },
+    { fontPx: box.w * ratio, spacingEm, align },
     measure,
   );
 
@@ -57,7 +57,7 @@ export function drawDesign(
     let x = line.x;
     for (const ch of Array.from(line.text)) {
       ctx.fillText(ch, x, line.baseline);
-      x += measure(ch, line.fontPx);
+      x += measure(ch, line.fontPx) + spacingEm * line.fontPx;
     }
   }
 }

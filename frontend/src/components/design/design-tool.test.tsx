@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useDesignStore } from "@/lib/design/store";
@@ -87,5 +87,25 @@ describe("DesignTool", () => {
     await userEvent.click(anton);
     expect(useDesignStore.getState().config?.font).toBe("anton");
     expect(anton).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("adjusts size, alignment and spacing", async () => {
+    renderTool();
+    await userEvent.click(await screen.findByRole("button", { name: "Extra Large" }));
+    await userEvent.click(screen.getByRole("button", { name: "Right" }));
+    await userEvent.click(screen.getByRole("button", { name: "Extra Wide" }));
+    const config = useDesignStore.getState().config;
+    expect(config?.font_size).toBe("extra_large");
+    expect(config?.alignment).toBe("right");
+    expect(config?.letter_spacing).toBe("extra_wide");
+  });
+
+  it("offers only readable text colours and swaps one that would vanish", async () => {
+    renderTool();
+    const textColors = await screen.findByRole("group", { name: /Text color/ });
+    expect(within(textColors).getAllByRole("button").map((b) => b.getAttribute("aria-label"))).toEqual(["Off White", "Gold"]);
+    await userEvent.click(screen.getByRole("button", { name: "White" }));
+    expect(useDesignStore.getState().config?.text_color).toBe("Ink Black");
+    expect(within(textColors).getAllByRole("button").map((b) => b.getAttribute("aria-label"))).toEqual(["Ink Black"]);
   });
 });

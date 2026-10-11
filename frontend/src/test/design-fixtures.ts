@@ -23,12 +23,40 @@ export const designOptions: DesignOptions = {
     { key: "anton", label: "Anton", style: "condensed" },
     { key: "pacifico", label: "Pacifico", style: "script" },
   ],
-  text_colors: [{ name: "Off White", hex: "#f4f1ea" }],
+  text_colors: [
+    { name: "Off White", hex: "#f4f1ea" },
+    { name: "Ink Black", hex: "#111111" },
+    { name: "Gold", hex: "#e0b23a" },
+  ],
+  text_colors_by_shirt: {
+    Black: ["Off White", "Gold"],
+    White: ["Ink Black"],
+    Navy: ["Off White", "Gold"],
+  },
+  font_sizes: [
+    { key: "small", label: "Small", ratio: 0.08 },
+    { key: "medium", label: "Medium", ratio: 0.12 },
+    { key: "large", label: "Large", ratio: 0.16 },
+    { key: "extra_large", label: "Extra Large", ratio: 0.22 },
+  ],
+  alignments: [
+    { key: "center", label: "Center" },
+    { key: "left", label: "Left" },
+    { key: "right", label: "Right" },
+  ],
+  letter_spacings: [
+    { key: "normal", label: "Normal", em: 0 },
+    { key: "wide", label: "Wide", em: 0.08 },
+    { key: "extra_wide", label: "Extra Wide", em: 0.2 },
+  ],
   defaults: {
     shirt_color: "Black",
     text: "",
     font: "archivo_black",
+    font_size: "medium",
     text_color: "Off White",
+    alignment: "center",
+    letter_spacing: "normal",
     placement: "center_chest",
   },
 };

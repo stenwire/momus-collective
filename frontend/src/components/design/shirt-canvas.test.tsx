@@ -48,4 +48,15 @@ describe("drawDesign", () => {
     drawDesign(ctx, { ...designOptions.defaults, text: "hi", font: "anton" }, designOptions);
     expect(ctx.font).toMatch(/^400 [\d.]+px 'Anton'$/);
   });
+
+  it("spaces letters by the chosen em amount", () => {
+    const xs = (spacing: string) => {
+      const { ctx } = fakeContext();
+      const xPositions: number[] = [];
+      ctx.fillText = ((_ch: string, x: number) => xPositions.push(x)) as never;
+      drawDesign(ctx, { ...designOptions.defaults, text: "ab", letter_spacing: spacing, alignment: "left" }, designOptions);
+      return xPositions[1] - xPositions[0];
+    };
+    expect(xs("extra_wide")).toBeGreaterThan(xs("normal"));
+  });
 });
