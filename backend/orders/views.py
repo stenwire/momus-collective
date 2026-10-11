@@ -16,7 +16,7 @@ from .delivery import delivery_settings, public_delivery_info
 from .history import OrderPagination
 from .locations import LAGOS_LGAS, NIGERIAN_STATES
 from .models import CheckoutSession, DeliverySettings, Order, OrderItem
-from .payments import AmountMismatch, open_session, settle
+from .payments import AmountMismatch, open_session, release, settle
 from .serializers import (
     CheckoutRequestSerializer,
     QuoteRequestSerializer,
@@ -128,6 +128,17 @@ def checkout_start(request):
         },
         status=status.HTTP_201_CREATED,
     )
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def checkout_cancel(request):
+    """Called when the popup is cancelled or errors, so an unpaid checkout
+    stops holding its promo code's use (T-422)."""
+    reference = str(request.data.get("reference", ""))
+    get_object_or_404(CheckoutSession, reference=reference)
+    release(reference)
+    return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(["POST"])

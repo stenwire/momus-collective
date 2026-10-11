@@ -65,6 +65,13 @@ export const verifyPayment = (reference: string) =>
     tracking_token: string | null;
   }>("/api/v1/checkout/verify/", { reference });
 
+// Frees an unfinished checkout's promo hold (T-422); best effort.
+export const cancelCheckout = (reference: string) =>
+  authFetch("/api/v1/checkout/cancel/", {
+    method: "POST",
+    body: JSON.stringify({ reference }),
+  }).catch(() => undefined);
+
 export type PopupOutcome =
   | { kind: "success"; reference: string }
   | { kind: "cancelled" }

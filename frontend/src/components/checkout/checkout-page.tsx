@@ -21,7 +21,7 @@ import {
   shippingErrors,
 } from "@/lib/checkout/types";
 import { saveGuestDetails } from "@/lib/checkout/guest-details";
-import { openPaystack, startCheckout, verifyPayment } from "@/lib/checkout/paystack";
+import { cancelCheckout, openPaystack, startCheckout, verifyPayment } from "@/lib/checkout/paystack";
 import { formatNaira } from "@/lib/format";
 import { CartLines } from "../cart/cart-lines";
 import { ShippingForm } from "./shipping-form";
@@ -132,6 +132,7 @@ export function CheckoutPage() {
         ...(promoCode ? { promo_code: promoCode } : {}),
       });
       const outcome = await openPaystack(session);
+      if (outcome.kind !== "success") void cancelCheckout(session.reference);
       if (outcome.kind === "cancelled") {
         setStatus("Payment cancelled. You weren't charged; try again whenever you're ready.");
         return;

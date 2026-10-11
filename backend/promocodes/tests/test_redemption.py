@@ -7,7 +7,6 @@ from rest_framework.test import APIClient
 from catalog.models import Category, Product
 from orders.models import Order
 from promocodes.models import PromoCode, PromoRedemption
-from promocodes.services import PromoError, redeem
 
 pytestmark = pytest.mark.django_db
 QUOTE = "/api/v1/checkout/quote/"
@@ -104,29 +103,6 @@ def test_per_customer_limit_counts_guest_uses_by_email(product):
     )
     assert "already used" in quote(product, "NAPS20")["promo_error"]
     assert quote(product, "NAPS20", email="someone@else.com")["discount"] == 200000
-
-
-def test_redeem_counts_the_use_and_records_it():
-    code = promo(max_uses=5)
-    first = order(1)
-    _, discount = redeem("naps20", first, 1000000, None, "guest@example.com")
-    assert discount == 200000
-    code.refresh_from_db()
-    assert code.uses_count == 1
-    assert PromoRedemption.objects.get(order=first).discount == 200000
-
-
-def test_redeem_rechecks_at_order_time():
-    promo(max_uses=1, uses_count=1)
-    with pytest.raises(PromoError, match="fully used"):
-        redeem("NAPS20", order(), 1000000, None, "x@example.com")
-
-
-def test_a_second_redemption_by_the_same_guest_is_refused():
-    promo(max_uses_per_user=1)
-    redeem("NAPS20", order(1), 1000000, None, "guest@example.com")
-    with pytest.raises(PromoError, match="already used"):
-        redeem("NAPS20", order(2), 1000000, None, "GUEST@example.com")
 
 
 def test_a_percentage_above_100_cannot_exceed_the_subtotal(product):

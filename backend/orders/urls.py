@@ -7,6 +7,7 @@ urlpatterns = [
     path("checkout/quote/", views.checkout_quote, name="checkout-quote"),
     path("checkout/", views.checkout_start, name="checkout-start"),
     path("checkout/verify/", views.checkout_verify, name="checkout-verify"),
+    path("checkout/cancel/", views.checkout_cancel, name="checkout-cancel"),
     path(
         "orders/items/<uuid:pk>/design-file/",
         views.order_item_design_file,

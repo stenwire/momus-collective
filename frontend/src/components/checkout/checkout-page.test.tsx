@@ -318,7 +318,8 @@ describe("CheckoutPage", () => {
   it("explains a cancelled payment and lets the customer try again", async () => {
     signedOut();
     useGuestCart.getState().add({ product, size: "M", color: "Black", quantity: 1 });
-    vi.stubGlobal("fetch", payApi());
+    const fetchMock = payApi();
+    vi.stubGlobal("fetch", fetchMock);
     window.PaystackPop = class {
       newTransaction(t: { onCancel: () => void }) {
         t.onCancel();
@@ -330,6 +331,9 @@ describe("CheckoutPage", () => {
     await userEvent.click(pay);
     expect(await screen.findByText(/Payment cancelled. You weren't charged/)).toBeInTheDocument();
     expect(pay).toBeEnabled();
+    // The abandoned checkout releases any promo hold.
+    const cancelCall = fetchMock.mock.calls.find(([u]) => u.endsWith("/checkout/cancel/"))!;
+    expect(JSON.parse(String(cancelCall[1]!.body))).toEqual({ reference: "MOMPAY-1" });
     expect(useGuestCart.getState().lines).toHaveLength(1);
     window.PaystackPop = undefined;
   });

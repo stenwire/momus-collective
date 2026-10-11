@@ -1,9 +1,30 @@
+from datetime import timedelta
+
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 from rest_framework.exceptions import ValidationError
 
+from promocodes import services as promos
+
 from .checkout import quote
 from .models import CheckoutSession
+
+# An unpaid checkout holds its promo use this long, or until cancelled.
+PROMO_HOLD = timedelta(minutes=30)
+
+
+def promo_holds(user, email):
+    def holds(promo):
+        pending = CheckoutSession.objects.filter(
+            status=CheckoutSession.Status.PENDING,
+            promo_code__iexact=promo.code,
+            created_at__gte=timezone.now() - PROMO_HOLD,
+        )
+        who = Q(email__iexact=email) | (Q(user=user) if user else Q(pk__in=[]))
+        return pending.count(), pending.filter(who).count()
+
+    return holds
 
 
 def line_snapshot(line):
@@ -35,6 +56,23 @@ def open_session(lines, shipping, contact_email, user, promo_code=""):
         raise ValidationError({"shipping": "Add a delivery address."})
     if result.total <= 0:
         raise ValidationError({"items": "This order has nothing to pay."})
+    with transaction.atomic():
+        if result.promo_code:
+            # Held until commit, so concurrent checkouts queue on the code.
+            try:
+                promos.reserve(
+                    result.promo_code,
+                    result.subtotal,
+                    user,
+                    contact_email,
+                    promo_holds(user, contact_email),
+                )
+            except promos.PromoError as error:
+                raise ValidationError({"promo_code": str(error)}) from error
+        return _create_session(result, shipping, contact_email, user)
+
+
+def _create_session(result, shipping, contact_email, user):
     return CheckoutSession.objects.create(
         user=user,
         email=contact_email,
@@ -80,3 +118,11 @@ def settle(reference, paystack_data):
 
         fulfil(session)
         return session, True
+
+
+def release(reference):
+    """The popup was closed or failed: free the session's promo hold. If the
+    money moves after all, `settle` still records it."""
+    return CheckoutSession.objects.filter(
+        reference=reference, status=CheckoutSession.Status.PENDING
+    ).update(status=CheckoutSession.Status.FAILED)
