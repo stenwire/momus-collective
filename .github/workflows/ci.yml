@@ -87,9 +87,11 @@ jobs:
       - run: uv run python manage.py migrate
         working-directory: backend
 
+      # Not `uv run`: a backgrounded uv holds its cache lock until the job
+      # ends, so setup-uv's post-job prune blocks 5 minutes and fails.
       - name: Start backend for SSR build
         run: |
-          uv run python manage.py runserver 0.0.0.0:8000 &
+          .venv/bin/python manage.py runserver --noreload 0.0.0.0:8000 &
           for i in $(seq 1 30); do
             curl -sf http://localhost:8000/api/v1/health/ && break
             sleep 1
