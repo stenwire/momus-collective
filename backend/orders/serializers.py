@@ -97,7 +97,7 @@ def order_payload(order, delivery, include_shipping=False):
     """The customer's view of an order. Contact details and the address
     appear only for the owner (SEC-14); the tracking link carries none."""
     from .delivery import estimated_delivery
-    from .models import OrderStatus
+    from .models import CUSTOMER_PIPELINE, OrderStatus, pipeline_step
 
     labels = dict(OrderStatus.choices)
     payload = {
@@ -108,6 +108,10 @@ def order_payload(order, delivery, include_shipping=False):
             {**entry, "label": labels.get(entry["status"], entry["status"])}
             for entry in order.status_history
         ],
+        "pipeline": [
+            {"status": status, "label": labels[status]} for status in CUSTOMER_PIPELINE
+        ],
+        "pipeline_step": pipeline_step(order.status),
         "created_at": order.created_at.isoformat(),
         "items": [item_payload(item) for item in order.items.all()],
         "subtotal": order.subtotal,

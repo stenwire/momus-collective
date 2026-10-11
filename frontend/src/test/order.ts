@@ -5,6 +5,14 @@ export const order: Order = {
   status: "paid",
   status_label: "Paid",
   status_history: [{ status: "paid", label: "Paid", timestamp: "2026-10-11T10:00:00+00:00" }],
+  pipeline: [
+    { status: "paid", label: "Paid" },
+    { status: "shirt_acquired", label: "Shirt Acquired" },
+    { status: "printed", label: "Printed" },
+    { status: "out_for_delivery", label: "Out for Delivery" },
+    { status: "delivered", label: "Delivered" },
+  ],
+  pipeline_step: 0,
   created_at: "2026-10-11T10:00:00+00:00",
   items: [
     {

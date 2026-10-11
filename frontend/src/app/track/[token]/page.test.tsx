@@ -25,7 +25,7 @@ describe("TrackOrderPage", () => {
   afterEach(() => vi.unstubAllGlobals());
 
   it("shows the order's progress, estimate and items, fetched fresh by token", async () => {
-    const fetchMock = respond(200, { ...order, status: "printed", status_label: "Printed" });
+    const fetchMock = respond(200, { ...order, status: "printed", status_label: "Printed", pipeline_step: 2 });
     await renderPage("tok/en");
     expect(fetchMock).toHaveBeenCalledWith(
       expect.stringContaining("/api/v1/orders/track/tok%2Fen/"),
@@ -41,10 +41,24 @@ describe("TrackOrderPage", () => {
   });
 
   it("calls a design under review part of Paid", async () => {
-    respond(200, { ...order, status: "moderation", status_label: "Moderation" });
+    respond(200, { ...order, status: "moderation", status_label: "Moderation", pipeline_step: 0 });
     await renderPage("tok");
     expect(screen.getByText("Paid")).toHaveAttribute("aria-current", "step");
     expect(screen.getByText(/your design is being reviewed/)).toBeInTheDocument();
+  });
+
+  it("renders the server's steps and says when an order was cancelled", async () => {
+    respond(200, { ...order, status: "cancelled", status_label: "Cancelled", pipeline_step: null });
+    await renderPage("tok");
+    expect(screen.queryByRole("list", { name: "Order progress" })).not.toBeInTheDocument();
+    expect(screen.getByText("This order was cancelled.")).toBeInTheDocument();
+  });
+
+  it("labels steps as the server names them", async () => {
+    respond(200, { ...order, status: "out_for_delivery", status_label: "Out for Delivery", pipeline_step: 3 });
+    await renderPage("tok");
+    expect(screen.getByText("Out for Delivery")).toHaveAttribute("aria-current", "step");
+    expect(screen.getByText("Shirt Acquired")).not.toHaveAttribute("aria-current");
   });
 
   it("is a 404 for a token that matches no order", async () => {

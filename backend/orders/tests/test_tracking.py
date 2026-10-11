@@ -141,3 +141,30 @@ def test_tracking_is_throttled():
     statuses = [track(f"guess-{i}").status_code for i in range(31)]
     assert statuses[:30] == [404] * 30
     assert statuses[30] == 429
+
+
+@pytest.mark.parametrize(
+    "status,step",
+    [
+        ("paid", 0),
+        ("moderation", 0),
+        ("shirt_acquired", 1),
+        ("printed", 2),
+        ("out_for_delivery", 3),
+        ("delivered", 4),
+        ("cancelled", None),
+        ("refunded", None),
+    ],
+)
+def test_the_pipeline_comes_from_the_status_enum(product, monkeypatch, status, step):
+    order = guest_order(product, monkeypatch)
+    Order.objects.filter(id=order.id).update(status=status)
+    data = track(order.tracking_token).json()
+    assert data["pipeline"] == [
+        {"status": "paid", "label": "Paid"},
+        {"status": "shirt_acquired", "label": "Shirt Acquired"},
+        {"status": "printed", "label": "Printed"},
+        {"status": "out_for_delivery", "label": "Out for Delivery"},
+        {"status": "delivered", "label": "Delivered"},
+    ]
+    assert data["pipeline_step"] == step

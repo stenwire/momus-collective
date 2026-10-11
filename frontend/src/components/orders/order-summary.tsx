@@ -4,13 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import { fetchDesignOptions } from "@/lib/api";
 import { formatNaira } from "@/lib/format";
-import {
-  formatDeliveryWindow,
-  type Order,
-  type OrderItem,
-  PIPELINE,
-  pipelineIndex,
-} from "@/lib/orders/types";
+import { formatDeliveryWindow, type Order, type OrderItem } from "@/lib/orders/types";
 import { ShirtCanvas } from "../design/shirt-canvas";
 
 export function Thumbnail({ item, size = "size-16" }: { item: OrderItem; size?: string }) {
@@ -43,13 +37,13 @@ export function Thumbnail({ item, size = "size-16" }: { item: OrderItem; size?: 
 }
 
 export function OrderProgress({ order }: { order: Order }) {
-  const current = pipelineIndex(order.status);
-  if (current < 0) {
+  const current = order.pipeline_step;
+  if (current === null) {
     return <p className="text-sm text-zinc-300">This order was {order.status_label.toLowerCase()}.</p>;
   }
   return (
     <ol aria-label="Order progress" className="flex flex-col gap-2">
-      {PIPELINE.map((step, i) => (
+      {order.pipeline.map((step, i) => (
         <li
           key={step.status}
           aria-current={i === current ? "step" : undefined}

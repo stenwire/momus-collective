@@ -20,6 +20,23 @@ class OrderStatus(models.TextChoices):
     REFUNDED = "refunded", "Refunded"
 
 
+# What the customer sees as progress; moderation happens within "Paid".
+CUSTOMER_PIPELINE = [
+    OrderStatus.PAID,
+    OrderStatus.SHIRT_ACQUIRED,
+    OrderStatus.PRINTED,
+    OrderStatus.OUT_FOR_DELIVERY,
+    OrderStatus.DELIVERED,
+]
+
+
+def pipeline_step(status):
+    """Index into CUSTOMER_PIPELINE, or None for cancelled and refunded."""
+    if status == OrderStatus.MODERATION:
+        return 0
+    return CUSTOMER_PIPELINE.index(status) if status in CUSTOMER_PIPELINE else None
+
+
 def generate_tracking_token():
     """SEC-13: unguessable, unlike the sequential order_number."""
     return secrets.token_urlsafe(32)

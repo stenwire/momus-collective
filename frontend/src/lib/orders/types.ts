@@ -28,6 +28,10 @@ export type Order = {
   status: OrderStatus;
   status_label: string;
   status_history: { status: OrderStatus; label: string; timestamp: string }[];
+  // The customer's progress steps, in order, and where this order is in
+  // them (null once cancelled or refunded).
+  pipeline: { status: OrderStatus; label: string }[];
+  pipeline_step: number | null;
   created_at: string;
   items: OrderItem[];
   subtotal: number;
@@ -38,21 +42,6 @@ export type Order = {
   tracking_url: string;
   shipping_address?: Record<string, string>;
 };
-
-// Moderation is a design order's review before the shirt is bought, so the
-// customer sees it as part of "Paid".
-export const PIPELINE: { status: OrderStatus; label: string }[] = [
-  { status: "paid", label: "Paid" },
-  { status: "shirt_acquired", label: "Shirt acquired" },
-  { status: "printed", label: "Printed" },
-  { status: "out_for_delivery", label: "Out for delivery" },
-  { status: "delivered", label: "Delivered" },
-];
-
-export function pipelineIndex(status: OrderStatus): number {
-  if (status === "moderation") return 0;
-  return PIPELINE.findIndex((step) => step.status === status);
-}
 
 const day = new Intl.DateTimeFormat("en-NG", {
   weekday: "short",

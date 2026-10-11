@@ -16,6 +16,7 @@ const newer: Order = {
   created_at: "2026-10-11T12:00:00+00:00",
   status: "printed",
   status_label: "Printed",
+  pipeline_step: 2,
   tracking_url: "http://localhost:3000/track/tok-2",
   shipping_address: {
     full_name: "Ada Lovelace",
