@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import ProductPage, { generateMetadata } from "./page";
@@ -59,7 +60,9 @@ describe("ProductPage", () => {
     const element = await ProductPage({
       params: Promise.resolve({ slug: "cogito" }),
     });
-    const { container } = render(element);
+    const { container } = render(
+      <QueryClientProvider client={new QueryClient()}>{element}</QueryClientProvider>,
+    );
     const script = container.querySelector(
       'script[type="application/ld+json"]',
     );

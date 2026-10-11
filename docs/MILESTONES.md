@@ -16,7 +16,7 @@ its own heading marks it "(Phase 2)" and the Out of Scope list repeats it.
 | M1 | Data Models and Auth | FR-USR-01, FR-USR-02, FR-USR-06, FR-USR-07, NFR-04 | M0 | complete |
 | M2 | Catalog and Storefront | FR-CAT-01..07, FR-ADM-04, FR-ADM-05, FR-ADM-06, NFR-02, NFR-03, NFR-05 | M1 | complete |
 | M3 | Custom Design Tool | FR-DES-01..11, FR-USR-04, NFR-01 | M2 | complete |
-| M4 | Cart, Checkout and Payment | FR-CART-01..09, FR-USR-03, FR-USR-05, FR-NOT-01 | M3 | not started |
+| M4 | Cart, Checkout and Payment | FR-CART-01..09, FR-USR-03, FR-USR-05, FR-NOT-01 | M3 | in progress |
 | M5 | Admin Pipeline, Notifications and Reviews | FR-ADM-01, FR-ADM-02, FR-ADM-03, FR-ADM-07, FR-ADM-08, FR-ADM-09, FR-ADM-10, FR-NOT-02, FR-NOT-03, FR-NOT-04, FR-REV-01..05, NFR-06, NFR-07 | M4 | not started |
 
 Branch per milestone, cut from `main`: `m0-foundation`,
@@ -184,7 +184,7 @@ server-side total computation both live here.
 
 | # | Criterion | State |
 |---|---|---|
-| 1 | Cart persists across refresh: localStorage for guests, server-side for users (FR-CART-01) | [ ] |
+| 1 | Cart persists across refresh: localStorage for guests, server-side for users (FR-CART-01) | [x] |
 | 2 | A guest cart merges into an existing server cart on login without losing either — test passes (FR-CART-01) | [ ] |
 | 3 | Cart items show thumbnail, slogan or Custom Design preview, size, color, quantity controls, unit price and remove (FR-CART-02) | [ ] |
 | 4 | Cart is a right drawer on desktop, bottom sheet on mobile, with a count badge (FR-CART-03) | [ ] |

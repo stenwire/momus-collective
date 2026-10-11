@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { useState } from "react";
 import type { ProductDetail } from "@/lib/api";
+import { errorMessages } from "@/lib/auth/api";
+import { useCart } from "@/lib/cart/use-cart";
 import { SIZES } from "@/lib/constants";
 import { formatNaira } from "@/lib/format";
 import { ProductCard } from "./product-card";
@@ -13,6 +15,28 @@ export function ProductDetailView({ product }: { product: ProductDetail }) {
     product.shirt_colors[0],
   );
   const mockup = product.mockup_images[0];
+  const { add } = useCart();
+  const [status, setStatus] = useState("");
+
+  async function addToBag() {
+    setStatus("");
+    try {
+      await add({
+        product: {
+          id: product.id,
+          slug: product.slug,
+          slogan: product.slogan,
+          image: mockup ?? null,
+          price: product.price,
+        },
+        size,
+        color: color ?? "",
+      });
+      setStatus("Added to your bag.");
+    } catch (error) {
+      setStatus(errorMessages(error).join(" "));
+    }
+  }
 
   return (
     <div className="flex flex-col gap-6 p-6 md:flex-row">
@@ -92,10 +116,14 @@ export function ProductDetailView({ product }: { product: ProductDetail }) {
 
         <button
           type="button"
+          onClick={addToBag}
           className="min-h-11 rounded-md bg-amber-400 px-6 py-2 font-medium text-black transition-colors hover:bg-amber-300"
         >
           Add to Bag
         </button>
+        <p aria-live="polite" className="text-sm text-emerald-400">
+          {status}
+        </p>
 
         {product.description ? (
           <p className="whitespace-pre-line text-sm text-zinc-400">

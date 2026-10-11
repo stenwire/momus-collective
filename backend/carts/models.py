@@ -43,7 +43,13 @@ class Cart(models.Model):
             models.CheckConstraint(
                 condition=models.Q(user__isnull=False) | ~models.Q(session_id=""),
                 name="cart_has_user_or_session",
-            )
+            ),
+            # One server cart per user, so every device sees the same one.
+            models.UniqueConstraint(
+                fields=["user"],
+                condition=models.Q(user__isnull=False),
+                name="one_cart_per_user",
+            ),
         ]
 
     def __str__(self):
