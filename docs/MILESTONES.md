@@ -200,7 +200,7 @@ server-side total computation both live here.
 | 14 | Confirmation page and email both show order number, summary, estimated delivery and tracking link (FR-CART-09, FR-NOT-01) | [x] |
 | 15 | The guest tracking link is unguessable, not the sequential order number | [x] |
 | 16 | Order history lists orders reverse-chronologically and expands to full detail (FR-USR-03) | [x] |
-| 17 | Wishlist adds from a product card heart and moves items to cart (FR-USR-05) | [ ] |
+| 17 | Wishlist adds from a product card heart and moves items to cart (FR-USR-05) | [x] |
 | 18 | `Order.shipping_address` is a JSON snapshot that does not follow later edits to the saved address — test passes | [x] |
 
 ### Verification

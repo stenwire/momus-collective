@@ -4,6 +4,7 @@ import { LogoutButton } from "./logout-button";
 const TABS = [
   { href: "/account/orders", label: "Orders" },
   { href: "/account/designs", label: "Designs" },
+  { href: "/account/wishlist", label: "Wishlist" },
 ];
 
 export function AccountHeader({ current, title }: { current: string; title: string }) {

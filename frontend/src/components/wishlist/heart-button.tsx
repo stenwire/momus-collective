@@ -1,0 +1,60 @@
+"use client";
+
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useSignedIn } from "@/lib/auth/use-signed-in";
+import { addToWishlist, fetchWishlist, removeFromWishlist } from "@/lib/wishlist/api";
+
+const BUTTON =
+  "flex size-11 items-center justify-center rounded-full bg-black/60 backdrop-blur hover:bg-black/80";
+
+function Heart({ filled }: { filled: boolean }) {
+  return (
+    <svg aria-hidden viewBox="0 0 24 24" className="size-5" fill={filled ? "currentColor" : "none"} stroke="currentColor" strokeWidth={2}>
+      <path d="M12 21s-7.5-4.6-9.5-9.2C1.2 8.6 3.3 5 6.8 5c2 0 3.4 1.1 4.2 2.3h2C13.8 6.1 15.2 5 17.2 5c3.5 0 5.6 3.6 4.3 6.8C19.5 16.4 12 21 12 21z" />
+    </svg>
+  );
+}
+
+function MemberHeart({ productId, slogan }: { productId: string; slogan: string }) {
+  const queryClient = useQueryClient();
+  const wishlist = useQuery({ queryKey: ["wishlist"], queryFn: fetchWishlist });
+  const saved = wishlist.data?.some((entry) => entry.product.id === productId) ?? false;
+  const toggle = useMutation({
+    mutationFn: () => (saved ? removeFromWishlist(productId) : addToWishlist(productId)),
+    onSuccess: (entries) => queryClient.setQueryData(["wishlist"], entries),
+  });
+  return (
+    <button
+      type="button"
+      aria-pressed={saved}
+      aria-label={`Save ${slogan} to wishlist`}
+      disabled={toggle.isPending || !wishlist.data}
+      onClick={() => toggle.mutate()}
+      className={`${BUTTON} ${saved ? "text-amber-400" : "text-zinc-50"}`}
+    >
+      <Heart filled={saved} />
+    </button>
+  );
+}
+
+// FR-USR-05: the wishlist lives on the account, so a guest's heart asks
+// them to log in and brings them back here.
+export function HeartButton({ productId, slogan }: { productId: string; slogan: string }) {
+  const signedIn = useSignedIn();
+  const pathname = usePathname() ?? "/";
+  if (signedIn === null) return null;
+  if (!signedIn) {
+    return (
+      <Link
+        href={`/login?next=${encodeURIComponent(pathname)}`}
+        aria-label={`Log in to save ${slogan} to your wishlist`}
+        className={`${BUTTON} text-zinc-50`}
+      >
+        <Heart filled={false} />
+      </Link>
+    );
+  }
+  return <MemberHeart productId={productId} slogan={slogan} />;
+}
