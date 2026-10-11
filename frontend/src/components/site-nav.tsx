@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { AuthNav } from "./auth/auth-nav";
+import { CartButton } from "./cart/cart-button";
 
 export function SiteNav() {
   return (
@@ -29,6 +30,7 @@ export function SiteNav() {
           Design
         </Link>
         <AuthNav />
+        <CartButton />
       </nav>
     </header>
   );

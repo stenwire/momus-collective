@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { AuthBootstrap } from "@/components/auth/auth-bootstrap";
+import { CartDrawer } from "@/components/cart/cart-drawer";
 import { CartSync } from "@/components/cart/cart-sync";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { SiteNav } from "@/components/site-nav";
@@ -37,6 +38,7 @@ export default function RootLayout({
           <SiteNav />
           {children}
           {modal}
+          <CartDrawer />
         </QueryProvider>
       </body>
     </html>
