@@ -119,3 +119,38 @@ export type Analytics = {
 };
 
 export const fetchAnalytics = () => adminCall<Analytics>("/api/v1/admin/analytics/");
+
+export type PromoCode = {
+  id: string;
+  code: string;
+  discount_type: "percentage" | "flat";
+  discount_value: number;
+  min_order_value: number | null;
+  max_uses: number | null;
+  max_uses_per_user: number;
+  expires_at: string | null;
+  is_active: boolean;
+  uses_count: number;
+  redemptions: number;
+  total_discount: number;
+  remaining_uses: number | null;
+  created_at: string;
+};
+
+export type PromoInput = Omit<
+  PromoCode,
+  "id" | "uses_count" | "redemptions" | "total_discount" | "remaining_uses" | "created_at"
+>;
+
+export const fetchPromoCodes = () => adminCall<PromoCode[]>("/api/v1/admin/promo-codes/");
+
+export const savePromoCode = (id: string | null, body: Partial<PromoInput>) =>
+  adminCall<PromoCode>(id ? `/api/v1/admin/promo-codes/${id}/` : "/api/v1/admin/promo-codes/", {
+    method: id ? "PATCH" : "POST",
+    body: JSON.stringify(body),
+  });
+
+export async function deletePromoCode(id: string): Promise<void> {
+  const res = await authFetch(`/api/v1/admin/promo-codes/${id}/`, { method: "DELETE" });
+  if (!res.ok) throw new ApiError(res.status, await res.json().catch(() => ({})));
+}

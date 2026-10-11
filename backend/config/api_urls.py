@@ -12,6 +12,7 @@ from catalog.admin_views import (
     AdminProductViewSet,
 )
 from designs.views import SavedDesignViewSet
+from promocodes.admin_views import AdminPromoCodeViewSet
 
 router = DefaultRouter()
 router.register("addresses", AddressViewSet, basename="address")
@@ -21,6 +22,7 @@ router.register("admin/categories", AdminCategoryViewSet, basename="admin-catego
 router.register(
     "admin/collections", AdminCollectionViewSet, basename="admin-collection"
 )
+router.register("admin/promo-codes", AdminPromoCodeViewSet, basename="admin-promo-code")
 
 
 @api_view(["GET"])
