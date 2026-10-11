@@ -107,3 +107,15 @@ export const markRefunded = (id: string) =>
 
 export const approveDesign = (id: string) =>
   adminCall<{ id: string; status: OrderStatus }>(`/api/v1/admin/moderation/${id}/approve/`, { method: "POST" });
+
+export type Analytics = {
+  revenue: { today: number; week: number; month: number; all_time: number };
+  average_order_value: number;
+  orders_by_status: { status: OrderStatus; label: string; count: number }[];
+  top_products: { id: string; slug: string; slogan: string; quantity: number; orders: number }[];
+  categories: { name: string; orders: number; quantity: number }[];
+  custom_vs_catalog: { custom: number; catalog: number };
+  trend: { date: string; revenue: number; orders: number }[];
+};
+
+export const fetchAnalytics = () => adminCall<Analytics>("/api/v1/admin/analytics/");

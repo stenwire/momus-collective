@@ -70,6 +70,7 @@ urlpatterns = [
         views.order_item_revise,
         name="order-item-revise",
     ),
+    path("admin/analytics/", admin_views.admin_analytics, name="admin-analytics"),
     path(
         "admin/delivery-settings/",
         views.admin_delivery_settings,

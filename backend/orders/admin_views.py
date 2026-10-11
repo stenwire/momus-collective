@@ -285,3 +285,11 @@ def admin_moderation_reject(request, pk):
 @permission_classes([IsStaffUser])
 def admin_moderation_refunded(request, pk):
     return _moderation_action(request, pk, mark_refunded)
+
+
+@api_view(["GET"])
+@permission_classes([IsStaffUser])
+def admin_analytics(request):
+    from .analytics import analytics
+
+    return Response(analytics())
