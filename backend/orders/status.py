@@ -36,4 +36,22 @@ def change_status(order_id, status, by, note=""):
         order.status = status
         order.status_history = [*order.status_history, entry]
         order.save(update_fields=["status", "status_history", "updated_at"])
+        notify_status(order)
     return order, True
+
+
+# Long enough to undo a mis-drag before the customer hears about it.
+STATUS_GRACE_SECONDS = 60
+
+
+def notify_status(order):
+    """FR-NOT-02, after commit and a grace period."""
+    from notifications.tasks import status_update
+
+    if order.status == OrderStatus.PAID:
+        return
+    args = (str(order.id), len(order.status_history) - 1)
+    transaction.on_commit(
+        lambda: status_update.apply_async(args, countdown=STATUS_GRACE_SECONDS),
+        robust=True,
+    )

@@ -5,8 +5,29 @@ from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 
+from accounts.models import NotificationPref
+from orders.models import OrderStatus
+
+from . import whatsapp
 from .models import Channel
 from .services import send_once
+
+# FR-NOT-02: what each change means for the customer. Paid isn't here: a
+# move back to it is the admin correcting a mistake.
+STATUS_MESSAGES = {
+    OrderStatus.SHIRT_ACQUIRED: (
+        "We've got your shirt and it's on its way to the printer."
+    ),
+    OrderStatus.PRINTED: "Your shirt is printed and being packed for delivery.",
+    OrderStatus.OUT_FOR_DELIVERY: "Your order is out for delivery with our rider.",
+    OrderStatus.DELIVERED: "Your order has been delivered. Enjoy wearing it!",
+    OrderStatus.CANCELLED: (
+        "Your order has been cancelled. Reply to this email if that's unexpected."
+    ),
+    OrderStatus.REFUNDED: (
+        "We've refunded your payment. It can take a few days to reach your account."
+    ),
+}
 
 
 def recipient(order):
@@ -59,3 +80,43 @@ def design_outcome(order, outcome):
             "details": order.rejection_details,
         },
     )
+
+
+def channels(order):
+    """Guests get email. A WhatsApp preference falls back to email while no
+    provider can message customers (D-093), so nobody misses an update."""
+    pref = order.user.notification_pref if order.user else NotificationPref.EMAIL
+    sender = whatsapp.provider()
+    whatsapp_ready = sender.can_message_customers and sender.configured()
+    wants_whatsapp = pref in (NotificationPref.WHATSAPP, NotificationPref.BOTH)
+    email = (
+        pref in (NotificationPref.EMAIL, NotificationPref.BOTH) or not whatsapp_ready
+    )
+    return email, wants_whatsapp and whatsapp_ready, sender
+
+
+def status_update(order, entry_index):
+    status = order.status_history[entry_index]["status"]
+    if status not in STATUS_MESSAGES:
+        return
+    label = OrderStatus(status).label
+    description = STATUS_MESSAGES[status]
+    kind = f"status:{entry_index}"
+    email, by_whatsapp, sender = channels(order)
+    if email:
+        send_email(
+            order,
+            kind,
+            "status_update",
+            f"Order {order.order_number}: {label}",
+            {"label": label, "description": description},
+        )
+    if by_whatsapp:
+        phone = (order.user.phone if order.user else "") or order.shipping_address.get(
+            "phone", ""
+        )
+        text = (
+            f"momus collective: order {order.order_number} is now {label}. "
+            f"{description} Track it: {tracking_url(order)}"
+        )
+        send_once(order, kind, Channel.WHATSAPP, lambda: sender.send(phone, text))

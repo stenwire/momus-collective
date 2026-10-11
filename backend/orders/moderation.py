@@ -13,6 +13,7 @@ from designs.storage import (
 )
 
 from .models import CustomerChoice, Order, OrderStatus, RejectionReason
+from .status import notify_status
 
 
 def _locked(order_id):
@@ -129,4 +130,5 @@ def mark_refunded(order_id, by):
         order.status = OrderStatus.REFUNDED
         _log(order, order.status, by, "Refunded after design rejection")
         order.save(update_fields=["status", "status_history", "updated_at"])
+        notify_status(order)
     return order
