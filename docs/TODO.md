@@ -119,6 +119,12 @@ T-3xx = M3, T-4xx = M4, T-5xx = M5. Never reuse a retired ID.
 | T-419 | M4 | Verify checkpoint finding 2 (minor): an archived product in a cart still shows as an ordinary priced line (`carts/serializers.py` `get_product`); expose availability on cart lines and mark unavailable ones, and make T-407 refuse them at checkout | T-401 | [x] |
 | T-420 | M4 | Split from T-410 at its live check: complete a USSD payment end to end through Paystack Inline (DoD 7's third channel), once B-011 is resolved | T-410 | [~] |
 | T-421 | M4 | Split from T-415 at its live check: one confirmation email delivered through Resend's real API to a real inbox, once B-012 is resolved | T-415 | [ ] |
+| T-422 | M4 | Verify finding 1 (major, SEC-07): promo limits are enforced only by an unlocked check before payment, and `record_use` (`promocodes/services.py:62-78`) counts over-limit uses after it; reserve the use under a lock on the code when a session opens, counting pending unexpired sessions | T-409 | [ ] |
+| T-423 | M4 | Verify finding 2 (major, EFF-07): `orders/webhooks.py:47-48` settles and fulfils inline; queue `settle` in Celery after the signature check, or record a decision that inline is deliberate | T-412 | [ ] |
+| T-424 | M4 | Verify finding 4 (minor): rename M4's admin-boundary tests (`test_delivery.py:132`, `test_fulfilment.py:211`) and the cart query test (`test_cart_api.py:195`) so the `-k authz` and `-k num_queries` proof selectors find them | T-417 | [ ] |
+| T-425 | M4 | Verify finding 5 (minor): the confirmation email recomputes line totals (`orders/tasks.py:53`) that `_item_payload` (`orders/serializers.py:85`) already gives | T-415 | [ ] |
+| T-426 | M4 | Verify finding 6 (minor): `promocodes.services.redeem` (`services.py:49-59`) has no production caller since D-086 and its docstring is false; remove it or reuse it for T-422 | T-422 | [ ] |
+| T-427 | M4 | Verify finding 7 (minor): the customer pipeline restates statuses and labels in `frontend/src/lib/orders/types.ts:44-50`; serve the ordered pipeline from the API | T-414 | [ ] |
 | T-501 | M5 | Admin order notification: email with design file attached, WhatsApp summary with link (FR-ADM-01) | T-417 | [ ] |
 | T-502 | M5 | Kanban order board with drag-to-update status (FR-ADM-02) | T-501 | [ ] |
 | T-503 | M5 | Sortable list view alongside the board (FR-ADM-02) | T-502 | [ ] |
