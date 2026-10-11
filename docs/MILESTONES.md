@@ -188,7 +188,7 @@ server-side total computation both live here.
 | 2 | A guest cart merges into an existing server cart on login without losing either — test passes (FR-CART-01) | [x] |
 | 3 | Cart items show thumbnail, slogan or Custom Design preview, size, color, quantity controls, unit price and remove (FR-CART-02) | [x] |
 | 4 | Cart is a right drawer on desktop, bottom sheet on mobile, with a count badge (FR-CART-03) | [x] |
-| 5 | Single-page checkout with Shipping, Order Summary and Payment; cart editable from checkout (FR-CART-04) | [ ] |
+| 5 | Single-page checkout with Shipping, Order Summary and Payment; cart editable from checkout (FR-CART-04) | [x] |
 | 6 | Guest checkout completes with email and phone, then offers account creation (FR-CART-05) | [ ] |
 | 7 | Paystack Inline handles card, bank transfer and USSD; failed payments show a clear error and allow retry (FR-CART-06) | [ ] |
 | 8 | The webhook verifies HMAC-SHA512 over the raw body against `x-paystack-signature` in constant time, rejecting with `401` **before touching order state** — tests cover unsigned and wrong-signature (FR-CART-06) | [ ] |

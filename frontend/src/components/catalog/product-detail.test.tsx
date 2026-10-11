@@ -85,5 +85,8 @@ describe("ProductDetailView", () => {
     await userEvent.click(screen.getByRole("button", { name: "Add to Bag" }));
     expect(await screen.findByText("Added to your bag.")).toBeInTheDocument();
     expect(useGuestCart.getState().lines[0]).toMatchObject({ size: "L", color: "White", quantity: 1 });
+    const { useCartDrawer } = await import("@/lib/cart/drawer-store");
+    await userEvent.click(screen.getByRole("button", { name: "View bag" }));
+    expect(useCartDrawer.getState().open).toBe(true);
   });
 });

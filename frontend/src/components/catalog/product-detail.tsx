@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useState } from "react";
 import type { ProductDetail } from "@/lib/api";
 import { errorMessages } from "@/lib/auth/api";
+import { useCartDrawer } from "@/lib/cart/drawer-store";
 import { useCart } from "@/lib/cart/use-cart";
 import { SIZES } from "@/lib/constants";
 import { formatNaira } from "@/lib/format";
@@ -16,10 +17,13 @@ export function ProductDetailView({ product }: { product: ProductDetail }) {
   );
   const mockup = product.mockup_images[0];
   const { add } = useCart();
+  const openBag = useCartDrawer((s) => s.setOpen);
   const [status, setStatus] = useState("");
+  const [added, setAdded] = useState(false);
 
   async function addToBag() {
     setStatus("");
+    setAdded(false);
     try {
       await add({
         product: {
@@ -33,6 +37,7 @@ export function ProductDetailView({ product }: { product: ProductDetail }) {
         color: color ?? "",
       });
       setStatus("Added to your bag.");
+      setAdded(true);
     } catch (error) {
       setStatus(errorMessages(error).join(" "));
     }
@@ -121,9 +126,21 @@ export function ProductDetailView({ product }: { product: ProductDetail }) {
         >
           Add to Bag
         </button>
-        <p aria-live="polite" className="text-sm text-emerald-400">
-          {status}
-        </p>
+        <div className="flex items-center gap-3">
+          <p aria-live="polite" className="text-sm text-emerald-400">
+            {status}
+          </p>
+          {added ? (
+            // The modal covers the nav on mobile, so the bag opens from here.
+            <button
+              type="button"
+              onClick={() => openBag(true)}
+              className="min-h-11 text-sm text-amber-400 underline"
+            >
+              View bag
+            </button>
+          ) : null}
+        </div>
 
         {product.description ? (
           <p className="whitespace-pre-line text-sm text-zinc-400">
