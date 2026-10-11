@@ -33,3 +33,23 @@ export function defaultDesignName(text: string): string {
   const firstLine = text.split("\n")[0].trim();
   return firstLine.length > 40 ? `${firstLine.slice(0, 39)}…` : firstLine;
 }
+
+export async function fetchDesign(id: string): Promise<SavedDesign> {
+  return parse<SavedDesign>(await authFetch(`/api/v1/designs/${id}/`));
+}
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+// The print file renders in a Celery task (EFF-07), so wait for its URL.
+export async function exportDesign(
+  id: string,
+  { attempts = 30, intervalMs = 1000 } = {},
+): Promise<SavedDesign> {
+  await parse(await authFetch(`/api/v1/designs/${id}/export/`, { method: "POST" }));
+  for (let i = 0; i < attempts; i++) {
+    const design = await fetchDesign(id);
+    if (design.design_file_url) return design;
+    await sleep(intervalMs);
+  }
+  throw new ApiError(504, { detail: "The print file is taking too long. Try again." });
+}

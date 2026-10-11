@@ -15,7 +15,7 @@ describe("SaveDesign", () => {
 
   beforeEach(() => {
     localStorage.clear();
-    useDesignStore.setState({ config, savedId: null, name: "" });
+    useDesignStore.setState({ config, savedId: null, savedConfig: null, name: "" });
     useAuthStore.setState({ tokens: null, email: null });
     fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
@@ -70,6 +70,64 @@ describe("SaveDesign", () => {
     render(<SaveDesign config={config} />);
     await userEvent.click(screen.getByRole("button", { name: "Save design" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("isn't readable");
+  });
+});
+
+describe("Add to cart", () => {
+  let fetchMock: ReturnType<typeof vi.fn>;
+  const saved = { id: "d1", name: "touch grass", config, design_file_url: "" };
+
+  beforeEach(() => {
+    localStorage.clear();
+    useDesignStore.setState({ config, savedId: null, savedConfig: null, name: "" });
+    useAuthStore.setState({ tokens: { access: "a", refresh: "r" }, email: "x" });
+    fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+  });
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("saves an unsaved design, then generates its print file", async () => {
+    fetchMock
+      .mockResolvedValueOnce(json(201, saved))
+      .mockResolvedValueOnce(json(202, { status: "queued" }))
+      .mockResolvedValueOnce(json(200, { ...saved, design_file_url: "http://api/file/" }));
+    render(<SaveDesign config={config} />);
+    await userEvent.click(screen.getByRole("button", { name: "Add to cart" }));
+    expect(await screen.findByText("Print-ready file created at 300 DPI.")).toBeInTheDocument();
+    const calls = fetchMock.mock.calls.map(([url, init]) => `${init?.method ?? "GET"} ${url.replace(/^.*\/api\/v1/, "")}`);
+    expect(calls).toEqual(["POST /designs/", "POST /designs/d1/export/", "GET /designs/d1/"]);
+  });
+
+  it("skips the save when the design is already saved and unchanged", async () => {
+    useDesignStore.setState({ savedId: "d1", savedConfig: { ...config } });
+    fetchMock
+      .mockResolvedValueOnce(json(202, { status: "queued" }))
+      .mockResolvedValueOnce(json(200, { ...saved, design_file_url: "http://api/file/" }));
+    render(<SaveDesign config={config} />);
+    await userEvent.click(screen.getByRole("button", { name: "Add to cart" }));
+    await screen.findByText("Print-ready file created at 300 DPI.");
+    expect(fetchMock.mock.calls[0][0]).toMatch(/\/designs\/d1\/export\/$/);
+  });
+
+  it("re-saves first when the design changed since it was saved", async () => {
+    useDesignStore.setState({ savedId: "d1", savedConfig: { ...config, text: "old" } });
+    fetchMock
+      .mockResolvedValueOnce(json(200, saved))
+      .mockResolvedValueOnce(json(202, { status: "queued" }))
+      .mockResolvedValueOnce(json(200, { ...saved, design_file_url: "http://api/file/" }));
+    render(<SaveDesign config={config} />);
+    await userEvent.click(screen.getByRole("button", { name: "Add to cart" }));
+    await screen.findByText("Print-ready file created at 300 DPI.");
+    expect(fetchMock.mock.calls[0][1].method).toBe("PATCH");
+  });
+
+  it("sends a guest to the account prompt instead", async () => {
+    useAuthStore.setState({ tokens: null });
+    render(<SaveDesign config={config} />);
+    await userEvent.click(screen.getByRole("button", { name: "Add to cart" }));
+    expect(screen.getByRole("region", { name: "Save your design" })).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });
 

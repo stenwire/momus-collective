@@ -140,6 +140,15 @@ SIMPLE_JWT = {
 
 FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
 
+# Absolute links the backend hands out to itself, e.g. design-file downloads.
+BACKEND_URL = env("BACKEND_URL", default="http://localhost:8000")
+
+# Print files are private: outside any public media URL, served only through
+# an access-checked endpoint (SEC-15).
+DESIGN_FILES_ROOT = Path(
+    env("DESIGN_FILES_ROOT", default=str(BASE_DIR / "private" / "design-files"))
+)
+
 # The frontend is the only client (D-011); CORS is scoped to exactly the
 # origins it can legitimately run on, not a wildcard.
 CORS_ALLOWED_ORIGINS = [FRONTEND_URL, *env.list("CORS_EXTRA_ORIGINS", default=[])]
