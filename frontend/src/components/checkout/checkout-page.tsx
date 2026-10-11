@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useId, useState } from "react";
 import { errorMessages } from "@/lib/auth/api";
@@ -19,6 +19,7 @@ import {
   type Shipping,
   shippingErrors,
 } from "@/lib/checkout/types";
+import { openPaystack, startCheckout, verifyPayment } from "@/lib/checkout/paystack";
 import { formatNaira } from "@/lib/format";
 import { CartLines } from "../cart/cart-lines";
 import { ShippingForm } from "./shipping-form";
@@ -56,6 +57,9 @@ export function CheckoutPage() {
   const [status, setStatus] = useState("");
   const [promoInput, setPromoInput] = useState("");
   const [promoCode, setPromoCode] = useState("");
+  const [paying, setPaying] = useState(false);
+  const [paidReference, setPaidReference] = useState<string | null>(null);
+  const queryClient = useQueryClient();
   // The server's numbers are the only ones shown or charged (SEC-06).
   // The delivery band needs a state, and in Lagos an LGA too.
   const area =
@@ -74,6 +78,13 @@ export function CheckoutPage() {
     retry: false,
   });
 
+  if (paidReference) {
+    return (
+      <p role="status" className="px-4 text-emerald-400">
+        Payment confirmed. Thank you! Reference {paidReference}.
+      </p>
+    );
+  }
   if (!ready || !options.data) {
     return <p className="px-4 text-zinc-400">Loading checkout…</p>;
   }
@@ -92,7 +103,7 @@ export function CheckoutPage() {
   const guest = signedIn === false;
   const guestEmailError = guest && touched ? emailError(email) : undefined;
 
-  function pay() {
+  async function pay() {
     setTouched(true);
     const invalid =
       Object.keys(shippingErrors(shipping)).length > 0 || (guest && emailError(email));
@@ -108,7 +119,35 @@ export function CheckoutPage() {
       setStatus("Delivery is still being priced for this address. Try again in a moment.");
       return;
     }
-    setStatus("Payment isn't connected yet.");
+    setPaying(true);
+    setStatus("Opening secure payment…");
+    try {
+      // Each attempt is a fresh server session, so a retry is always allowed.
+      const session = await startCheckout({
+        ...(guest ? { items: guestItems(guestLines), email: email.trim() } : {}),
+        shipping,
+        ...(promoCode ? { promo_code: promoCode } : {}),
+      });
+      const outcome = await openPaystack(session);
+      if (outcome.kind === "cancelled") {
+        setStatus("Payment cancelled. You weren't charged; try again whenever you're ready.");
+        return;
+      }
+      if (outcome.kind === "error") {
+        setStatus(`Payment failed: ${outcome.message} You weren't charged; please try again.`);
+        return;
+      }
+      setStatus("Confirming your payment…");
+      await verifyPayment(outcome.reference);
+      setPaidReference(outcome.reference);
+      useGuestCart.getState().clear();
+      await queryClient.invalidateQueries({ queryKey: ["cart"] });
+      setStatus("Payment confirmed. Thank you!");
+    } catch (error) {
+      setStatus(errorMessages(error).join(" "));
+    } finally {
+      setPaying(false);
+    }
   }
 
   return (
@@ -232,7 +271,8 @@ export function CheckoutPage() {
           <button
             type="button"
             onClick={pay}
-            className="min-h-11 rounded-md bg-amber-400 px-6 font-medium text-black hover:bg-amber-300"
+            disabled={paying || paidReference !== null}
+            className="min-h-11 rounded-md bg-amber-400 px-6 font-medium text-black hover:bg-amber-300 disabled:opacity-60"
           >
             {quote.data ? `Pay ${formatNaira(quote.data.total)}` : "Pay now"}
           </button>

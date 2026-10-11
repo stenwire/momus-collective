@@ -133,3 +133,54 @@ class DeliverySettings(models.Model):
 
     def __str__(self):
         return "Delivery settings"
+
+
+def generate_payment_reference():
+    return f"MOMPAY-{secrets.token_hex(10)}"
+
+
+class CheckoutSession(models.Model):
+    """What the customer agreed to pay, frozen when they press Pay, before
+    any order exists (the order status enum starts at Paid). One Paystack
+    transaction each; a retry is a new session with a new reference."""
+
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending"
+        PAID = "paid", "Paid"
+        FAILED = "failed", "Failed"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    reference = models.CharField(
+        max_length=40, unique=True, default=generate_payment_reference, editable=False
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="checkout_sessions",
+    )
+    email = models.EmailField()
+    phone = models.CharField(max_length=20)
+    shipping_address = models.JSONField()
+    lines = models.JSONField()
+    subtotal = models.PositiveIntegerField()
+    delivery_fee = models.PositiveIntegerField()
+    discount = models.PositiveIntegerField(default=0)
+    total = models.PositiveIntegerField()
+    promo_code = models.CharField(max_length=32, blank=True)
+    status = models.CharField(
+        max_length=10, choices=Status.choices, default=Status.PENDING
+    )
+    order = models.OneToOneField(
+        Order,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="checkout_session",
+    )
+    paid_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.reference

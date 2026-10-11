@@ -259,4 +259,82 @@ describe("CheckoutPage", () => {
     await userEvent.click(screen.getByRole("button", { name: "Remove code NAPS20" }));
     expect(await screen.findByRole("button", { name: "Pay ₦15,000" })).toBeInTheDocument();
   });
+
+  async function fillAddress() {
+    await userEvent.type(await screen.findByLabelText("Email"), "g@example.com");
+    await userEvent.type(screen.getByLabelText("Full name"), "Ada Lovelace");
+    await userEvent.type(screen.getByLabelText("Phone number"), "+2348000000000");
+    await userEvent.type(screen.getByLabelText("Address"), "12 Admiralty Way");
+    await userEvent.type(screen.getByLabelText("City or town"), "Lekki");
+    await userEvent.selectOptions(screen.getByLabelText("State"), "Lagos");
+    await userEvent.selectOptions(screen.getByLabelText("LGA"), "Eti-Osa");
+  }
+
+  function payApi(verifyStatus = 200) {
+    return vi.fn<(url: string, init?: RequestInit) => Promise<Response>>(async (url) => {
+      if (url.includes("/checkout/options/")) return json(options);
+      if (url.includes("/checkout/quote/")) return json({ ...serverQuote, delivery_fee: 300000, total: 1800000 });
+      if (url.endsWith("/checkout/"))
+        return json({ reference: "MOMPAY-1", amount: 1800000, email: "g@example.com", public_key: "pk", channels: ["card", "bank_transfer", "ussd"] });
+      if (url.includes("/checkout/verify/"))
+        return { ok: verifyStatus < 400, status: verifyStatus, json: async () => (verifyStatus < 400 ? { status: "paid" } : { detail: "Payment didn't go through; you weren't charged. Try again." }) } as Response;
+      return json({});
+    });
+  }
+
+  it("pays through Paystack, verifies on the server and empties the bag", async () => {
+    signedOut();
+    useGuestCart.getState().add({ product, size: "M", color: "Black", quantity: 1 });
+    const fetchMock = payApi();
+    vi.stubGlobal("fetch", fetchMock);
+    window.PaystackPop = class {
+      newTransaction(t: { onSuccess: (tx: { reference: string }) => void }) {
+        t.onSuccess({ reference: "MOMPAY-1" });
+      }
+    } as never;
+    renderCheckout();
+    await fillAddress();
+    await userEvent.click(await screen.findByRole("button", { name: "Pay ₦18,000" }));
+    expect(await screen.findByText(/Payment confirmed/)).toBeInTheDocument();
+    const urls = fetchMock.mock.calls.map(([u]) => u);
+    expect(urls.some((u) => u.endsWith("/checkout/verify/"))).toBe(true);
+    expect(useGuestCart.getState().lines).toEqual([]);
+    window.PaystackPop = undefined;
+  });
+
+  it("explains a cancelled payment and lets the customer try again", async () => {
+    signedOut();
+    useGuestCart.getState().add({ product, size: "M", color: "Black", quantity: 1 });
+    vi.stubGlobal("fetch", payApi());
+    window.PaystackPop = class {
+      newTransaction(t: { onCancel: () => void }) {
+        t.onCancel();
+      }
+    } as never;
+    renderCheckout();
+    await fillAddress();
+    const pay = await screen.findByRole("button", { name: "Pay ₦18,000" });
+    await userEvent.click(pay);
+    expect(await screen.findByText(/Payment cancelled. You weren't charged/)).toBeInTheDocument();
+    expect(pay).toBeEnabled();
+    expect(useGuestCart.getState().lines).toHaveLength(1);
+    window.PaystackPop = undefined;
+  });
+
+  it("shows the server's reason when Paystack says the charge failed", async () => {
+    signedOut();
+    useGuestCart.getState().add({ product, size: "M", color: "Black", quantity: 1 });
+    vi.stubGlobal("fetch", payApi(402));
+    window.PaystackPop = class {
+      newTransaction(t: { onSuccess: (tx: { reference: string }) => void }) {
+        t.onSuccess({ reference: "MOMPAY-1" });
+      }
+    } as never;
+    renderCheckout();
+    await fillAddress();
+    await userEvent.click(await screen.findByRole("button", { name: "Pay ₦18,000" }));
+    expect(await screen.findByText(/you weren't charged/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Pay ₦18,000" })).toBeEnabled();
+    window.PaystackPop = undefined;
+  });
 });

@@ -1,15 +1,24 @@
-from rest_framework import serializers
+from django.conf import settings
+from django.shortcuts import get_object_or_404
+from rest_framework import serializers, status
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from config.permissions import IsStaffUser
 
+from . import paystack
 from .checkout import cart_lines, guest_lines, quote
 from .delivery import delivery_settings, public_delivery_info
 from .locations import LAGOS_LGAS, NIGERIAN_STATES
-from .models import DeliverySettings
-from .serializers import QuoteRequestSerializer, quote_payload
+from .models import CheckoutSession, DeliverySettings
+from .payments import AmountMismatch, open_session, settle
+from .serializers import (
+    CheckoutRequestSerializer,
+    QuoteRequestSerializer,
+    quote_payload,
+)
 
 
 @api_view(["GET"])
@@ -79,3 +88,69 @@ def admin_delivery_settings(request):
         serializer.is_valid(raise_exception=True)
         serializer.save()
     return Response(DeliverySettingsSerializer(settings).data)
+
+
+def payments_unavailable():
+    return Response(
+        {"detail": "Payments aren't available right now. Please try again later."},
+        status=status.HTTP_503_SERVICE_UNAVAILABLE,
+    )
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def checkout_start(request):
+    """FR-CART-06: freeze the server's quote and hand the browser exactly
+    what Paystack Inline needs. Nothing here trusts a client figure."""
+    if not paystack.configured():
+        return payments_unavailable()
+    serializer = CheckoutRequestSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    data = serializer.validated_data
+    user = request.user if request.user.is_authenticated else None
+    email = user.email if user else data["email"]
+    if not email:
+        raise ValidationError({"email": "Enter an email for your receipt."})
+    session = open_session(
+        lines_for(request, data), data["shipping"], email, user, data["promo_code"]
+    )
+    return Response(
+        {
+            "reference": session.reference,
+            "amount": session.total,
+            "email": session.email,
+            "public_key": settings.PAYSTACK_PUBLIC_KEY,
+            "channels": paystack.CHANNELS,
+        },
+        status=status.HTTP_201_CREATED,
+    )
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def checkout_verify(request):
+    """After the popup reports success, ask Paystack itself. Only its answer
+    (status, amount and currency) settles the session."""
+    if not paystack.configured():
+        return payments_unavailable()
+    reference = str(request.data.get("reference", ""))
+    session = get_object_or_404(CheckoutSession, reference=reference)
+    if session.status != CheckoutSession.Status.PAID:
+        try:
+            session = settle(reference, paystack.verify_transaction(reference))
+        except paystack.PaystackError:
+            return Response(
+                {"detail": "We couldn't confirm your payment yet. Please try again."},
+                status=status.HTTP_502_BAD_GATEWAY,
+            )
+        except AmountMismatch:
+            return Response(
+                {"detail": "That payment doesn't match this order. Contact us."},
+                status=status.HTTP_409_CONFLICT,
+            )
+    if session.status != CheckoutSession.Status.PAID:
+        return Response(
+            {"detail": "Payment didn't go through; you weren't charged. Try again."},
+            status=status.HTTP_402_PAYMENT_REQUIRED,
+        )
+    return Response({"reference": session.reference, "status": session.status})

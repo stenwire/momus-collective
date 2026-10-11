@@ -52,6 +52,8 @@ jobs:
       DATABASE_URL: postgres://momus:momus@localhost:5432/momus
       REDIS_URL: redis://localhost:6379/0
       GOOGLE_OAUTH_CLIENT_ID: ci-only-placeholder.apps.googleusercontent.com
+      PAYSTACK_SECRET_KEY: ci-only-placeholder-not-a-key
+      PAYSTACK_PUBLIC_KEY: ci-only-placeholder-not-a-key
       CORS_EXTRA_ORIGINS: http://localhost:3000
       NEXT_PUBLIC_API_URL: http://localhost:8000
 
@@ -157,6 +159,8 @@ jobs:
       DATABASE_URL: postgres://momus:momus@localhost:5432/momus
       REDIS_URL: redis://localhost:6379/0
       GOOGLE_OAUTH_CLIENT_ID: ci-only-placeholder.apps.googleusercontent.com
+      PAYSTACK_SECRET_KEY: ci-only-placeholder-not-a-key
+      PAYSTACK_PUBLIC_KEY: ci-only-placeholder-not-a-key
 
     steps:
       - uses: actions/checkout@v4

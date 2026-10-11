@@ -168,6 +168,11 @@ CSRF_COOKIE_SAMESITE = AUTH_COOKIE_SAMESITE
 
 GOOGLE_OAUTH_CLIENT_ID = env("GOOGLE_OAUTH_CLIENT_ID")
 
+# Required, no fallback (D-025). Empty disables payments rather than signing
+# webhooks with a guessable key (FR-CART-06).
+PAYSTACK_SECRET_KEY = env("PAYSTACK_SECRET_KEY")
+PAYSTACK_PUBLIC_KEY = env("PAYSTACK_PUBLIC_KEY")
+
 DEFAULT_FROM_EMAIL = env(
     "DEFAULT_FROM_EMAIL", default="no-reply@momuscollective.example"
 )

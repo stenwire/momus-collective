@@ -47,3 +47,25 @@ def quote_payload(quote):
         "total": quote.total,
         "notes": quote.notes,
     }
+
+
+class ShippingSerializer(serializers.Serializer):
+    full_name = serializers.CharField(max_length=150)
+    phone = serializers.RegexField(r"^\+?[0-9 ]{7,15}$", max_length=20)
+    address_line_1 = serializers.CharField(max_length=255)
+    address_line_2 = serializers.CharField(
+        max_length=255, required=False, allow_blank=True, default=""
+    )
+    city = serializers.CharField(max_length=100)
+    state = serializers.CharField(max_length=50)
+    lga = serializers.CharField(max_length=100)
+    notes = serializers.CharField(
+        max_length=500, required=False, allow_blank=True, default=""
+    )
+
+
+class CheckoutRequestSerializer(serializers.Serializer):
+    items = GuestLineSerializer(many=True, required=False, max_length=50)
+    shipping = ShippingSerializer()
+    email = serializers.EmailField(required=False, allow_blank=True, default="")
+    promo_code = serializers.CharField(required=False, allow_blank=True, default="")
