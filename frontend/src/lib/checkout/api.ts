@@ -1,6 +1,6 @@
 import { ApiError, authFetch } from "@/lib/auth/api";
 import type { GuestLine } from "@/lib/cart/guest-store";
-import type { CheckoutOptions, Quote, SavedAddress } from "./types";
+import type { CheckoutOptions, DeliveryInfo, Quote, SavedAddress } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -36,4 +36,10 @@ export async function fetchQuote(body: Record<string, unknown>): Promise<Quote> 
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new ApiError(res.status, data);
   return data as Quote;
+}
+
+export async function fetchDeliveryInfo(): Promise<DeliveryInfo> {
+  const res = await fetch(`${API_URL}/api/v1/checkout/delivery/`, { cache: "no-store" });
+  if (!res.ok) throw new ApiError(res.status, {});
+  return res.json();
 }

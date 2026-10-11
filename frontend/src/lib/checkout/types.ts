@@ -50,8 +50,14 @@ export function emailError(email: string): string | undefined {
 export type Quote = {
   lines: { title: string; size: string; color: string; quantity: number; unit_price: number; line_total: number }[];
   subtotal: number;
-  delivery_fee: number;
+  delivery_fee: number | null;
+  delivery_band: string | null;
   discount: number;
   total: number;
   notes: string[];
+};
+
+export type DeliveryInfo = {
+  fees: Record<string, number>;
+  free_delivery_threshold: number | null;
 };

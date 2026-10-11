@@ -6,6 +6,19 @@ import type { CartData } from "@/lib/cart/types";
 import { designOptions, mockDesignApi } from "@/test/design-fixtures";
 import { CartLines } from "./cart-lines";
 
+const deliveryInfo = {
+  fees: { lagos_within: 200000, lagos_cross: 300000, outside_lagos: 500000 },
+  free_delivery_threshold: 5000000,
+};
+function api() {
+  const design = mockDesignApi();
+  return vi.fn(async (url: string) =>
+    url.includes("/checkout/delivery/")
+      ? ({ ok: true, status: 200, json: async () => deliveryInfo } as Response)
+      : design(url),
+  );
+}
+
 const cart: CartData = {
   items: [
     {
@@ -53,7 +66,7 @@ function renderLines(data = cart) {
 describe("CartLines", () => {
   beforeEach(() => {
     vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockReturnValue(null);
-    vi.stubGlobal("fetch", mockDesignApi());
+    vi.stubGlobal("fetch", api());
   });
 
   afterEach(() => {
@@ -76,10 +89,18 @@ describe("CartLines", () => {
     ).toBeInTheDocument();
   });
 
-  it("shows the subtotal and total", () => {
+  it("shows the subtotal, a delivery estimate and the total before delivery", async () => {
     renderLines();
     expect(screen.getByText("Subtotal").nextSibling).toHaveTextContent("₦42,500");
-    expect(screen.getByText("Total").nextSibling).toHaveTextContent("₦42,500");
+    expect(await screen.findByText("From ₦2,000")).toBeInTheDocument();
+    expect(screen.getByText("Free delivery on orders over ₦50,000.")).toBeInTheDocument();
+    expect(screen.getByText("Total before delivery").nextSibling).toHaveTextContent("₦42,500");
+  });
+
+  it("estimates free delivery over the threshold", async () => {
+    renderLines({ ...cart, subtotal: 6000000 });
+    expect(await screen.findByText("Free")).toBeInTheDocument();
+    expect(screen.getByText("Total").nextSibling).toHaveTextContent("₦60,000");
   });
 
   it("adjusts quantity with + and − and removes a line", async () => {

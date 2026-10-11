@@ -105,3 +105,31 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"{self.quantity}x {self.slogan_text}"
+
+
+class DeliverySettings(models.Model):
+    """FR-CART-08, the single row the admin edits: flat fees per band in
+    kobo, a free-delivery threshold, and delivery windows for estimates."""
+
+    lagos_within_fee = models.PositiveIntegerField()
+    lagos_cross_fee = models.PositiveIntegerField()
+    outside_lagos_fee = models.PositiveIntegerField()
+    free_delivery_threshold = models.PositiveIntegerField(null=True, blank=True)
+    origin_side = models.CharField(
+        max_length=10, choices=[("mainland", "Mainland"), ("island", "Island")]
+    )
+    lagos_days_min = models.PositiveSmallIntegerField()
+    lagos_days_max = models.PositiveSmallIntegerField()
+    outside_days_min = models.PositiveSmallIntegerField()
+    outside_days_max = models.PositiveSmallIntegerField()
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(id=1), name="delivery_settings_singleton"
+            )
+        ]
+
+    def __str__(self):
+        return "Delivery settings"

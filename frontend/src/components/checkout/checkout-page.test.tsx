@@ -199,4 +199,29 @@ describe("CheckoutPage", () => {
     renderCheckout();
     expect(await screen.findByRole("alert")).toHaveTextContent("is no longer available");
   });
+
+  it("prices delivery once the address has a state and Lagos LGA", async () => {
+    signedOut();
+    useGuestCart.getState().add({ product, size: "M", color: "Black", quantity: 1 });
+    const fetchMock = vi.fn<(url: string, init?: RequestInit) => Promise<Response>>(async (url, init) => {
+      if (url.includes("/checkout/options/")) return json(options);
+      if (url.includes("/checkout/quote/")) {
+        const body = JSON.parse(init!.body as string);
+        const fee = body.shipping ? 300000 : null;
+        return json({ ...serverQuote, delivery_fee: fee, total: 1500000 + (fee ?? 0) });
+      }
+      return json({});
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    renderCheckout();
+    expect(await screen.findByText("Add your address")).toBeInTheDocument();
+    await userEvent.selectOptions(screen.getByLabelText("State"), "Lagos");
+    await userEvent.selectOptions(screen.getByLabelText("LGA"), "Eti-Osa");
+    expect(await screen.findByRole("button", { name: "Pay ₦18,000" })).toBeInTheDocument();
+    const quotes = fetchMock.mock.calls.filter(([url]) => url.includes("/checkout/quote/"));
+    expect(JSON.parse(quotes[quotes.length - 1][1]!.body as string).shipping).toEqual({
+      state: "Lagos",
+      lga: "Eti-Osa",
+    });
+  });
 });

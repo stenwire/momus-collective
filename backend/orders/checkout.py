@@ -10,6 +10,8 @@ from carts.services import unit_price, user_cart, validate_line
 from catalog.models import Product
 from designs.pricing import price_list
 
+from .delivery import band_for, delivery_settings, fee_for
+
 
 @dataclass
 class Line:
@@ -33,13 +35,15 @@ class Line:
 class Quote:
     lines: list[Line]
     subtotal: int
-    delivery_fee: int = 0
+    delivery_fee: int | None = None
+    delivery_band: str | None = None
     discount: int = 0
     notes: list[str] = field(default_factory=list)
 
     @property
     def total(self):
-        return max(self.subtotal + self.delivery_fee - self.discount, 0)
+        fee = self.delivery_fee or 0
+        return max(self.subtotal + fee - self.discount, 0)
 
 
 def _unavailable(title):
@@ -91,7 +95,17 @@ def guest_lines(raw_items):
     return lines
 
 
-def quote(lines):
+def quote(lines, shipping=None):
+    """Delivery is priced once the address gives a state (and LGA in Lagos);
+    until then the fee is None and the total excludes it."""
     if not lines:
         raise ValidationError({"items": "Your bag is empty."})
-    return Quote(lines=lines, subtotal=sum(line.total for line in lines))
+    result = Quote(lines=lines, subtotal=sum(line.total for line in lines))
+    if shipping and shipping.get("state"):
+        settings = delivery_settings()
+        band = band_for(shipping["state"], shipping.get("lga", ""), settings)
+        result.delivery_band = band
+        result.delivery_fee = fee_for(band, result.subtotal, settings)
+        if result.delivery_fee == 0:
+            result.notes.append("Free delivery on this order.")
+    return result

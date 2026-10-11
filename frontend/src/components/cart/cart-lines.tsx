@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import { fetchDesignOptions } from "@/lib/api";
+import { fetchDeliveryInfo } from "@/lib/checkout/api";
 import { type CartData, type CartLine, MAX_LINE_QUANTITY } from "@/lib/cart/types";
 import { formatNaira } from "@/lib/format";
 import { ShirtCanvas } from "../design/shirt-canvas";
@@ -50,9 +51,18 @@ export function CartLines({
   onRemove: (id: string) => void;
   showTotals?: boolean;
 }) {
+  const delivery = useQuery({
+    queryKey: ["delivery-info"],
+    queryFn: fetchDeliveryInfo,
+    enabled: showTotals,
+  });
   if (cart.items.length === 0) {
     return <p className="text-sm text-zinc-400">Your bag is empty.</p>;
   }
+  // FR-CART-02's estimate: the cheapest band until checkout knows the address.
+  const threshold = delivery.data?.free_delivery_threshold ?? null;
+  const freeDelivery = threshold !== null && cart.subtotal >= threshold;
+  const cheapest = delivery.data ? Math.min(...Object.values(delivery.data.fees)) : null;
   return (
     <div className="flex flex-col gap-4">
       <ul className="flex flex-col gap-4">
@@ -111,9 +121,22 @@ export function CartLines({
       <dl className="grid grid-cols-2 gap-y-1 text-sm">
         <dt className="text-zinc-400">Subtotal</dt>
         <dd className="text-right text-zinc-50">{formatNaira(cart.subtotal)}</dd>
-        <dt className="text-zinc-400">Delivery</dt>
-        <dd className="text-right text-zinc-400">Calculated at checkout</dd>
-        <dt className="font-semibold text-zinc-50">Total</dt>
+        <dt className="text-zinc-400">Delivery (estimate)</dt>
+        <dd className="text-right text-zinc-400">
+          {freeDelivery
+            ? "Free"
+            : cheapest !== null
+              ? `From ${formatNaira(cheapest)}`
+              : "Calculated at checkout"}
+        </dd>
+        {!freeDelivery && threshold !== null ? (
+          <dd className="col-span-2 text-xs text-zinc-500">
+            Free delivery on orders over {formatNaira(threshold)}.
+          </dd>
+        ) : null}
+        <dt className="font-semibold text-zinc-50">
+          Total{freeDelivery ? "" : " before delivery"}
+        </dt>
         <dd className="text-right font-semibold text-amber-400">{formatNaira(cart.subtotal)}</dd>
       </dl>
       ) : null}

@@ -54,7 +54,15 @@ export function CheckoutPage() {
   const [touched, setTouched] = useState(false);
   const [status, setStatus] = useState("");
   // The server's numbers are the only ones shown or charged (SEC-06).
-  const quoteBody = signedIn ? {} : { items: guestItems(guestLines) };
+  // The delivery band needs a state, and in Lagos an LGA too.
+  const area =
+    shipping.state && (shipping.state !== "Lagos" || shipping.lga)
+      ? { state: shipping.state, lga: shipping.lga }
+      : undefined;
+  const quoteBody = {
+    ...(signedIn ? {} : { items: guestItems(guestLines) }),
+    ...(area ? { shipping: area } : {}),
+  };
   const quote = useQuery({
     queryKey: ["checkout-quote", signedIn, quoteBody, cart.item_count, cart.subtotal],
     queryFn: () => fetchQuote(quoteBody),
@@ -90,6 +98,10 @@ export function CheckoutPage() {
     }
     if (invalid) {
       setStatus("Check the highlighted delivery details.");
+      return;
+    }
+    if (quote.data.delivery_fee === null) {
+      setStatus("Delivery is still being priced for this address. Try again in a moment.");
       return;
     }
     setStatus("Payment isn't connected yet.");
@@ -146,7 +158,11 @@ export function CheckoutPage() {
               <dd className="text-right text-zinc-50">{formatNaira(quote.data.subtotal)}</dd>
               <dt className="text-zinc-400">Delivery</dt>
               <dd className="text-right text-zinc-50">
-                {quote.data.delivery_fee ? formatNaira(quote.data.delivery_fee) : "Calculated from your address"}
+                {quote.data.delivery_fee === null
+                  ? "Add your address"
+                  : quote.data.delivery_fee === 0
+                    ? "Free"
+                    : formatNaira(quote.data.delivery_fee)}
               </dd>
               {quote.data.discount ? (
                 <>
