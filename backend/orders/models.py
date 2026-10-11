@@ -20,6 +20,23 @@ class OrderStatus(models.TextChoices):
     REFUNDED = "refunded", "Refunded"
 
 
+# What the customer sees as progress; moderation happens within "Paid".
+CUSTOMER_PIPELINE = [
+    OrderStatus.PAID,
+    OrderStatus.SHIRT_ACQUIRED,
+    OrderStatus.PRINTED,
+    OrderStatus.OUT_FOR_DELIVERY,
+    OrderStatus.DELIVERED,
+]
+
+
+def pipeline_step(status):
+    """Index into CUSTOMER_PIPELINE, or None for cancelled and refunded."""
+    if status == OrderStatus.MODERATION:
+        return 0
+    return CUSTOMER_PIPELINE.index(status) if status in CUSTOMER_PIPELINE else None
+
+
 def generate_tracking_token():
     """SEC-13: unguessable, unlike the sequential order_number."""
     return secrets.token_urlsafe(32)
@@ -62,6 +79,7 @@ class Order(models.Model):
     paid_at = models.DateTimeField(null=True, blank=True)
     status_history = models.JSONField(default=list)
     notes = models.TextField(blank=True)
+    confirmation_sent_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -102,6 +120,87 @@ class OrderItem(models.Model):
     quantity = models.PositiveIntegerField(validators=[MinValueValidator(1)])
     unit_price = models.PositiveIntegerField(validators=[MinValueValidator(1)])
     design_file_url = models.URLField(blank=True)
+    # Frozen at checkout: the saved design stays editable afterwards.
+    design_config = models.JSONField(null=True, blank=True)
 
     def __str__(self):
         return f"{self.quantity}x {self.slogan_text}"
+
+
+class DeliverySettings(models.Model):
+    """FR-CART-08, the single row the admin edits: flat fees per band in
+    kobo, a free-delivery threshold, and delivery windows for estimates."""
+
+    lagos_within_fee = models.PositiveIntegerField()
+    lagos_cross_fee = models.PositiveIntegerField()
+    outside_lagos_fee = models.PositiveIntegerField()
+    free_delivery_threshold = models.PositiveIntegerField(null=True, blank=True)
+    origin_side = models.CharField(
+        max_length=10, choices=[("mainland", "Mainland"), ("island", "Island")]
+    )
+    lagos_days_min = models.PositiveSmallIntegerField()
+    lagos_days_max = models.PositiveSmallIntegerField()
+    outside_days_min = models.PositiveSmallIntegerField()
+    outside_days_max = models.PositiveSmallIntegerField()
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(id=1), name="delivery_settings_singleton"
+            )
+        ]
+
+    def __str__(self):
+        return "Delivery settings"
+
+
+def generate_payment_reference():
+    return f"MOMPAY-{secrets.token_hex(10)}"
+
+
+class CheckoutSession(models.Model):
+    """What the customer agreed to pay, frozen when they press Pay, before
+    any order exists (the order status enum starts at Paid). One Paystack
+    transaction each; a retry is a new session with a new reference."""
+
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending"
+        PAID = "paid", "Paid"
+        FAILED = "failed", "Failed"
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    reference = models.CharField(
+        max_length=40, unique=True, default=generate_payment_reference, editable=False
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="checkout_sessions",
+    )
+    email = models.EmailField()
+    phone = models.CharField(max_length=20)
+    shipping_address = models.JSONField()
+    lines = models.JSONField()
+    subtotal = models.PositiveIntegerField()
+    delivery_fee = models.PositiveIntegerField()
+    discount = models.PositiveIntegerField(default=0)
+    total = models.PositiveIntegerField()
+    promo_code = models.CharField(max_length=32, blank=True)
+    status = models.CharField(
+        max_length=10, choices=Status.choices, default=Status.PENDING
+    )
+    order = models.OneToOneField(
+        Order,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="checkout_session",
+    )
+    paid_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.reference

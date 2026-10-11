@@ -48,5 +48,7 @@ urlpatterns = [
     path("account/password/", account_views.change_password, name="account-password"),
     path("", include("catalog.urls")),
     path("", include("designs.urls")),
+    path("", include("carts.urls")),
+    path("", include("orders.urls")),
     path("", include(router.urls)),
 ]

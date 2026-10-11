@@ -8,7 +8,10 @@ import { FormErrors, FormField } from "./form-field";
 
 export function RegisterForm() {
   const router = useRouter();
-  const next = safeNext(useSearchParams().get("next"));
+  const params = useSearchParams();
+  const next = safeNext(params.get("next"));
+  // Pre-filled from a guest checkout's account offer (FR-CART-05).
+  const prefill = (key: string) => params.get(key) ?? undefined;
   const [errors, setErrors] = useState<string[]>([]);
   const [pending, setPending] = useState(false);
 
@@ -35,10 +38,10 @@ export function RegisterForm() {
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4">
       <FormErrors messages={errors} />
-      <FormField label="First name" name="first_name" autoComplete="given-name" required />
-      <FormField label="Last name" name="last_name" autoComplete="family-name" />
-      <FormField label="Email" name="email" type="email" autoComplete="email" required />
-      <FormField label="Phone" name="phone" type="tel" autoComplete="tel" required />
+      <FormField label="First name" name="first_name" defaultValue={prefill("first_name")} autoComplete="given-name" required />
+      <FormField label="Last name" name="last_name" defaultValue={prefill("last_name")} autoComplete="family-name" />
+      <FormField label="Email" name="email" defaultValue={prefill("email")} type="email" autoComplete="email" required />
+      <FormField label="Phone" name="phone" defaultValue={prefill("phone")} type="tel" autoComplete="tel" required />
       <FormField
         label="Password"
         name="password"

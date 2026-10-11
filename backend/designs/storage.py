@@ -28,3 +28,11 @@ def discard_design_files(design_id):
         # Local disk keeps empty folders; object stores have none to remove.
         with contextlib.suppress(OSError, NotImplementedError):
             os.rmdir(storage.path(prefix))
+
+
+def order_item_file_name(item_id):
+    return f"orders/{item_id}.png"
+
+
+def order_item_preview_name(item_id):
+    return f"orders/{item_id}-preview.png"

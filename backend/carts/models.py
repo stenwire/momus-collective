@@ -43,7 +43,13 @@ class Cart(models.Model):
             models.CheckConstraint(
                 condition=models.Q(user__isnull=False) | ~models.Q(session_id=""),
                 name="cart_has_user_or_session",
-            )
+            ),
+            # One server cart per user, so every device sees the same one.
+            models.UniqueConstraint(
+                fields=["user"],
+                condition=models.Q(user__isnull=False),
+                name="one_cart_per_user",
+            ),
         ]
 
     def __str__(self):
@@ -88,3 +94,27 @@ class CartItem(models.Model):
 
     def __str__(self):
         return f"{self.quantity}x in cart {self.cart_id}"
+
+
+class WishlistItem(models.Model):
+    """FR-USR-05: a product a signed-in customer has hearted."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="wishlist"
+    )
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name="wishlisted"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "product"], name="one_wishlist_entry_per_product"
+            )
+        ]
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.user_id} ♥ {self.product_id}"

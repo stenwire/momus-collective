@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { LogoutButton } from "@/components/auth/logout-button";
+import { AccountHeader } from "@/components/auth/account-header";
 import { DesignGallery } from "@/components/design/design-gallery";
 
 export const metadata: Metadata = {
@@ -10,10 +10,7 @@ export const metadata: Metadata = {
 export default function MyDesignsPage() {
   return (
     <main className="flex flex-1 flex-col gap-6 px-4 py-8">
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-semibold text-zinc-50">My designs</h1>
-        <LogoutButton />
-      </div>
+      <AccountHeader current="/account/designs" title="My designs" />
       <DesignGallery />
     </main>
   );

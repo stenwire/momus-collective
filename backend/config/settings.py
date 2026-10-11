@@ -125,6 +125,7 @@ REST_FRAMEWORK = {
         "auth-login": "10/min",
         "auth-register": "5/min",
         "auth-password-reset": "5/min",
+        "order-track": "30/min",
     },
 }
 
@@ -168,12 +169,21 @@ CSRF_COOKIE_SAMESITE = AUTH_COOKIE_SAMESITE
 
 GOOGLE_OAUTH_CLIENT_ID = env("GOOGLE_OAUTH_CLIENT_ID")
 
+# Required, no fallback (D-025). Empty disables payments rather than signing
+# webhooks with a guessable key (FR-CART-06).
+PAYSTACK_SECRET_KEY = env("PAYSTACK_SECRET_KEY")
+PAYSTACK_PUBLIC_KEY = env("PAYSTACK_PUBLIC_KEY")
+
 DEFAULT_FROM_EMAIL = env(
     "DEFAULT_FROM_EMAIL", default="no-reply@momuscollective.example"
 )
 
-# Resend integration lands with the transactional-email task in a later
-# milestone; console output is enough to prove the send path fires today.
+# Required, no fallback (D-025). Empty prints mail to the console instead
+# of sending it, for local work.
+RESEND_API_KEY = env("RESEND_API_KEY")
 EMAIL_BACKEND = env(
-    "EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend"
+    "EMAIL_BACKEND",
+    default="config.email.ResendEmailBackend"
+    if RESEND_API_KEY
+    else "django.core.mail.backends.console.EmailBackend",
 )

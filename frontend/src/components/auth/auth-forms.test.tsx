@@ -88,6 +88,15 @@ describe("auth forms", () => {
     expect(push).toHaveBeenCalledWith("/design");
   });
 
+  it("pre-fills from a guest checkout's account offer", () => {
+    search = "email=g%40example.com&first_name=Ada&last_name=L&phone=%2B2348000000000";
+    render(<RegisterForm />);
+    expect(screen.getByLabelText("Email")).toHaveValue("g@example.com");
+    expect(screen.getByLabelText("First name")).toHaveValue("Ada");
+    expect(screen.getByLabelText("Last name")).toHaveValue("L");
+    expect(screen.getByLabelText("Phone")).toHaveValue("+2348000000000");
+  });
+
   it("shows a duplicate-email rejection", async () => {
     fetchMock.mockResolvedValueOnce(
       json(400, { email: ["An account with this email address already exists."] }),
@@ -109,12 +118,12 @@ describe("AuthNav", () => {
     expect(screen.getByRole("link", { name: "Log in" })).toHaveAttribute("href", "/login");
   });
 
-  it("links to My designs when signed in", () => {
+  it("links to the account's orders when signed in", () => {
     signedIn();
     render(<AuthNav />);
-    expect(screen.getByRole("link", { name: "My designs" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Account" })).toHaveAttribute(
       "href",
-      "/account/designs",
+      "/account/orders",
     );
   });
 });

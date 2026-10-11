@@ -21,6 +21,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from config.throttling import scoped
+from orders.history import claim_guest_orders
 
 from .models import AuthProvider, User
 
@@ -153,6 +154,7 @@ def google_login(request):
         user.auth_provider = AuthProvider.GOOGLE
         user.is_verified = True
         user.save(update_fields=["auth_provider", "is_verified"])
+    claim_guest_orders(user)
 
     raw = request.data.get("remember_me", False)
     remember_me = str(raw).strip().lower() in ("true", "1")

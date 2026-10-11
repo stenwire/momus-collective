@@ -16,7 +16,7 @@ its own heading marks it "(Phase 2)" and the Out of Scope list repeats it.
 | M1 | Data Models and Auth | FR-USR-01, FR-USR-02, FR-USR-06, FR-USR-07, NFR-04 | M0 | complete |
 | M2 | Catalog and Storefront | FR-CAT-01..07, FR-ADM-04, FR-ADM-05, FR-ADM-06, NFR-02, NFR-03, NFR-05 | M1 | complete |
 | M3 | Custom Design Tool | FR-DES-01..11, FR-USR-04, NFR-01 | M2 | complete |
-| M4 | Cart, Checkout and Payment | FR-CART-01..09, FR-USR-03, FR-USR-05, FR-NOT-01 | M3 | not started |
+| M4 | Cart, Checkout and Payment | FR-CART-01..09, FR-USR-03, FR-USR-05, FR-NOT-01 | M3 | in progress |
 | M5 | Admin Pipeline, Notifications and Reviews | FR-ADM-01, FR-ADM-02, FR-ADM-03, FR-ADM-07, FR-ADM-08, FR-ADM-09, FR-ADM-10, FR-NOT-02, FR-NOT-03, FR-NOT-04, FR-REV-01..05, NFR-06, NFR-07 | M4 | not started |
 
 Branch per milestone, cut from `main`: `m0-foundation`,
@@ -184,24 +184,24 @@ server-side total computation both live here.
 
 | # | Criterion | State |
 |---|---|---|
-| 1 | Cart persists across refresh: localStorage for guests, server-side for users (FR-CART-01) | [ ] |
-| 2 | A guest cart merges into an existing server cart on login without losing either — test passes (FR-CART-01) | [ ] |
-| 3 | Cart items show thumbnail, slogan or Custom Design preview, size, color, quantity controls, unit price and remove (FR-CART-02) | [ ] |
-| 4 | Cart is a right drawer on desktop, bottom sheet on mobile, with a count badge (FR-CART-03) | [ ] |
-| 5 | Single-page checkout with Shipping, Order Summary and Payment; cart editable from checkout (FR-CART-04) | [ ] |
-| 6 | Guest checkout completes with email and phone, then offers account creation (FR-CART-05) | [ ] |
-| 7 | Paystack Inline handles card, bank transfer and USSD; failed payments show a clear error and allow retry (FR-CART-06) | [ ] |
-| 8 | The webhook verifies HMAC-SHA512 over the raw body against `x-paystack-signature` in constant time, rejecting with `401` **before touching order state** — tests cover unsigned and wrong-signature (FR-CART-06) | [ ] |
-| 9 | A replayed valid webhook does not create or confirm a second order — test passes | [ ] |
-| 10 | Promo codes validate expiry, max uses, per-user uses and minimum order value at redemption — test passes (FR-CART-07) | [ ] |
-| 11 | Delivery fees apply per state band with a configurable free-delivery threshold (FR-CART-08) | [ ] |
-| 12 | Order totals are recomputed server-side; a client-supplied price is rejected or ignored — test passes | [ ] |
-| 13 | Order numbers follow `MOM-YYYYMMDD-NNN` (FR-CART-09) | [ ] |
-| 14 | Confirmation page and email both show order number, summary, estimated delivery and tracking link (FR-CART-09, FR-NOT-01) | [ ] |
-| 15 | The guest tracking link is unguessable, not the sequential order number | [ ] |
-| 16 | Order history lists orders reverse-chronologically and expands to full detail (FR-USR-03) | [ ] |
-| 17 | Wishlist adds from a product card heart and moves items to cart (FR-USR-05) | [ ] |
-| 18 | `Order.shipping_address` is a JSON snapshot that does not follow later edits to the saved address — test passes | [ ] |
+| 1 | Cart persists across refresh: localStorage for guests, server-side for users (FR-CART-01) | [x] |
+| 2 | A guest cart merges into an existing server cart on login without losing either — test passes (FR-CART-01) | [x] |
+| 3 | Cart items show thumbnail, slogan or Custom Design preview, size, color, quantity controls, unit price and remove (FR-CART-02) | [x] |
+| 4 | Cart is a right drawer on desktop, bottom sheet on mobile, with a count badge (FR-CART-03) | [x] |
+| 5 | Single-page checkout with Shipping, Order Summary and Payment; cart editable from checkout (FR-CART-04) | [x] |
+| 6 | Guest checkout completes with email and phone, then offers account creation (FR-CART-05) | [x] |
+| 7 | Paystack Inline handles card, bank transfer and USSD; failed payments show a clear error and allow retry (FR-CART-06). USSD waived by the user (D-092); card and transfer proven live | [x] |
+| 8 | The webhook verifies HMAC-SHA512 over the raw body against `x-paystack-signature` in constant time, rejecting with `401` **before touching order state** — tests cover unsigned and wrong-signature (FR-CART-06) | [x] |
+| 9 | A replayed valid webhook does not create or confirm a second order — test passes | [x] |
+| 10 | Promo codes validate expiry, max uses, per-user uses and minimum order value at redemption — test passes (FR-CART-07) | [x] |
+| 11 | Delivery fees apply per state band with a configurable free-delivery threshold (FR-CART-08) | [x] |
+| 12 | Order totals are recomputed server-side; a client-supplied price is rejected or ignored — test passes | [x] |
+| 13 | Order numbers follow `MOM-YYYYMMDD-NNN` (FR-CART-09) | [x] |
+| 14 | Confirmation page and email both show order number, summary, estimated delivery and tracking link (FR-CART-09, FR-NOT-01) | [x] |
+| 15 | The guest tracking link is unguessable, not the sequential order number | [x] |
+| 16 | Order history lists orders reverse-chronologically and expands to full detail (FR-USR-03) | [x] |
+| 17 | Wishlist adds from a product card heart and moves items to cart (FR-USR-05) | [x] |
+| 18 | `Order.shipping_address` is a JSON snapshot that does not follow later edits to the saved address — test passes | [x] |
 
 ### Verification
 
