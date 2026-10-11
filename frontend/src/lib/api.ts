@@ -2,6 +2,12 @@ import type { DesignOptions } from "./design/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
+// Catalog reads may be served from Next's data cache for at most this long,
+// so admin edits reach server-rendered pages within a minute (T-221, D-081).
+// Browsers ignore the `next` option.
+export const CATALOG_REVALIDATE_SECONDS = 60;
+const catalogFetch = { next: { revalidate: CATALOG_REVALIDATE_SECONDS } };
+
 export type Category = {
   id: string;
   name: string;
@@ -34,7 +40,7 @@ export async function fetchProducts(
   const query = new URLSearchParams(
     Object.entries(params).map(([key, value]) => [key, String(value)]),
   );
-  const res = await fetch(`${API_URL}/api/v1/products/?${query}`);
+  const res = await fetch(`${API_URL}/api/v1/products/?${query}`, catalogFetch);
   if (!res.ok) {
     throw new Error(`Failed to fetch products: ${res.status}`);
   }
@@ -48,7 +54,7 @@ export type ProductDetail = Product & {
 };
 
 export async function fetchProduct(slug: string): Promise<ProductDetail | null> {
-  const res = await fetch(`${API_URL}/api/v1/products/${slug}/`);
+  const res = await fetch(`${API_URL}/api/v1/products/${slug}/`, catalogFetch);
   if (res.status === 404) {
     return null;
   }
@@ -66,7 +72,7 @@ export type CategoryList = {
 };
 
 export async function fetchCategories(): Promise<CategoryList> {
-  const res = await fetch(`${API_URL}/api/v1/categories/`);
+  const res = await fetch(`${API_URL}/api/v1/categories/`, catalogFetch);
   if (!res.ok) {
     throw new Error(`Failed to fetch categories: ${res.status}`);
   }
@@ -82,7 +88,7 @@ export type Collection = {
 };
 
 export async function fetchCollections(): Promise<Collection[]> {
-  const res = await fetch(`${API_URL}/api/v1/collections/`);
+  const res = await fetch(`${API_URL}/api/v1/collections/`, catalogFetch);
   if (!res.ok) {
     throw new Error(`Failed to fetch collections: ${res.status}`);
   }
