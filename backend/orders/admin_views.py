@@ -1,6 +1,7 @@
 """Staff-only order management (FR-ADM-02, FR-ADM-03). Every view asserts
 IsStaffUser: 401 anonymous, 403 customer (NFR-04)."""
 
+from django.conf import settings
 from django.db.models import Case, Count, IntegerField, Prefetch, Q, Value, When
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
@@ -11,6 +12,7 @@ from rest_framework.response import Response
 from config.permissions import IsStaffUser
 
 from .models import Order, OrderItem, OrderStatus
+from .serializers import item_payload
 from .status import BOARD, change_status
 
 BOARD_LIMIT = 50
@@ -138,3 +140,65 @@ def admin_order_list(request):
     return paginator.get_paginated_response(
         [{**admin_card(order), "status_label": labels[order.status]} for order in page]
     )
+
+
+def admin_detail(order):
+    """FR-ADM-03: everything the admin needs to fulfil one order."""
+    labels = dict(OrderStatus.choices)
+    address = order.shipping_address
+    redemption = getattr(order, "promo_redemption", None)
+    return {
+        "id": str(order.id),
+        "order_number": order.order_number,
+        "status": order.status,
+        "status_label": labels[order.status],
+        "created_at": order.created_at.isoformat(),
+        "paid_at": order.paid_at.isoformat() if order.paid_at else None,
+        "customer": {
+            "name": address.get("full_name", ""),
+            "phone": address.get("phone", ""),
+            "email": order.user.email if order.user else order.guest_email,
+            "has_account": order.user_id is not None,
+        },
+        "shipping_address": address,
+        "items": [
+            {
+                **item_payload(item),
+                "design_file_url": item.design_file_url or None,
+            }
+            for item in order.items.all()
+        ],
+        "payment": {
+            "reference": order.paystack_reference,
+            "subtotal": order.subtotal,
+            "delivery_fee": order.delivery_fee,
+            "discount": order.discount,
+            "promo_code": redemption.promo_code.code if redemption else None,
+            "total": order.total,
+        },
+        "status_history": [
+            {**entry, "label": labels.get(entry["status"], entry["status"])}
+            for entry in order.status_history
+        ],
+        "notes": order.notes,
+        "tracking_url": f"{settings.FRONTEND_URL}/track/{order.tracking_token}",
+    }
+
+
+class NotesSerializer(serializers.Serializer):
+    notes = serializers.CharField(allow_blank=True, max_length=2000)
+
+
+@api_view(["GET", "PATCH"])
+@permission_classes([IsStaffUser])
+def admin_order_detail(request, pk):
+    queryset = Order.objects.select_related(
+        "user", "promo_redemption__promo_code"
+    ).prefetch_related("items__product")
+    order = get_object_or_404(queryset, pk=pk)
+    if request.method == "PATCH":
+        serializer = NotesSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        order.notes = serializer.validated_data["notes"]
+        order.save(update_fields=["notes", "updated_at"])
+    return Response(admin_detail(order))

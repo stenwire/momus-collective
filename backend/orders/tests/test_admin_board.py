@@ -236,3 +236,102 @@ def test_admin_order_list_num_queries_are_constant(staff):
     with CaptureQueriesContext(connection) as many:
         client.get(LIST)
     assert len(few) == len(many)
+
+
+def detail_url(order):
+    return f"/api/v1/admin/orders/{order.id}/"
+
+
+def test_admin_order_detail_authz(user):
+    order = make(1)
+    for client, code in ((APIClient(), 401), (client_for(user), 403)):
+        assert client.get(detail_url(order)).status_code == code
+        assert (
+            client.patch(detail_url(order), {"notes": "x"}, format="json").status_code
+            == code
+        )
+    order.refresh_from_db()
+    assert order.notes == ""
+
+
+def test_the_detail_has_everything_to_fulfil_the_order(staff, user):
+    from promocodes.models import PromoCode, PromoRedemption
+
+    order = make(1, custom=True)
+    item = order.items.get()
+    item.design_file_url = f"http://api.test/api/v1/orders/items/{item.id}/design-file/"
+    item.save()
+    Order.objects.filter(pk=order.pk).update(
+        paystack_reference="MOMPAY-abc",
+        paid_at=timezone.now(),
+        status_history=[
+            {"status": "paid", "timestamp": "2026-10-11T09:00:00"},
+            {
+                "status": "printed",
+                "timestamp": "2026-10-11T12:00:00",
+                "by": "o@x",
+                "note": "Done",
+            },
+        ],
+        status="printed",
+        discount=100000,
+    )
+    promo = PromoCode.objects.create(
+        code="NAPS20", discount_type="flat", discount_value=1
+    )
+    PromoRedemption.objects.create(
+        promo_code=promo, order=order, email="g@example.com", discount=100000
+    )
+    data = client_for(staff).get(detail_url(order)).json()
+    assert data["customer"] == {
+        "name": "Customer 1",
+        "phone": SHIPPING["phone"],
+        "email": "g@example.com",
+        "has_account": False,
+    }
+    assert data["shipping_address"]["notes"] == SHIPPING["notes"]
+    [line] = data["items"]
+    assert (line["size"], line["quantity"], line["kind"]) == ("M", 2, "design")
+    assert line["design_file_url"].endswith(f"/orders/items/{item.id}/design-file/")
+    assert data["payment"]["reference"] == "MOMPAY-abc"
+    assert data["payment"]["promo_code"] == "NAPS20"
+    assert [(h["label"], h.get("note")) for h in data["status_history"]] == [
+        ("Paid", None),
+        ("Printed", "Done"),
+    ]
+    assert data["status_label"] == "Printed"
+    assert data["tracking_url"].endswith(f"/track/{order.tracking_token}")
+
+
+def test_staff_can_write_internal_notes(staff):
+    order = make(1)
+    resp = client_for(staff).patch(
+        detail_url(order),
+        {"notes": "Customer asked for Friday delivery"},
+        format="json",
+    )
+    assert resp.status_code == 200
+    assert resp.json()["notes"] == "Customer asked for Friday delivery"
+    order.refresh_from_db()
+    assert order.notes == "Customer asked for Friday delivery"
+    too_long = client_for(staff).patch(
+        detail_url(order), {"notes": "x" * 2001}, format="json"
+    )
+    assert too_long.status_code == 400
+
+
+def test_the_detail_query_count_does_not_grow_with_items(staff):
+    small, large = make(1, items=1), make(2, items=6)
+    client = client_for(staff)
+    with CaptureQueriesContext(connection) as one:
+        client.get(detail_url(small))
+    with CaptureQueriesContext(connection) as six:
+        client.get(detail_url(large))
+    assert len(one) == len(six)
+
+
+def test_an_unknown_order_detail_is_404(staff):
+    resp = client_for(staff).get(
+        "/api/v1/admin/orders/00000000-0000-0000-0000-000000000000/"
+    )
+    assert resp.status_code == 404

@@ -1,5 +1,5 @@
 import { ApiError, authFetch } from "@/lib/auth/api";
-import type { OrderStatus } from "@/lib/orders/types";
+import type { OrderItem, OrderStatus } from "@/lib/orders/types";
 
 export type AdminCard = {
   id: string;
@@ -40,3 +40,34 @@ export function fetchOrderList({ status, search, ordering, page }: OrderListQuer
   if (search) params.set("search", search);
   return adminCall<OrderListPage>(`/api/v1/admin/orders/?${params}`);
 }
+
+export type AdminOrderDetail = {
+  id: string;
+  order_number: string;
+  status: OrderStatus;
+  status_label: string;
+  created_at: string;
+  paid_at: string | null;
+  customer: { name: string; phone: string; email: string; has_account: boolean };
+  shipping_address: Record<string, string>;
+  items: (OrderItem & { design_file_url: string | null })[];
+  payment: {
+    reference: string;
+    subtotal: number;
+    delivery_fee: number;
+    discount: number;
+    promo_code: string | null;
+    total: number;
+  };
+  status_history: { status: OrderStatus; label: string; timestamp: string; by?: string; note?: string }[];
+  notes: string;
+  tracking_url: string;
+};
+
+export const fetchAdminOrder = (id: string) => adminCall<AdminOrderDetail>(`/api/v1/admin/orders/${id}/`);
+
+export const saveOrderNotes = (id: string, notes: string) =>
+  adminCall<AdminOrderDetail>(`/api/v1/admin/orders/${id}/`, {
+    method: "PATCH",
+    body: JSON.stringify({ notes }),
+  });
