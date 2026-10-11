@@ -155,7 +155,7 @@ custom design as a line item.
 | 4 | 8-10 curated fonts selectable with previews, covering bold sans, condensed impact, script, monospace, serif and stencil (FR-DES-04) | [x] |
 | 5 | Size, text color, alignment and letter spacing all adjustable (FR-DES-05) | [x] |
 | 6 | Placement offers exactly Upper Chest, Center Chest default, Lower Chest, Full Front — no back, no free-drag (FR-DES-06) | [x] |
-| 7 | Preview button shows a clean mockup without controls (FR-DES-07) | [ ] |
+| 7 | Preview button shows a clean mockup without controls (FR-DES-07) | [x] |
 | 8 | Logged-in users save designs with full config; guests are prompted to register (FR-DES-08) | [ ] |
 | 9 | Adding to cart generates a PNG or SVG at 300 DPI minimum with transparent background — test asserts the resolution (FR-DES-09) | [ ] |
 | 10 | 10-15 templates across Bold Statement, Minimalist, Stacked Text and Disclaimer Style (FR-DES-10) | [ ] |

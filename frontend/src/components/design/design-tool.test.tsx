@@ -123,4 +123,28 @@ describe("DesignTool", () => {
     await userEvent.click(within(group).getByRole("button", { name: "Full Front" }));
     expect(useDesignStore.getState().config?.placement).toBe("full_front");
   });
+
+  it("previews a clean mockup with no editing controls, and returns", async () => {
+    renderTool();
+    await userEvent.type(await screen.findByLabelText("Your slogan"), "hi");
+    await userEvent.click(screen.getByRole("button", { name: "Preview" }));
+
+    const dialog = screen.getByRole("dialog", { name: "Design preview" });
+    expect(within(dialog).getByRole("img", { name: "Finished shirt preview: hi" })).toBeInTheDocument();
+    expect(screen.queryByLabelText("Your slogan")).not.toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: "Font" })).not.toBeInTheDocument();
+    const back = screen.getByRole("button", { name: "Back to editing" });
+    expect(back).toHaveFocus();
+
+    await userEvent.click(back);
+    expect(screen.getByLabelText("Your slogan")).toHaveValue("hi");
+  });
+
+  it("closes the preview on Escape", async () => {
+    renderTool();
+    await userEvent.click(await screen.findByRole("button", { name: "Preview" }));
+    await userEvent.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Your slogan")).toBeInTheDocument();
+  });
 });
