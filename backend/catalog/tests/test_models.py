@@ -12,8 +12,10 @@ pytestmark = pytest.mark.django_db
 
 
 def make_category(**kwargs):
-    kwargs.setdefault("name", "Philosophy")
-    kwargs.setdefault("slug", "philosophy")
+    # Distinct from the real launch categories T-203's migration seeds, so
+    # tests creating their own category never collide on a unique slug.
+    kwargs.setdefault("name", "Test Category")
+    kwargs.setdefault("slug", "test-category")
     return Category.objects.create(**kwargs)
 
 
@@ -51,9 +53,9 @@ def test_price_must_be_positive():
 
 
 def test_category_slug_is_unique():
-    make_category(slug="tech")
+    make_category(slug="test-slug")
     with pytest.raises(IntegrityError), transaction.atomic():
-        make_category(name="Tech Again", slug="tech")
+        make_category(name="Different Name", slug="test-slug")
 
 
 def test_product_category_is_protected_on_delete():

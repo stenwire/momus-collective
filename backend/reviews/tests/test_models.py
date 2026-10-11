@@ -23,7 +23,8 @@ def make_user(email="buyer@example.com"):
 
 
 def make_product():
-    category = Category.objects.create(name="Tech", slug="tech")
+    # Distinct from the real launch categories T-203's migration seeds.
+    category = Category.objects.create(name="Test Category", slug="test-category")
     return Product.objects.create(
         category=category,
         slogan="404 slogan not found",
