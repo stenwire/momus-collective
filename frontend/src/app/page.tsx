@@ -6,6 +6,10 @@ import { OurStory } from "@/components/our-story";
 import { fetchCollections } from "@/lib/api";
 import { getQueryClient } from "@/lib/get-query-client";
 
+// Regenerated in the background at most once a minute (ISR), not frozen at
+// build time; must equal CATALOG_REVALIDATE_SECONDS (a literal is required).
+export const revalidate = 60;
+
 export const metadata: Metadata = {
   title: "momus collective — Shirts with something to say",
   description:
