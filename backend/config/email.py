@@ -1,5 +1,7 @@
 """Sends Django mail through Resend's HTTP API (PRD: Email via Resend)."""
 
+import base64
+
 import requests
 from django.conf import settings
 from django.core.mail.backends.base import BaseEmailBackend
@@ -37,6 +39,12 @@ class ResendEmailBackend(BaseEmailBackend):
         for content, mimetype in getattr(message, "alternatives", []):
             if mimetype == "text/html":
                 payload["html"] = content
+        attachments = [
+            {"filename": filename, "content": base64.b64encode(content).decode()}
+            for filename, content, _ in message.attachments
+        ]
+        if attachments:
+            payload["attachments"] = attachments
         try:
             resp = requests.post(
                 API,

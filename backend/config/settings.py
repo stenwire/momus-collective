@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "reviews",
     "newsletter",
     "designs",
+    "notifications",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
@@ -173,6 +174,15 @@ GOOGLE_OAUTH_CLIENT_ID = env("GOOGLE_OAUTH_CLIENT_ID")
 # webhooks with a guessable key (FR-CART-06).
 PAYSTACK_SECRET_KEY = env("PAYSTACK_SECRET_KEY")
 PAYSTACK_PUBLIC_KEY = env("PAYSTACK_PUBLIC_KEY")
+
+# WhatsApp (D-093). Keys are required with no fallback (D-025); empty
+# means that provider sends nothing.
+WHATSAPP_PROVIDER = env("WHATSAPP_PROVIDER", default="")
+TERMII_API_KEY = env("TERMII_API_KEY")
+TERMII_SENDER_ID = env("TERMII_SENDER_ID", default="")
+TERMII_BASE_URL = env("TERMII_BASE_URL", default="https://api.ng.termii.com")
+CALLMEBOT_API_KEY = env("CALLMEBOT_API_KEY")
+ADMIN_WHATSAPP_NUMBER = env("ADMIN_WHATSAPP_NUMBER", default="")
 
 DEFAULT_FROM_EMAIL = env(
     "DEFAULT_FROM_EMAIL", default="no-reply@momuscollective.example"
