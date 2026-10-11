@@ -89,8 +89,12 @@ export async function fetchCollections(): Promise<Collection[]> {
   return res.json();
 }
 
+// no-store: a build-time copy goes stale the moment the backend's options
+// change, and the tool cannot render against a shape it doesn't expect.
 export async function fetchDesignOptions(): Promise<DesignOptions> {
-  const res = await fetch(`${API_URL}/api/v1/designs/options/`);
+  const res = await fetch(`${API_URL}/api/v1/designs/options/`, {
+    cache: "no-store",
+  });
   if (!res.ok) {
     throw new Error(`Failed to fetch design options: ${res.status}`);
   }

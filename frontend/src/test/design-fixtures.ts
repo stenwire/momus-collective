@@ -5,6 +5,7 @@ export const designOptions: DesignOptions = {
   canvas_size: 1000,
   units_per_inch: 30,
   print_dpi: 300,
+  text_limits: { max_length: 80, max_lines: 4 },
   placements: [
     {
       key: "center_chest",

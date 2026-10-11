@@ -57,4 +57,22 @@ describe("DesignTool", () => {
     expect(navy).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("group", { name: /Shirt color: Navy/ })).toBeInTheDocument();
   });
+
+  it("counts characters live and stops at 80", async () => {
+    renderTool();
+    const input = await screen.findByLabelText("Your slogan");
+    await userEvent.type(input, "abc");
+    expect(screen.getByText("3/80")).toBeInTheDocument();
+    await userEvent.type(input, "x".repeat(90));
+    expect(useDesignStore.getState().config?.text).toHaveLength(80);
+    expect(screen.getByText("80/80")).toBeInTheDocument();
+  });
+
+  it("sanitizes pasted text before it reaches the store", async () => {
+    renderTool();
+    const input = await screen.findByLabelText("Your slogan");
+    await userEvent.click(input);
+    await userEvent.paste("zero\u200bwidth\u0007");
+    expect(useDesignStore.getState().config?.text).toBe("zerowidth");
+  });
 });

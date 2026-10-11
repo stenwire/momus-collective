@@ -32,6 +32,7 @@ describe("DesignPage", () => {
     ).toBeInTheDocument();
     expect(fetch).toHaveBeenCalledWith(
       expect.stringContaining("/api/v1/designs/options/"),
+      { cache: "no-store" },
     );
   });
 });

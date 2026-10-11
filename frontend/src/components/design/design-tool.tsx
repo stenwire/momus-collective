@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { fetchDesignOptions } from "@/lib/api";
 import { useDesignStore } from "@/lib/design/store";
 import { ShirtCanvas } from "./shirt-canvas";
+import { SloganInput } from "./slogan-input";
 import { SwatchPicker } from "./swatch-picker";
 
 export function DesignTool() {
@@ -41,16 +42,11 @@ export function DesignTool() {
         />
       </div>
       <div className="flex w-full flex-col gap-5 md:w-80">
-        <label className="flex flex-col gap-2 text-sm font-medium text-zinc-300">
-          Your slogan
-          <textarea
-            value={config.text}
-            onChange={(e) => update({ text: e.target.value })}
-            rows={3}
-            placeholder="Type something unhinged"
-            className="min-h-11 rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-base text-zinc-50 placeholder:text-zinc-500 focus:border-amber-400 focus:outline-none"
-          />
-        </label>
+        <SloganInput
+          value={config.text}
+          limits={options.text_limits}
+          onChange={(text) => update({ text })}
+        />
         <SwatchPicker
           legend="Shirt color"
           colors={options.shirt_colors}

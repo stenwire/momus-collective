@@ -11,10 +11,13 @@ export type DesignConfig = {
   placement: string;
 };
 
+export type TextLimits = { max_length: number; max_lines: number };
+
 export type DesignOptions = {
   canvas_size: number;
   units_per_inch: number;
   print_dpi: number;
+  text_limits: TextLimits;
   placements: Placement[];
   shirt_colors: NamedColor[];
   text_colors: NamedColor[];

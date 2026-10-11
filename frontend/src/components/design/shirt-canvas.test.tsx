@@ -36,4 +36,10 @@ describe("drawDesign", () => {
     drawDesign(ctx, designOptions.defaults, designOptions);
     expect(calls.fillText).toEqual([]);
   });
+
+  it("sanitizes text again at draw time", () => {
+    const { ctx, calls } = fakeContext();
+    drawDesign(ctx, { ...designOptions.defaults, text: "a\u202eb" }, designOptions);
+    expect(calls.fillText.join("")).toBe("ab");
+  });
 });

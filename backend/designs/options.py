@@ -14,6 +14,10 @@ PLACEMENTS = {
     },
 }
 
+# FR-DES-03 caps text at 80 characters. Four lines is the most a chest
+# print stays legible at; the PRD names no line limit (D-068).
+TEXT_LIMITS = {"max_length": 80, "max_lines": 4}
+
 DEFAULT_CONFIG = {
     "shirt_color": "Black",
     "text": "",
@@ -41,6 +45,7 @@ def public_options():
         "canvas_size": CANVAS_SIZE,
         "units_per_inch": UNITS_PER_INCH,
         "print_dpi": PRINT_DPI,
+        "text_limits": TEXT_LIMITS,
         "placements": [{"key": k, **v} for k, v in PLACEMENTS.items()],
         "shirt_colors": [{"name": k, "hex": v} for k, v in SHIRT_COLORS.items()],
         "text_colors": [{"name": k, "hex": v} for k, v in TEXT_COLORS.items()],

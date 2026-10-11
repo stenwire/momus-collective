@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { layoutText } from "@/lib/design/layout";
+import { sanitizeDesignText } from "@/lib/design/sanitize";
 import { COLLAR_PATH, SHIRT_PATH } from "@/lib/design/shirt-path";
 import type { DesignConfig, DesignOptions } from "@/lib/design/types";
 
@@ -43,7 +44,7 @@ export function drawDesign(
     return ctx.measureText(ch).width;
   };
   const lines = layoutText(
-    config.text,
+    sanitizeDesignText(config.text, options.text_limits),
     box,
     { fontPx: box.w * FONT_PX_RATIO, spacingEm: 0, align: "center" },
     measure,

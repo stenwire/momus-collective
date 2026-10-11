@@ -151,7 +151,7 @@ custom design as a line item.
 |---|---|---|
 | 1 | Canvas renders a shirt mockup and re-renders live as the user types (FR-DES-01, FR-DES-07) | [x] |
 | 2 | All 7 shirt colors select and update the mockup instantly (FR-DES-02) | [x] |
-| 3 | Text input caps at 80 characters with a live counter (FR-DES-03) | [ ] |
+| 3 | Text input caps at 80 characters with a live counter (FR-DES-03) | [x] |
 | 4 | 8-10 curated fonts selectable with previews, covering bold sans, condensed impact, script, monospace, serif and stencil (FR-DES-04) | [ ] |
 | 5 | Size, text color, alignment and letter spacing all adjustable (FR-DES-05) | [ ] |
 | 6 | Placement offers exactly Upper Chest, Center Chest default, Lower Chest, Full Front — no back, no free-drag (FR-DES-06) | [ ] |
