@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { AuthNav } from "./auth/auth-nav";
 
 export function SiteNav() {
   return (
@@ -27,6 +28,7 @@ export function SiteNav() {
         >
           Design
         </Link>
+        <AuthNav />
       </nav>
     </header>
   );
