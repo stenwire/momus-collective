@@ -60,5 +60,6 @@ urlpatterns = [
     path("", include("designs.urls")),
     path("", include("carts.urls")),
     path("", include("orders.urls")),
+    path("", include("newsletter.urls")),
     path("", include(router.urls)),
 ]

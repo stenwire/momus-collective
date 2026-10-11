@@ -5,6 +5,7 @@ import { CartDrawer } from "@/components/cart/cart-drawer";
 import { CartNotice } from "@/components/cart/cart-notice";
 import { CartSync } from "@/components/cart/cart-sync";
 import { QueryProvider } from "@/components/providers/query-provider";
+import { SiteFooter } from "@/components/site-footer";
 import { SiteNav } from "@/components/site-nav";
 import "./globals.css";
 
@@ -40,6 +41,7 @@ export default function RootLayout({
           <CartNotice />
           {children}
           {modal}
+          <SiteFooter />
           <CartDrawer />
         </QueryProvider>
       </body>

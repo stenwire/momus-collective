@@ -232,7 +232,7 @@ because every one of these acts on orders that M4 creates.
 | 8 | Admin manages promo codes with redemption and remaining-use tracking (FR-ADM-09) | [x] |
 | 9 | Customer list shows name, email, phone, order count, total spent and last order date (FR-ADM-10) | [x] |
 | 10 | Status changes notify by the customer's `notification_pref` — email, WhatsApp or both (FR-NOT-02) | [ ] |
-| 11 | Newsletter capture in footer and homepage stores subscribers in the database (FR-NOT-04) | [ ] |
+| 11 | Newsletter capture in footer and homepage stores subscribers in the database (FR-NOT-04) | [x] |
 | 12 | Only verified purchasers can review; reviews carry the Verified Purchase badge (FR-REV-01, FR-REV-02) | [ ] |
 | 13 | Review text caps at 500 characters with a 1-5 rating (FR-REV-01) | [ ] |
 | 14 | Admin can flag and hide reviews (FR-REV-03) | [ ] |
