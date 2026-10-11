@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useAuthStore } from "@/lib/auth/store";
 import { useDesignStore } from "@/lib/design/store";
 import { AuthNav } from "./auth-nav";
+import { LogoutButton } from "./logout-button";
 import { LoginForm } from "./login-form";
 import { RegisterForm } from "./register-form";
 
@@ -106,12 +107,24 @@ describe("AuthNav", () => {
     expect(screen.getByRole("link", { name: "Log in" })).toHaveAttribute("href", "/login");
   });
 
+  it("links to My designs when signed in", () => {
+    useAuthStore.setState({ tokens: { access: "a", refresh: "r" }, email: "x" });
+    render(<AuthNav />);
+    expect(screen.getByRole("link", { name: "My designs" })).toHaveAttribute(
+      "href",
+      "/account/designs",
+    );
+  });
+});
+
+describe("LogoutButton", () => {
   it("logs out, clearing tokens and the link to a saved design", async () => {
     useAuthStore.setState({ tokens: { access: "a", refresh: "r" }, email: "x" });
     useDesignStore.setState({ savedId: "d1", name: "mine" });
-    render(<AuthNav />);
+    render(<LogoutButton />);
     await userEvent.click(screen.getByRole("button", { name: "Log out" }));
     expect(useAuthStore.getState().tokens).toBeNull();
     expect(useDesignStore.getState().savedId).toBeNull();
+    expect(push).toHaveBeenCalledWith("/");
   });
 });

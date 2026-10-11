@@ -60,6 +60,19 @@ class SavedDesignViewSet(viewsets.ModelViewSet):
         instance.delete()
 
     @action(detail=True, methods=["post"])
+    def duplicate(self, request, pk=None):
+        """FR-USR-04. The copy starts without a print file of its own."""
+        original = self.get_object()
+        name_field = SavedDesign._meta.get_field("name")
+        copy = SavedDesign.objects.create(
+            user=request.user,
+            name=f"{original.name} (copy)"[: name_field.max_length],
+            config=original.config,
+        )
+        serializer = self.get_serializer(copy)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["post"])
     def export(self, request, pk=None):
         """FR-DES-09: render the print file off the request path (EFF-07)."""
         design = self.get_object()

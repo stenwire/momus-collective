@@ -151,3 +151,32 @@ def test_list_query_count_is_constant():
 
 def test_options_route_is_not_swallowed_by_the_design_router():
     assert APIClient().get("/api/v1/designs/options/").status_code == 200
+
+
+def test_duplicate_copies_the_config_under_a_new_name():
+    client = client_for(make_user())
+    original = save(client).json()
+    resp = client.post(f"/api/v1/designs/{original['id']}/duplicate/")
+    assert resp.status_code == 201
+    copy = resp.json()
+    assert copy["id"] != original["id"]
+    assert copy["name"] == "My shirt (copy)"
+    assert copy["config"] == original["config"]
+    assert copy["design_file_url"] == ""
+    assert len(client.get("/api/v1/designs/").json()) == 2
+
+
+def test_duplicate_name_stays_within_the_field_limit():
+    client = client_for(make_user())
+    design_id = client.post(
+        "/api/v1/designs/", {"name": "n" * 100, "config": CONFIG}, format="json"
+    ).json()["id"]
+    copy = client.post(f"/api/v1/designs/{design_id}/duplicate/").json()
+    assert len(copy["name"]) == 100
+
+
+def test_cannot_duplicate_another_users_design():
+    design_id = save(client_for(make_user())).json()["id"]
+    intruder = client_for(make_user("intruder@example.com"))
+    assert intruder.post(f"/api/v1/designs/{design_id}/duplicate/").status_code == 404
+    assert SavedDesign.objects.count() == 1

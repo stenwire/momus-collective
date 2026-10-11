@@ -15,16 +15,16 @@ export function SiteNav() {
           className="h-auto w-[110px] md:w-[140px]"
         />
       </Link>
-      <nav className="flex items-center gap-4">
+      <nav className="flex items-center gap-3 sm:gap-4">
         <Link
           href="/shop"
-          className="inline-flex min-h-11 items-center text-sm font-medium text-zinc-300 hover:text-zinc-50"
+          className="inline-flex min-h-11 items-center text-sm font-medium whitespace-nowrap text-zinc-300 hover:text-zinc-50"
         >
           Shop
         </Link>
         <Link
           href="/design"
-          className="inline-flex min-h-11 items-center text-sm font-medium text-zinc-300 hover:text-zinc-50"
+          className="inline-flex min-h-11 items-center text-sm font-medium whitespace-nowrap text-zinc-300 hover:text-zinc-50"
         >
           Design
         </Link>

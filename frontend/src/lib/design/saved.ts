@@ -7,6 +7,7 @@ export type SavedDesign = {
   config: DesignConfig;
   preview_image_url: string;
   design_file_url: string;
+  price: number | null;
   created_at: string;
   updated_at: string;
 };
@@ -52,4 +53,19 @@ export async function exportDesign(
     await sleep(intervalMs);
   }
   throw new ApiError(504, { detail: "The print file is taking too long. Try again." });
+}
+
+export async function listDesigns(): Promise<SavedDesign[]> {
+  return parse<SavedDesign[]>(await authFetch("/api/v1/designs/"));
+}
+
+export async function duplicateDesign(id: string): Promise<SavedDesign> {
+  return parse<SavedDesign>(
+    await authFetch(`/api/v1/designs/${id}/duplicate/`, { method: "POST" }),
+  );
+}
+
+export async function deleteDesign(id: string): Promise<void> {
+  const res = await authFetch(`/api/v1/designs/${id}/`, { method: "DELETE" });
+  if (!res.ok && res.status !== 404) await parse(res);
 }
