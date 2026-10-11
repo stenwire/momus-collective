@@ -21,6 +21,8 @@ class QuoteRequestSerializer(serializers.Serializer):
 
     items = GuestLineSerializer(many=True, required=False, max_length=50)
     shipping = ShippingAreaSerializer(required=False)
+    promo_code = serializers.CharField(required=False, allow_blank=True, default="")
+    email = serializers.EmailField(required=False, allow_blank=True, default="")
 
 
 def quote_payload(quote):
@@ -40,6 +42,8 @@ def quote_payload(quote):
         "delivery_fee": quote.delivery_fee,
         "delivery_band": quote.delivery_band,
         "discount": quote.discount,
+        "promo_code": quote.promo_code,
+        "promo_error": quote.promo_error,
         "total": quote.total,
         "notes": quote.notes,
     }

@@ -9,6 +9,7 @@ from carts.models import CartItem
 from carts.services import unit_price, user_cart, validate_line
 from catalog.models import Product
 from designs.pricing import price_list
+from promocodes import services as promos
 
 from .delivery import band_for, delivery_settings, fee_for
 
@@ -38,6 +39,8 @@ class Quote:
     delivery_fee: int | None = None
     delivery_band: str | None = None
     discount: int = 0
+    promo_code: str | None = None
+    promo_error: str | None = None
     notes: list[str] = field(default_factory=list)
 
     @property
@@ -95,7 +98,7 @@ def guest_lines(raw_items):
     return lines
 
 
-def quote(lines, shipping=None):
+def quote(lines, shipping=None, promo_code="", user=None, email=""):
     """Delivery is priced once the address gives a state (and LGA in Lagos);
     until then the fee is None and the total excludes it."""
     if not lines:
@@ -108,4 +111,12 @@ def quote(lines, shipping=None):
         result.delivery_fee = fee_for(band, result.subtotal, settings)
         if result.delivery_fee == 0:
             result.notes.append("Free delivery on this order.")
+    if promo_code:
+        # A bad code leaves the quote standing, with the reason beside it.
+        try:
+            promo = promos.find(promo_code)
+            result.discount = promos.check(promo, result.subtotal, user, email)
+            result.promo_code = promo.code
+        except promos.PromoError as error:
+            result.promo_error = str(error)
     return result

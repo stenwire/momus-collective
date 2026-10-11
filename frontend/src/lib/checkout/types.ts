@@ -53,6 +53,8 @@ export type Quote = {
   delivery_fee: number | null;
   delivery_band: string | null;
   discount: number;
+  promo_code: string | null;
+  promo_error: string | null;
   total: number;
   notes: string[];
 };

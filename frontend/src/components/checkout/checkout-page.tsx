@@ -51,8 +51,11 @@ export function CheckoutPage() {
   const [email, setEmail] = useState("");
   const emailFieldId = useId();
   const emailErrorId = useId();
+  const promoFieldId = useId();
   const [touched, setTouched] = useState(false);
   const [status, setStatus] = useState("");
+  const [promoInput, setPromoInput] = useState("");
+  const [promoCode, setPromoCode] = useState("");
   // The server's numbers are the only ones shown or charged (SEC-06).
   // The delivery band needs a state, and in Lagos an LGA too.
   const area =
@@ -60,8 +63,9 @@ export function CheckoutPage() {
       ? { state: shipping.state, lga: shipping.lga }
       : undefined;
   const quoteBody = {
-    ...(signedIn ? {} : { items: guestItems(guestLines) }),
+    ...(signedIn ? {} : { items: guestItems(guestLines), email: email.trim() }),
     ...(area ? { shipping: area } : {}),
+    ...(promoCode ? { promo_code: promoCode } : {}),
   };
   const quote = useQuery({
     queryKey: ["checkout-quote", signedIn, quoteBody, cart.item_count, cart.subtotal],
@@ -150,6 +154,52 @@ export function CheckoutPage() {
           {quote.isError ? (
             <p role="alert" className="text-sm text-red-400">
               {errorMessages(quote.error).join(" ")}
+            </p>
+          ) : null}
+          <form
+            className="flex gap-2"
+            onSubmit={(e) => {
+              e.preventDefault();
+              setPromoCode(promoInput.trim());
+            }}
+          >
+            <label className="sr-only" htmlFor={promoFieldId}>
+              Promo code
+            </label>
+            <input
+              id={promoFieldId}
+              value={promoInput}
+              onChange={(e) => setPromoInput(e.target.value)}
+              placeholder="Promo code"
+              autoCapitalize="characters"
+              className="min-h-11 min-w-0 flex-1 rounded-md border border-zinc-700 bg-zinc-950 px-3 text-base uppercase text-zinc-50 focus:border-amber-400 focus:outline-none"
+            />
+            <button
+              type="submit"
+              className="min-h-11 rounded-md border border-zinc-600 px-4 text-sm text-zinc-100 hover:border-zinc-400"
+            >
+              Apply
+            </button>
+          </form>
+          {quote.data?.promo_error ? (
+            <p role="alert" className="text-sm text-red-400">
+              {quote.data.promo_error}
+            </p>
+          ) : null}
+          {quote.data?.promo_code ? (
+            <p className="flex items-center justify-between text-sm text-emerald-400">
+              Code {quote.data.promo_code} applied
+              <button
+                type="button"
+                onClick={() => {
+                  setPromoCode("");
+                  setPromoInput("");
+                }}
+                aria-label={`Remove code ${quote.data.promo_code}`}
+                className="min-h-11 px-2 text-zinc-400 underline"
+              >
+                Remove
+              </button>
             </p>
           ) : null}
           {quote.data ? (

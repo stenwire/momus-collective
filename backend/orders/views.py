@@ -32,9 +32,16 @@ def checkout_quote(request):
     serializer = QuoteRequestSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     data = serializer.validated_data
-    return Response(
-        quote_payload(quote(lines_for(request, data), data.get("shipping")))
+    user = request.user if request.user.is_authenticated else None
+    email = user.email if user else data["email"]
+    result = quote(
+        lines_for(request, data),
+        data.get("shipping"),
+        promo_code=data["promo_code"],
+        user=user,
+        email=email,
     )
+    return Response(quote_payload(result))
 
 
 @api_view(["GET"])

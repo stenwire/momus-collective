@@ -26,7 +26,10 @@ const serverQuote = {
   lines: [],
   subtotal: 1500000,
   delivery_fee: 0,
+  delivery_band: null,
   discount: 0,
+  promo_code: null,
+  promo_error: null,
   total: 1500000,
   notes: [],
 };
@@ -186,7 +189,10 @@ describe("CheckoutPage", () => {
     expect(await screen.findByRole("button", { name: "Pay ₦15,000" })).toBeInTheDocument();
     const quoteCall = fetchMock.mock.calls.find(([url]) => String(url).includes("/checkout/quote/"))!;
     const sent = JSON.parse(quoteCall[1]!.body as string);
-    expect(sent).toEqual({ items: [{ product: "p1", size: "M", color: "Black", quantity: 1 }] });
+    expect(sent).toEqual({
+      items: [{ product: "p1", size: "M", color: "Black", quantity: 1 }],
+      email: "",
+    });
   });
 
   it("surfaces a refused quote, such as an archived product", async () => {
@@ -223,5 +229,34 @@ describe("CheckoutPage", () => {
       state: "Lagos",
       lga: "Eti-Osa",
     });
+  });
+
+  it("applies a promo code, shows the discount, and can remove it", async () => {
+    signedOut();
+    useGuestCart.getState().add({ product, size: "M", color: "Black", quantity: 1 });
+    const fetchMock = vi.fn<(url: string, init?: RequestInit) => Promise<Response>>(async (url, init) => {
+      if (url.includes("/checkout/options/")) return json(options);
+      if (url.includes("/checkout/quote/")) {
+        const code = JSON.parse(init!.body as string).promo_code?.toUpperCase();
+        if (code === "BAD") return json({ ...serverQuote, promo_error: "This code has expired." });
+        if (code) return json({ ...serverQuote, discount: 300000, promo_code: "NAPS20", total: 1200000 });
+        return json(serverQuote);
+      }
+      return json({});
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    renderCheckout();
+    const field = await screen.findByLabelText("Promo code");
+    await userEvent.type(field, "bad");
+    await userEvent.click(screen.getByRole("button", { name: "Apply" }));
+    expect(await screen.findByText("This code has expired.")).toBeInTheDocument();
+    await userEvent.clear(field);
+    await userEvent.type(field, "naps20");
+    await userEvent.click(screen.getByRole("button", { name: "Apply" }));
+    expect(await screen.findByText("Code NAPS20 applied")).toBeInTheDocument();
+    expect(screen.getByText("Discount").nextSibling).toHaveTextContent("−₦3,000");
+    expect(screen.getByRole("button", { name: "Pay ₦12,000" })).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Remove code NAPS20" }));
+    expect(await screen.findByRole("button", { name: "Pay ₦15,000" })).toBeInTheDocument();
   });
 });
