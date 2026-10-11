@@ -54,11 +54,11 @@ export function RegisterForm() {
       >
         {pending ? "Creating account…" : "Create account"}
       </button>
-      <p className="text-sm text-zinc-400">
+      <p className="flex flex-wrap items-center gap-x-1 text-sm text-zinc-400">
         Already have an account?{" "}
         <Link
           href={`/login?next=${encodeURIComponent(next)}`}
-          className="text-amber-400 underline"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center text-amber-400 underline"
         >
           Log in
         </Link>

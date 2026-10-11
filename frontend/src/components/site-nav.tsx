@@ -5,7 +5,7 @@ import { AuthNav } from "./auth/auth-nav";
 export function SiteNav() {
   return (
     <header className="flex items-center justify-between border-b border-zinc-800 px-4 py-3">
-      <Link href="/" className="flex items-center">
+      <Link href="/" className="flex min-h-11 items-center">
         <Image
           src="/wordmark.png"
           alt="momus collective"
@@ -18,13 +18,13 @@ export function SiteNav() {
       <nav className="flex items-center gap-3 sm:gap-4">
         <Link
           href="/shop"
-          className="inline-flex min-h-11 items-center text-sm font-medium whitespace-nowrap text-zinc-300 hover:text-zinc-50"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center text-sm font-medium whitespace-nowrap text-zinc-300 hover:text-zinc-50"
         >
           Shop
         </Link>
         <Link
           href="/design"
-          className="inline-flex min-h-11 items-center text-sm font-medium whitespace-nowrap text-zinc-300 hover:text-zinc-50"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center text-sm font-medium whitespace-nowrap text-zinc-300 hover:text-zinc-50"
         >
           Design
         </Link>

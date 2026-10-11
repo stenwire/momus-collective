@@ -14,7 +14,7 @@ export function Hero() {
         </p>
         <Link
           href="/shop"
-          className="rounded-md bg-amber-400 px-6 py-2 font-medium text-black transition-colors hover:bg-amber-300"
+          className="inline-flex min-h-11 items-center rounded-md bg-amber-400 px-6 py-2 font-medium text-black transition-colors hover:bg-amber-300"
         >
           Shop All Products
         </Link>

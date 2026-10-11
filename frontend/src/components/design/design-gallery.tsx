@@ -194,7 +194,7 @@ export function DesignGallery() {
     return (
       <p className="text-zinc-400">
         No saved designs yet.{" "}
-        <Link href="/design" className="text-amber-400 underline">
+        <Link href="/design" className="inline-flex min-h-11 items-center text-amber-400 underline">
           Design your first shirt
         </Link>
       </p>
