@@ -45,13 +45,17 @@ def verify_email(request):
             {"detail": "This verification link is invalid or has expired."},
             status=status.HTTP_400_BAD_REQUEST,
         )
+    from orders.history import claim_guest_orders
+
     from .models import User
 
-    updated = User.objects.filter(id=user_id).update(is_verified=True)
-    if not updated:
+    user = User.objects.filter(id=user_id).first()
+    if user is None:
         return Response(
             {"detail": "Account not found."}, status=status.HTTP_404_NOT_FOUND
         )
+    User.objects.filter(id=user.id).update(is_verified=True)
+    claim_guest_orders(user)
     return Response({"detail": "Email verified."})
 
 

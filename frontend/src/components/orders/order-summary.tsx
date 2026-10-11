@@ -13,13 +13,13 @@ import {
 } from "@/lib/orders/types";
 import { ShirtCanvas } from "../design/shirt-canvas";
 
-function Thumbnail({ item }: { item: OrderItem }) {
+export function Thumbnail({ item, size = "size-16" }: { item: OrderItem; size?: string }) {
   const { data: options } = useQuery({
     queryKey: ["design-options"],
     queryFn: fetchDesignOptions,
     enabled: item.design_config !== null,
   });
-  const box = "relative size-16 shrink-0 overflow-hidden rounded-md bg-zinc-900";
+  const box = `relative ${size} shrink-0 overflow-hidden rounded-md bg-zinc-900`;
   if (item.design_config) {
     return (
       <div className={box}>

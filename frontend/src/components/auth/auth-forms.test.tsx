@@ -118,12 +118,12 @@ describe("AuthNav", () => {
     expect(screen.getByRole("link", { name: "Log in" })).toHaveAttribute("href", "/login");
   });
 
-  it("links to My designs when signed in", () => {
+  it("links to the account's orders when signed in", () => {
     signedIn();
     render(<AuthNav />);
-    expect(screen.getByRole("link", { name: "My designs" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Account" })).toHaveAttribute(
       "href",
-      "/account/designs",
+      "/account/orders",
     );
   });
 });

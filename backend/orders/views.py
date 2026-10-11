@@ -13,6 +13,7 @@ from config.throttling import scoped
 from . import paystack
 from .checkout import cart_lines, guest_lines, quote
 from .delivery import delivery_settings, public_delivery_info
+from .history import OrderPagination
 from .locations import LAGOS_LGAS, NIGERIAN_STATES
 from .models import CheckoutSession, DeliverySettings, Order, OrderItem
 from .payments import AmountMismatch, open_session, settle
@@ -219,3 +220,20 @@ def order_item_preview(request, token, item_id):
     response = FileResponse(storage.open(name, "rb"), content_type="image/png")
     response["Cache-Control"] = "private, max-age=86400"
     return response
+
+
+@api_view(["GET"])
+def order_history(request):
+    """FR-USR-03: the signed-in customer's orders, newest first. Only the
+    owner's, so the address can be included (SEC-14)."""
+    orders = (
+        Order.objects.filter(user=request.user)
+        .order_by("-created_at")
+        .prefetch_related("items__product")
+    )
+    paginator = OrderPagination()
+    page = paginator.paginate_queryset(orders, request)
+    delivery = delivery_settings()
+    return paginator.get_paginated_response(
+        [order_payload(order, delivery, include_shipping=True) for order in page]
+    )

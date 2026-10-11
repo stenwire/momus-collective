@@ -12,6 +12,7 @@ urlpatterns = [
         views.order_item_design_file,
         name="order-item-design-file",
     ),
+    path("orders/", views.order_history, name="order-history"),
     path("orders/track/<str:token>/", views.order_track, name="order-track"),
     path(
         "orders/track/<str:token>/items/<uuid:item_id>/preview/",
