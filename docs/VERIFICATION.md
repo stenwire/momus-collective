@@ -1,83 +1,78 @@
 # Verification Report
 
-**Milestone:** M3 - Custom Design Tool
-**Scope:** Final M3 audit at `a47afa8`: all 23 M3 tasks (T-301..T-323),
-including the httpOnly cookie auth (T-321) and the two findings it raised
-(T-322 cross-tab refresh, T-323 atomic token spend), re-confirmed closed by
-opening the files. Every cross-cutting checklist item M3 code touches:
-admin authorization, server-side pricing, money types, input sanitization,
-design-file access (SEC-15), CSRF (SEC-09), auth rate limits (SEC-08),
-query counts, DRY-01/03/06/07, both test suites, prohibited-scope greps,
-lint/format/types, and the `/api/v1/` contract.
+**Milestone:** M1 - Data Models and Auth
+**Scope:** M1 follow-up on `m1-followup-t117` (from `main` at `6da09f9`):
+the uncommitted T-117 change to `/api/v1/auth/token/refresh/`
+(`accounts/auth_views.py` `remembers`, `rotate_refresh_token`,
+`RefreshView`; `accounts/session_views.py` now delegating to the shared
+rotation; `accounts/urls.py`; new `accounts/tests/test_refresh_lifetime.py`),
+plus every cross-cutting check that auth code touches: FR-USR-02 session
+lifetimes, rate limits, the v1 contract, secrets, DRY-07, the full backend
+suite.
 **Date:** 2026-10-11
 **Blockers:** 0
 **Major:** 0
 **Minor:** 0
 **Verdict:** PASS
-**Dimensions not verified:** BLD-01 (`pnpm build` writes `.next/`, which
-this skill forbids; the T-322 implement run built and served every route).
-BLD-07 for commits after PR #6's last CI run (T-319..T-323 not yet pushed;
-CI will run on push). EFF-08 (Lighthouse not re-run). SEC-01/02/03/07 and
-SPC-07..13 are M4/M5 scope. CI-SEC-01..05 are verified at M0.
+**Dimensions not verified:** BLD-01 and frontend checks (no frontend file
+changed in this follow-up). BLD-07 (branch not pushed yet). EFF-08 not
+applicable. M4/M5-scope checks as before. CI-SEC-01..05 are verified at M0.
 
 ## Findings
 
-None. The prior run's findings are closed:
-1 (major) closed: `backend/accounts/session_views.py` `session_refresh` no
-longer calls `clear_auth_cookies` on failure (0 occurrences in the
-function), and `frontend/src/lib/auth/api.ts:101` re-reads the session
-before signing out.
-2 (minor) closed: `session_views.py:66-77` spends the token inside
-`transaction.atomic()` with `select_for_update()` on its `OutstandingToken`
-row before creating the `BlacklistedToken`.
+None.
+
+Checked and judged sound by opening the files:
+- `accounts/auth_views.py:43-48` `remembers`: a pre-claim session-only
+  token's `exp - iat` is exactly 43,200s, so the strict `>` maps it to
+  session-only; a 30-day token maps to remembered.
+- `accounts/auth_views.py:51-72` `rotate_refresh_token`: the spend is
+  atomic under `select_for_update`; a token without an `OutstandingToken`
+  row is denied. All tokens here are minted by `for_user`, which always
+  creates that row, so this cannot arise in practice.
+- `accounts/urls.py:11` routes `token/refresh/` to `RefreshView`; its
+  error mapping comes from SimpleJWT's `TokenViewBase`, so the 401/400
+  bodies are unchanged (API-02), as `test_the_response_contract_is_unchanged`
+  asserts against the stock view's recorded output.
 
 ## Commands run
 
 ```
-$ git status --porcelain
-(clean)
 $ cd backend && uv run python -c "import sys;print(sys.prefix)"
 /Users/Apple/Desktop/Lab/playground/sten_lab/momus-collective/backend/.venv
 $ cd backend && uv run pytest -q
-289 passed, 1 warning in 32.57s
+296 passed, 1 warning in 34.25s
+$ cd backend && uv run pytest -q accounts
+83 passed, 1 warning in 18.31s
 $ cd backend && uv run ruff check .
 All checks passed!
 $ cd backend && uv run ruff format --check .
-116 files already formatted
+117 files already formatted
 $ cd backend && uv run python manage.py check
 System check identified no issues (0 silenced).
 $ cd backend && uv run python manage.py makemigrations --check --dry-run
 No changes detected
-$ pnpm --dir frontend test        (pnpm 11.21.0 via npx)
- Test Files  21 passed (21)
-      Tests  119 passed (119)
-$ pnpm --dir frontend typecheck
-✓ Types generated successfully
-$ pnpm --dir frontend lint
-$ eslint --max-warnings 0
-exit 0
 $ rg -n "sk_live|sk_test|PAYSTACK_SECRET_KEY\s*=\s*[\"']" --glob '!*.md'
 (no output)
 $ PRO-01..08 greps
 frontend/src/lib/format.ts:2:  style: "currency",      (known false positive)
 frontend/src/lib/format.ts:3:  currency: "NGN",
-$ grep -c clear_auth_cookies in session_refresh -> 0
-$ grep select_for_update / transaction.atomic / BlacklistedToken.objects.create
-66:    with transaction.atomic():
-68:            OutstandingToken.objects.select_for_update()
-77:        BlacklistedToken.objects.create(token=outstanding)
-$ DRY-07 scan over the 86 .py/.ts/.tsx/.yml files changed since main
-86 files; violations: 0
+$ DRY-07 scan over the changed and new .py files
+backend/accounts/auth_views.py
+backend/accounts/session_views.py
+backend/accounts/urls.py
+backend/accounts/tests/test_refresh_lifetime.py
+4 files; violations: 0
 ```
 
 ## Dimension summary
 
 | Dimension | Result | Notes |
 |---|---|---|
-| 1. Security and input trust | pass | Browser tokens are httpOnly, Secure and SameSite, never in a response body, and the refresh cookie is path-scoped. Cookie-authenticated writes need the CSRF token, with foreign origins refused (SEC-09). Refresh tokens are spent exactly once, proven by a threaded test, and a racing tab can no longer log the user out. Admin endpoints are `IsStaffUser` with 401/403 tests; prices are server-computed; design text is sanitized on write and at render; print files are private, owner or staff only. Residual, not a defect: if a tab's single retried session read still beats the other tab's rotation, that tab shows signed-out until its next navigation; its cookies are intact. |
-| 2. Efficiency | pass | Constant-query design list; pricing 2 queries; per-design file prefix; rendering in Celery. |
-| 3. DRY and layering | pass | One shirt-colour definition shared by catalog and tool; pricing in one module; cookie helpers in one module; DRY-07 0 violations. |
-| 4. Tests | pass | Backend `289 passed`, frontend `119 passed`. Known-failure checks are recorded for CSRF enforcement, the race guard, atomic spend, cookie clearing and the money scan. |
-| 5. Spec conformance | pass | SPC-03/04/05/06/16 hold; NFR-04's CSRF and rate limiting are enforced on browser sessions; D-078 records thumbnails. |
-| 6. Build and types | pass (partial) | Typecheck, lint, ruff, checks and migrations clean. BLD-01/BLD-07 as in the header. |
-| 7. Client contract and acceptance | pass | Session endpoints are additive; the one tightened field is the user-ratified exception (D-077, D-079). All 23 M3 tasks and 14 DoD rows are `[x]` with pasted proof. |
+| 1. Security and input trust | pass | Bearer refresh now spends tokens atomically, as the cookie flow does; a spent or invalid token gets the same 401 as before. No secret, no fallback default. |
+| 2. Efficiency | pass | A refresh is a fixed handful of queries (lock, blacklist check and insert, user lookup). |
+| 3. DRY and layering | pass | One rotation implementation now serves both the bearer and cookie flows; DRY-07 0 violations. |
+| 4. Tests | pass | `296 passed`; 7 new lifetime and contract tests, proven against the stock view in the implement run (3 failed there). |
+| 5. Spec conformance | pass | FR-USR-02: a session-only login now stays session-length through refreshes. |
+| 6. Build and types | pass (backend) | Ruff, checks and migrations clean; backend env is `backend/.venv`. Frontend not touched. |
+| 7. Client contract and acceptance | pass | Same path, same response keys, same 401/400 bodies (API-02). |

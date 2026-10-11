@@ -1,7 +1,6 @@
 """Cookie-based browser sessions (D-080). Tokens travel only in httpOnly
 cookies and never appear in a response body a script could read."""
 
-from django.db import transaction
 from django.middleware.csrf import get_token
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes, throttle_classes
@@ -13,7 +12,6 @@ from rest_framework_simplejwt.exceptions import TokenBackendError, TokenError
 from rest_framework_simplejwt.state import token_backend
 from rest_framework_simplejwt.token_blacklist.models import (
     BlacklistedToken,
-    OutstandingToken,
 )
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -28,9 +26,9 @@ from config.throttling import scoped
 from .auth_views import (
     REMEMBER_ME_LIFETIME,
     RememberMeTokenObtainPairSerializer,
-    issue_token_pair,
+    remembers,
+    rotate_refresh_token,
 )
-from .models import User
 
 
 def _user_payload(user):
@@ -54,32 +52,12 @@ def _respond(request, user, pair=None, remember=False, retry=False):
 
 
 def _rotate(raw):
-    """Spends a refresh token for a new pair with the same lifetime class.
-    The spend is atomic: a concurrent request for the same token waits on
-    the row lock, then finds it spent. None when missing, invalid or spent."""
     if not raw:
         return None
     try:
-        token = RefreshToken(raw)
+        return rotate_refresh_token(raw)
     except TokenError:
         return None
-    with transaction.atomic():
-        outstanding = (
-            OutstandingToken.objects.select_for_update()
-            .filter(jti=token["jti"])
-            .first()
-        )
-        if (
-            outstanding is None
-            or BlacklistedToken.objects.filter(token=outstanding).exists()
-        ):
-            return None
-        BlacklistedToken.objects.create(token=outstanding)
-    user = User.objects.filter(id=token["user_id"], is_active=True).first()
-    if user is None:
-        return None
-    remember = bool(token.get("remember", False))
-    return user, issue_token_pair(user, remember), remember
 
 
 def _spent(raw):
@@ -123,7 +101,7 @@ def session_login(request):
     except TokenError as error:
         raise AuthenticationFailed(str(error)) from error
     data = serializer.validated_data
-    remember = RefreshToken(data["refresh"]).get("remember", False)
+    remember = remembers(RefreshToken(data["refresh"]))
     return _respond(request, serializer.user, data, remember)
 
 
