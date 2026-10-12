@@ -9,6 +9,8 @@ class NewsletterSubscriber(models.Model):
     is_active = models.BooleanField(default=True)
     subscribed_at = models.DateTimeField(auto_now_add=True)
     unsubscribed_at = models.DateTimeField(null=True, blank=True)
+    # The weekly New Drops send skips anyone sent one in the past 6 days.
+    last_new_drops_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.email

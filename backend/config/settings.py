@@ -98,6 +98,11 @@ CELERY_BEAT_SCHEDULE = {
         "task": "backups.tasks.daily_database_backup",
         "schedule": crontab(hour=2, minute=0),
     },
+    # FR-NOT-04, Fridays mid-morning Lagos time.
+    "weekly-new-drops": {
+        "task": "newsletter.tasks.weekly_new_drops",
+        "schedule": crontab(hour=10, minute=0, day_of_week="friday"),
+    },
     "weekly-asset-backup": {
         "task": "backups.tasks.weekly_asset_backup",
         "schedule": crontab(hour=3, minute=0, day_of_week="sunday"),

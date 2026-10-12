@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<body style="margin:0;padding:24px 16px;background:#0b0b0c;color:#f4f4f5;font-family:Helvetica,Arial,sans-serif;">
+  <p style="font-size:20px;font-weight:bold;margin:0 0 16px;">New this week</p>
+  {% for p in products %}
+  <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px;">
+    <tr>
+      <td width="96" valign="top">{% if p.image %}<a href="{{ p.url }}"><img src="{{ p.image }}" width="88" height="88" alt="{{ p.slogan }}" style="display:block;border-radius:6px;"></a>{% endif %}</td>
+      <td valign="top" style="font-size:14px;">
+        <a href="{{ p.url }}" style="color:#f4f4f5;font-weight:bold;text-decoration:none;">{{ p.slogan }}</a>
+        <div style="color:#fbbf24;margin-top:4px;">{{ p.price }}</div>
+      </td>
+    </tr>
+  </table>
+  {% endfor %}
+  <p><a href="{{ shop_url }}" style="display:inline-block;background:#fbbf24;color:#000;text-decoration:none;font-weight:bold;padding:12px 20px;border-radius:6px;">Shop new drops</a></p>
+  <p style="color:#71717a;font-size:12px;">You're getting this because you signed up for new drops. <a href="{{ unsubscribe_url }}" style="color:#a1a1aa;">Unsubscribe</a></p>
+</body>
+</html>
