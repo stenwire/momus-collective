@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views
+from . import admin_views, views
 
 urlpatterns = [
     path(
@@ -12,5 +12,11 @@ urlpatterns = [
         "products/<slug:slug>/reviews/eligibility/",
         views.review_eligibility,
         name="review-eligibility",
+    ),
+    path("admin/reviews/", admin_views.admin_review_list, name="admin-reviews"),
+    path(
+        "admin/reviews/<uuid:pk>/",
+        admin_views.admin_review_moderate,
+        name="admin-review-moderate",
     ),
 ]

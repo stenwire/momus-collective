@@ -5,28 +5,13 @@ from django.utils import timezone
 from rest_framework.test import APIClient
 
 from accounts.models import User
-from catalog.models import Category, Product
+from catalog.models import Product
 from orders.models import Order, OrderItem
 from orders.tests.test_fulfilment import SHIPPING, client_for
 from reviews.models import Review
 
 pytestmark = pytest.mark.django_db
 _n = iter(range(1, 1000))
-
-
-@pytest.fixture
-def shirt():
-    category = Category.objects.create(name="Test Category", slug="test-category")
-    return Product.objects.create(
-        slogan="touch grass", slug="tg", category=category, price=1
-    )
-
-
-@pytest.fixture
-def other_shirt(shirt):
-    return Product.objects.create(
-        slogan="other", slug="other", category=shirt.category, price=1
-    )
 
 
 def buyer(email="ada@example.com", first="Ada", last="Lovelace"):

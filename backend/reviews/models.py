@@ -7,6 +7,14 @@ from django.db import models
 from catalog.models import Product
 
 
+class HiddenReason(models.TextChoices):
+    """FR-REV-03's guidelines."""
+
+    OFFENSIVE = "offensive", "Offensive content"
+    SPAM = "spam", "Spam"
+    IRRELEVANT = "irrelevant", "Irrelevant"
+
+
 class Review(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     product = models.ForeignKey(
@@ -31,6 +39,11 @@ class Review(models.Model):
     # (FR-REV-02) -- set from the order relationship, not user input.
     is_verified = models.BooleanField(default=True)
     is_visible = models.BooleanField(default=True)
+    # FR-REV-03: flagged reviews stay up for a closer look; hidden ones go.
+    is_flagged = models.BooleanField(default=False)
+    hidden_reason = models.CharField(
+        max_length=20, choices=HiddenReason.choices, blank=True
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

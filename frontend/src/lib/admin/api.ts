@@ -179,3 +179,35 @@ export function fetchCustomers({ search, ordering, page }: { search: string; ord
 }
 
 export const fetchCustomer = (id: string) => adminCall<CustomerDetail>(`/api/v1/admin/customers/${id}/`);
+
+export type AdminReview = {
+  id: string;
+  product: { slug: string; slogan: string };
+  order_number: string;
+  rating: number;
+  text: string;
+  reviewer: string;
+  is_visible: boolean;
+  is_flagged: boolean;
+  hidden_reason: string;
+  hidden_reason_label: string;
+  created_at: string;
+};
+
+export type AdminReviewPage = {
+  count: number;
+  next: string | null;
+  results: AdminReview[];
+  reasons: { key: string; label: string }[];
+};
+
+export function fetchAdminReviews({ show, search, page }: { show: string; search: string; page: number }) {
+  const params = new URLSearchParams({ show, page: String(page) });
+  if (search) params.set("search", search);
+  return adminCall<AdminReviewPage>(`/api/v1/admin/reviews/?${params}`);
+}
+
+export const moderateReview = (
+  id: string,
+  body: { is_flagged?: boolean; is_visible?: boolean; hidden_reason?: string },
+) => adminCall<AdminReview>(`/api/v1/admin/reviews/${id}/`, { method: "PATCH", body: JSON.stringify(body) });
