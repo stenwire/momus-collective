@@ -7,16 +7,6 @@ import { fetchOrderList } from "@/lib/admin/api";
 import { formatNaira } from "@/lib/format";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 
-const STATUSES = [
-  ["paid", "Paid"],
-  ["moderation", "Moderation"],
-  ["shirt_acquired", "Shirt Acquired"],
-  ["printed", "Printed"],
-  ["out_for_delivery", "Out for Delivery"],
-  ["delivered", "Delivered"],
-  ["cancelled", "Cancelled"],
-  ["refunded", "Refunded"],
-];
 const placed = new Intl.DateTimeFormat("en-NG", { dateStyle: "medium", timeStyle: "short" });
 const FIELD =
   "min-h-11 rounded-md border border-zinc-700 bg-zinc-950 px-3 text-base text-zinc-50 focus:border-amber-400 focus:outline-none";
@@ -70,6 +60,7 @@ export function OrderList() {
   });
   const rows = orders.data?.pages.flatMap((p) => p.results) ?? [];
   const count = orders.data?.pages[0]?.count ?? 0;
+  const statuses = orders.data?.pages[0]?.statuses ?? [];
 
   return (
     <div className="flex min-w-0 flex-col gap-4 px-4">
@@ -93,9 +84,9 @@ export function OrderList() {
           </label>
           <select id={statusId} value={status} onChange={(e) => setStatus(e.target.value)} className={FIELD}>
             <option value="">All</option>
-            {STATUSES.map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
+            {statuses.map((s) => (
+              <option key={s.status} value={s.status}>
+                {s.label}
               </option>
             ))}
           </select>

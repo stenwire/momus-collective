@@ -9,14 +9,6 @@ import { formatNaira } from "@/lib/format";
 import type { OrderStatus } from "@/lib/orders/types";
 import { Thumbnail } from "../orders/order-summary";
 
-const BOARD: [OrderStatus, string][] = [
-  ["paid", "Paid"],
-  ["shirt_acquired", "Shirt Acquired"],
-  ["printed", "Printed"],
-  ["out_for_delivery", "Out for Delivery"],
-  ["delivered", "Delivered"],
-  ["cancelled", "Cancelled"],
-];
 const when = new Intl.DateTimeFormat("en-NG", { dateStyle: "medium", timeStyle: "short" });
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
@@ -56,9 +48,9 @@ function StatusControl({ order }: { order: AdminOrderDetail }) {
         onChange={(e) => move.mutate(e.target.value as OrderStatus)}
         className="min-h-11 rounded-md border border-zinc-700 bg-zinc-950 px-3 text-base text-zinc-50"
       >
-        {BOARD.map(([value, label]) => (
-          <option key={value} value={value}>
-            {label}
+        {order.board_statuses.map((s) => (
+          <option key={s.status} value={s.status}>
+            {s.label}
           </option>
         ))}
       </select>

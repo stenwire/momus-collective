@@ -31,7 +31,8 @@ export const moveOrder = (id: string, status: OrderStatus) =>
   });
 
 export type AdminRow = AdminCard & { status_label: string };
-export type OrderListPage = { count: number; next: string | null; results: AdminRow[] };
+export type StatusChoice = { status: OrderStatus; label: string };
+export type OrderListPage = { count: number; next: string | null; results: AdminRow[]; statuses: StatusChoice[] };
 export type OrderListQuery = { status: string; search: string; ordering: string; page: number };
 
 export function fetchOrderList({ status, search, ordering, page }: OrderListQuery) {
@@ -63,6 +64,7 @@ export type AdminOrderDetail = {
   };
   status_history: { status: OrderStatus; label: string; timestamp: string; by?: string; note?: string }[];
   notes: string;
+  board_statuses: StatusChoice[];
   tracking_url: string;
 };
 

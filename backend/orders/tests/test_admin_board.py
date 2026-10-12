@@ -335,3 +335,29 @@ def test_an_unknown_order_detail_is_404(staff):
         "/api/v1/admin/orders/00000000-0000-0000-0000-000000000000/"
     )
     assert resp.status_code == 404
+
+
+def test_status_choices_come_from_the_enum(staff):
+    order = make(1)
+    client = client_for(staff)
+    statuses = client.get(LIST).json()["statuses"]
+    assert [s["status"] for s in statuses] == [
+        "paid",
+        "moderation",
+        "shirt_acquired",
+        "printed",
+        "out_for_delivery",
+        "delivered",
+        "cancelled",
+        "refunded",
+    ]
+    assert statuses[2]["label"] == "Shirt Acquired"
+    board = client.get(detail_url(order)).json()["board_statuses"]
+    assert [s["status"] for s in board] == [
+        "paid",
+        "shirt_acquired",
+        "printed",
+        "out_for_delivery",
+        "delivered",
+        "cancelled",
+    ]

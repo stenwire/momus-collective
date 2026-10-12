@@ -19,10 +19,15 @@ const row = (n: number, extra: Partial<AdminRow> = {}): AdminRow => ({
   ...extra,
 });
 
+const STATUSES = [
+  { status: "paid", label: "Paid" },
+  { status: "printed", label: "Printed" },
+];
+
 function api(pages: Record<string, { results: AdminRow[]; next: string | null; count: number }>) {
   const fetchMock = vi.fn(async (url: string) => {
     const page = new URL(url).searchParams.get("page") ?? "1";
-    return { ok: true, status: 200, json: async () => pages[page] ?? pages["1"] } as Response;
+    return { ok: true, status: 200, json: async () => ({ statuses: STATUSES, ...(pages[page] ?? pages["1"]) }) } as Response;
   });
   vi.stubGlobal("fetch", fetchMock);
   return fetchMock;
@@ -70,6 +75,14 @@ describe("OrderList", () => {
     await waitFor(() => expect(lastParams(fetchMock).get("ordering")).toBe("amount"));
     expect(screen.getByRole("columnheader", { name: /Amount/ })).toHaveAttribute("aria-sort", "ascending");
     expect(screen.getByRole("columnheader", { name: /Date/ })).toHaveAttribute("aria-sort", "none");
+  });
+
+  it("offers the statuses the server sends", async () => {
+    api({ "1": { results: [row(1)], next: null, count: 1 } });
+    renderList();
+    await screen.findByRole("table");
+    const options = Array.from((screen.getByLabelText("Status") as HTMLSelectElement).options).map((o) => o.text);
+    expect(options).toEqual(["All", "Paid", "Printed"]);
   });
 
   it("filters by status and searches", async () => {

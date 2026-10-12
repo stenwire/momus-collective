@@ -138,9 +138,14 @@ def admin_order_list(request):
     paginator = AdminOrderPagination()
     page = paginator.paginate_queryset(orders, request)
     labels = dict(OrderStatus.choices)
-    return paginator.get_paginated_response(
+    response = paginator.get_paginated_response(
         [{**admin_card(order), "status_label": labels[order.status]} for order in page]
     )
+    # The filter's choices come from the enum, not a copy in the frontend.
+    response.data["statuses"] = [
+        {"status": v, "label": n} for v, n in OrderStatus.choices
+    ]
+    return response
 
 
 def admin_detail(order):
@@ -184,6 +189,7 @@ def admin_detail(order):
             for entry in order.status_history
         ],
         "notes": order.notes,
+        "board_statuses": [{"status": st, "label": labels[st]} for st in BOARD],
         "tracking_url": f"{settings.FRONTEND_URL}/track/{order.tracking_token}",
     }
 

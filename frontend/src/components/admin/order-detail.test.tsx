@@ -65,6 +65,14 @@ const detail: AdminOrderDetail = {
     { status: "printed", label: "Printed", timestamp: "2026-10-11T15:00:00Z", by: "owner@momus.test", note: "Printed at Yaba" },
   ],
   notes: "",
+  board_statuses: [
+    { status: "paid", label: "Paid" },
+    { status: "shirt_acquired", label: "Shirt Acquired" },
+    { status: "printed", label: "Printed" },
+    { status: "out_for_delivery", label: "Out for Delivery" },
+    { status: "delivered", label: "Delivered" },
+    { status: "cancelled", label: "Cancelled" },
+  ],
   tracking_url: "http://localhost:3000/track/tok",
 };
 
