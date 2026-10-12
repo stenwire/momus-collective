@@ -74,6 +74,10 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 DATABASES = {"default": env.db("DATABASE_URL")}
+# Reuse connections between requests instead of opening one per request;
+# health checks drop a connection the database has closed (T-518).
+DATABASES["default"]["CONN_MAX_AGE"] = env.int("DB_CONN_MAX_AGE", default=60)
+DATABASES["default"]["CONN_HEALTH_CHECKS"] = True
 
 REDIS_URL = env("REDIS_URL")
 
