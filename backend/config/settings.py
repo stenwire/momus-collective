@@ -128,6 +128,7 @@ REST_FRAMEWORK = {
         "auth-password-reset": "5/min",
         "order-track": "30/min",
         "newsletter": "10/min",
+        "reviews": "60/min",
     },
 }
 

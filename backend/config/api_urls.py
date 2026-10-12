@@ -61,5 +61,6 @@ urlpatterns = [
     path("", include("carts.urls")),
     path("", include("orders.urls")),
     path("", include("newsletter.urls")),
+    path("", include("reviews.urls")),
     path("", include(router.urls)),
 ]

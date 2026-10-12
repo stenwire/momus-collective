@@ -233,8 +233,8 @@ because every one of these acts on orders that M4 creates.
 | 9 | Customer list shows name, email, phone, order count, total spent and last order date (FR-ADM-10) | [x] |
 | 10 | Status changes notify by the customer's `notification_pref` — email, WhatsApp or both (FR-NOT-02) | [ ] |
 | 11 | Newsletter capture in footer and homepage stores subscribers in the database (FR-NOT-04) | [x] |
-| 12 | Only verified purchasers can review; reviews carry the Verified Purchase badge (FR-REV-01, FR-REV-02) | [ ] |
-| 13 | Review text caps at 500 characters with a 1-5 rating (FR-REV-01) | [ ] |
+| 12 | Only verified purchasers can review; reviews carry the Verified Purchase badge (FR-REV-01, FR-REV-02) | [x] |
+| 13 | Review text caps at 500 characters with a 1-5 rating (FR-REV-01) | [x] |
 | 14 | Admin can flag and hide reviews (FR-REV-03) | [ ] |
 | 15 | Products show average rating and review count on card and detail; Top Rated collection works (FR-REV-04) | [ ] |
 | 16 | A review prompt email fires 3 days after Delivered (FR-REV-05) | [ ] |
