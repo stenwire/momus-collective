@@ -167,6 +167,24 @@ DESIGN_FILES_ROOT = Path(
     env("DESIGN_FILES_ROOT", default=str(BASE_DIR / "private" / "design-files"))
 )
 
+BACKUP_ROOT = Path(env("BACKUP_ROOT", default=str(BASE_DIR / "private" / "backups")))
+
+# D-097: each purpose picks a storage provider. The S3 settings are read
+# only when a purpose uses S3, and then the keys are required (D-025).
+STORAGE_PROVIDERS = {
+    "design_files": env("FILE_STORAGE_PROVIDER", default="local"),
+    "backups": env("BACKUP_STORAGE_PROVIDER", default="local"),
+}
+if "s3" in STORAGE_PROVIDERS.values():
+    S3_ACCESS_KEY_ID = env("S3_ACCESS_KEY_ID")
+    S3_SECRET_ACCESS_KEY = env("S3_SECRET_ACCESS_KEY")
+    S3_ENDPOINT_URL = env("S3_ENDPOINT_URL", default="")
+    S3_REGION = env("S3_REGION", default="auto")
+    S3_BUCKETS = {
+        "design_files": env("S3_FILES_BUCKET", default=""),
+        "backups": env("S3_BACKUP_BUCKET", default=""),
+    }
+
 # The frontend is the only client (D-011); CORS is scoped to exactly the
 # origins it can legitimately run on, not a wildcard.
 CORS_ALLOWED_ORIGINS = [FRONTEND_URL, *env.list("CORS_EXTRA_ORIGINS", default=[])]
