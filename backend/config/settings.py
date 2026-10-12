@@ -79,6 +79,8 @@ REDIS_URL = env("REDIS_URL")
 
 CELERY_BROKER_URL = REDIS_URL
 CELERY_RESULT_BACKEND = REDIS_URL
+# Keep the redacting LOGGING config in workers too (T-517).
+CELERY_WORKER_HIJACK_ROOT_LOGGER = False
 # Run by `celery -A config beat` alongside the worker.
 CELERY_BEAT_SCHEDULE = {
     "review-prompts": {
@@ -206,3 +208,6 @@ EMAIL_BACKEND = env(
     if RESEND_API_KEY
     else "django.core.mail.backends.console.EmailBackend",
 )
+
+# T-517: one console handler, and it redacts PII and order tokens.
+from config.logging import LOGGING  # noqa: E402,F401

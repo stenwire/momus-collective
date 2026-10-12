@@ -241,7 +241,7 @@ because every one of these acts on orders that M4 creates.
 | 17 | Every admin route asserts an explicit `is_staff` permission class — test passes (NFR-04) | [x] |
 | 18 | Load testing confirms 1,000 concurrent users and 500 orders/month are served (NFR-06) | [ ] |
 | 19 | Daily database backups and weekly asset backups to secondary storage are configured (NFR-07) | [ ] |
-| 20 | Customer PII does not appear in application logs — confirmed by opening the logging config | [ ] |
+| 20 | Customer PII does not appear in application logs — confirmed by opening the logging config | [x] |
 
 ### Verification
 
