@@ -149,6 +149,11 @@ T-3xx = M3, T-4xx = M4, T-5xx = M5. Never reuse a retired ID.
 | T-521 | M5 | Split from T-501 at its live check: one admin WhatsApp alert delivered through a real provider (the CallMeBot bot until Termii is keyed), once B-013 is resolved | T-501 | [ ] |
 | T-522 | M5 | Split from T-507 at its live check: one customer status update delivered by WhatsApp through Termii (DoD 10's WhatsApp branch), once B-014 is resolved | T-507 | [ ] |
 | T-523 | M5 | Discovered at T-511: FR-NOT-04's weekly "New Drops" email to active subscribers, featuring products added that week, each with its unsubscribe link (Celery beat) | T-511 | [x] |
+| T-524 | M5 | Verify finding 1 (major): show Paystack's fee and the amount actually paid to the admin; the admin email and WhatsApp label the order total "Total paid" (`admin_new_order.txt:13`, `admin_alerts.py:85`) and the order detail omits `payment_fee` (`orders/admin_views.py:172-179`) | T-504 | [ ] |
+| T-525 | M5 | Verify finding 2 (major): commit a production process definition (gunicorn gthread with access log off, Celery worker, Celery beat) and a deployment note of required environment variables | T-519 | [ ] |
+| T-526 | M5 | Verify finding 4 (minor): the admin list and detail restate statuses and labels (`order-list.tsx:10-19`, `order-detail.tsx:12-19`); serve them from the API | T-504 | [ ] |
+| T-527 | M5 | Verify finding 5 (minor): move the `naira` formatter out of `orders.tasks` into a shared module (`admin_alerts.py:10`, `new_drops.py:14`) | T-523 | [ ] |
+| T-528 | M5 | Verify finding 6 (minor): while the CallMeBot relay is the WhatsApp provider, send the admin only order number, total, item count and link, not the customer's name, phone and address | T-501 | [ ] |
 | T-520 | M5 | Storage provider interface (local disk and S3-compatible, selected by env, D-097); design and print files and backups go through it | T-518 | [x] |
 
 ## Change log
