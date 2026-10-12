@@ -50,7 +50,16 @@ const detail: AdminOrderDetail = {
       design_file_url: "http://api.test/api/v1/orders/items/i2/design-file/",
     },
   ],
-  payment: { reference: "MOMPAY-abc", subtotal: 2450000, delivery_fee: 300000, discount: 100000, promo_code: "NAPS20", total: 2650000 },
+  payment: {
+    reference: "MOMPAY-abc",
+    subtotal: 2450000,
+    delivery_fee: 300000,
+    discount: 100000,
+    promo_code: "NAPS20",
+    total: 2650000,
+    payment_fee: 0,
+    amount_paid: 2650000,
+  },
   status_history: [
     { status: "paid", label: "Paid", timestamp: "2026-10-11T10:01:00Z" },
     { status: "printed", label: "Printed", timestamp: "2026-10-11T15:00:00Z", by: "owner@momus.test", note: "Printed at Yaba" },
@@ -116,6 +125,22 @@ describe("AdminOrderDetailView", () => {
     expect(within(timeline).getByText(/owner@momus.test/)).toBeInTheDocument();
     expect(within(timeline).getByText("Printed at Yaba")).toBeInTheDocument();
     expect(screen.getByLabelText("Status")).toHaveValue("printed");
+  });
+
+  it("shows Paystack's fee and the total paid when the customer bore it", async () => {
+    api({ ...detail, payment: { ...detail.payment, payment_fee: 52031, amount_paid: 2702031 } });
+    renderDetail();
+    const payment = await screen.findByRole("region", { name: "Payment" });
+    expect(within(payment).getByText("Order total").nextSibling).toHaveTextContent("₦26,500");
+    expect(within(payment).getByText("Paystack fee (paid by the customer)").nextSibling).toHaveTextContent("₦520.31");
+    expect(within(payment).getByText("Total paid").nextSibling).toHaveTextContent("₦27,020.31");
+  });
+
+  it("shows no fee lines without a fee", async () => {
+    api();
+    renderDetail();
+    const payment = await screen.findByRole("region", { name: "Payment" });
+    expect(within(payment).queryByText("Total paid")).not.toBeInTheDocument();
   });
 
   it("saves internal notes", async () => {

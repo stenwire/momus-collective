@@ -1,4 +1,4 @@
-{% autoescape off %}New order {{ order.order_number }}: {{ total }} paid
+{% autoescape off %}New order {{ order.order_number }}: {{ paid }} paid
 
 Customer: {{ customer.name }}{% if not customer.account %} (guest){% endif %}
 Phone: {{ customer.phone }}
@@ -10,7 +10,9 @@ Items:{% for line in items %}
 Subtotal: {{ subtotal }}
 Delivery: {{ delivery }}{% if discount %}
 Discount: -{{ discount }}{% endif %}
-Total paid: {{ total }}
+Order total: {{ total }}{% if fee %}
+Paystack fee (paid by the customer): {{ fee }}{% endif %}
+Total paid: {{ paid }}
 Paystack reference: {{ order.paystack_reference }}
 
 Ship to:

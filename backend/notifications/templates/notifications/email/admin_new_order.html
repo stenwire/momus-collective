@@ -2,7 +2,7 @@
 <html lang="en">
 <body style="margin:0;padding:16px;font-family:Helvetica,Arial,sans-serif;color:#18181b;">
   <h1 style="font-size:20px;margin:0 0 4px;">New order {{ order.order_number }}</h1>
-  <p style="margin:0 0 16px;font-size:16px;"><strong>{{ total }}</strong> paid</p>
+  <p style="margin:0 0 16px;font-size:16px;"><strong>{{ paid }}</strong> paid</p>
   <h2 style="font-size:15px;margin:16px 0 4px;">Customer</h2>
   <p style="margin:0;font-size:14px;line-height:1.5;">
     {{ customer.name }}{% if not customer.account %} (guest){% endif %}<br>
@@ -21,7 +21,8 @@
   </table>
   <p style="font-size:14px;line-height:1.5;">
     Subtotal {{ subtotal }} &middot; Delivery {{ delivery }}{% if discount %} &middot; Discount &minus;{{ discount }}{% endif %}<br>
-    <strong>Total paid {{ total }}</strong><br>
+    Order total {{ total }}{% if fee %} &middot; Paystack fee {{ fee }}{% endif %}<br>
+    <strong>Total paid {{ paid }}</strong><br>
     Paystack reference: {{ order.paystack_reference }}
   </p>
   <h2 style="font-size:15px;margin:16px 0 4px;">Ship to</h2>

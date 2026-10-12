@@ -58,6 +58,8 @@ export type AdminOrderDetail = {
     discount: number;
     promo_code: string | null;
     total: number;
+    payment_fee: number;
+    amount_paid: number;
   };
   status_history: { status: OrderStatus; label: string; timestamp: string; by?: string; note?: string }[];
   notes: string;

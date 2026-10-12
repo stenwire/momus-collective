@@ -176,6 +176,8 @@ def admin_detail(order):
             "discount": order.discount,
             "promo_code": redemption.promo_code.code if redemption else None,
             "total": order.total,
+            "payment_fee": order.payment_fee,
+            "amount_paid": order.total + order.payment_fee,
         },
         "status_history": [
             {**entry, "label": labels.get(entry["status"], entry["status"])}

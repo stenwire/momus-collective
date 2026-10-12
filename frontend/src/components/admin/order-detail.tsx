@@ -205,8 +205,16 @@ export function AdminOrderDetailView({ id }: { id: string }) {
               <dd className="text-right">−{formatNaira(o.payment.discount)}</dd>
             </>
           ) : null}
-          <dt className="font-semibold text-zinc-50">Total</dt>
+          <dt className="font-semibold text-zinc-50">Order total</dt>
           <dd className="text-right font-semibold text-zinc-50">{formatNaira(o.payment.total)}</dd>
+          {o.payment.payment_fee ? (
+            <>
+              <dt>Paystack fee (paid by the customer)</dt>
+              <dd className="text-right">{formatNaira(o.payment.payment_fee)}</dd>
+              <dt className="font-semibold text-zinc-50">Total paid</dt>
+              <dd className="text-right font-semibold text-zinc-50">{formatNaira(o.payment.amount_paid)}</dd>
+            </>
+          ) : null}
         </dl>
       </Section>
       <Section title="Timeline">

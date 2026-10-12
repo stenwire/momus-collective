@@ -43,6 +43,8 @@ def _context(order):
         "delivery": naira(order.delivery_fee),
         "discount": naira(order.discount) if order.discount else "",
         "total": naira(order.total),
+        "fee": naira(order.payment_fee) if order.payment_fee else "",
+        "paid": naira(order.total + order.payment_fee),
         "admin_url": admin_url(order),
     }
 
@@ -66,7 +68,7 @@ def _email(order):
         return
     context = _context(order)
     message = EmailMultiAlternatives(
-        subject=f"New order {order.order_number}: {context['total']}",
+        subject=f"New order {order.order_number}: {context['paid']}",
         body=render_to_string("notifications/email/admin_new_order.txt", context),
         from_email=settings.DEFAULT_FROM_EMAIL,
         to=recipients,
@@ -82,7 +84,7 @@ def _email(order):
 
 def whatsapp_summary(order):
     c = _context(order)
-    lines = [f"New order {order.order_number}: {c['total']} paid"]
+    lines = [f"New order {order.order_number}: {c['paid']} paid"]
     lines.append(f"{c['customer']['name']}, {c['customer']['phone']}")
     for line in c["items"]:
         item = line["item"]

@@ -7,6 +7,7 @@ from django.core import mail
 from django.core.exceptions import ImproperlyConfigured
 from django.core.mail import EmailMessage
 from PIL import Image
+from rest_framework.test import APIClient
 
 from accounts.models import User
 from carts.models import SavedDesign
@@ -199,3 +200,44 @@ def test_resend_backend_sends_attachments_base64(monkeypatch, settings):
     assert calls[0]["attachments"] == [
         {"filename": "file.png", "content": base64.b64encode(b"\x89PNG-bytes").decode()}
     ]
+
+
+def test_a_passed_on_fee_is_shown_to_the_admin(
+    product, staff, monkeypatch, wa, django_capture_on_commit_callbacks
+):
+    from orders import paystack
+    from orders.models import Order
+
+    body = guest_start(product)
+    monkeypatch.setattr(
+        paystack,
+        "verify_transaction",
+        lambda ref: {
+            "status": "success",
+            "currency": "NGN",
+            "amount": body["amount"] + 52031,
+            "requested_amount": body["amount"],
+        },
+    )
+    with django_capture_on_commit_callbacks(execute=True):
+        APIClient().post(
+            "/api/v1/checkout/verify/", {"reference": body["reference"]}, format="json"
+        )
+    order = Order.objects.get(paystack_reference=body["reference"])
+    [email] = admin_mail()
+    assert email.subject == f"New order {order.order_number}: ₦23,520.31"
+    assert "Order total: ₦23,000" in email.body
+    assert "Paystack fee (paid by the customer): ₦520.31" in email.body
+    assert "Total paid: ₦23,520.31" in email.body
+    assert wa.calls[0]["params"]["text"].startswith(
+        f"New order {order.order_number}: ₦23,520.31 paid"
+    )
+    detail = (
+        client_for(User.objects.get(email="owner@example.com"))
+        .get(f"/api/v1/admin/orders/{order.id}/")
+        .json()
+    )
+    assert (detail["payment"]["payment_fee"], detail["payment"]["amount_paid"]) == (
+        52031,
+        2352031,
+    )
