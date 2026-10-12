@@ -120,3 +120,46 @@ def status_update(order, entry_index):
             f"{description} Track it: {tracking_url(order)}"
         )
         send_once(order, kind, Channel.WHATSAPP, lambda: sender.send(phone, text))
+
+
+REVIEW_PROMPT_DELAY_DAYS = 3
+
+
+def review_links(order):
+    """One link per catalog shirt not yet reviewed for this order; custom
+    designs have no product page to review."""
+    from reviews.models import Review
+
+    reviewed = set(
+        Review.objects.filter(order=order).values_list("product_id", flat=True)
+    )
+    seen, links = set(), []
+    for item in order.items.all():
+        product = item.product
+        if product is None or not product.is_active:
+            continue
+        if product.id in reviewed or product.id in seen:
+            continue
+        seen.add(product.id)
+        links.append(
+            {
+                "slogan": product.slogan,
+                "url": f"{settings.FRONTEND_URL}/product/{product.slug}"
+                f"?review={order.tracking_token}#reviews",
+            }
+        )
+    return links
+
+
+def review_prompt(order):
+    """FR-REV-05. Sent once per order; nothing if there's nothing to review."""
+    links = review_links(order)
+    if not links:
+        return False
+    return send_email(
+        order,
+        "review_prompt",
+        "review_prompt",
+        f"How's your shirt? Review order {order.order_number}",
+        {"links": links},
+    )

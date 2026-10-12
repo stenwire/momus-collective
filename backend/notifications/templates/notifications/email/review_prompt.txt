@@ -1,0 +1,8 @@
+{% autoescape off %}Your order {{ order.order_number }} arrived a few days ago. How are you finding it?
+
+A quick review helps other people pick their next shirt:
+{% for link in links %}
+- {{ link.slogan }}: {{ link.url }}{% endfor %}
+
+momus collective
+{% endautoescape %}

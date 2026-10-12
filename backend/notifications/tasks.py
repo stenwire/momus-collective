@@ -31,3 +31,33 @@ def status_update(order_id, entry_index):
     if entry_index != len(order.status_history) - 1:
         return
     send(order, entry_index)
+
+
+@shared_task
+def send_review_prompts():
+    """Hourly (CELERY_BEAT_SCHEDULE): orders delivered at least 3 days ago
+    that haven't been prompted. One failure doesn't stop the rest."""
+    from datetime import timedelta
+
+    from django.utils import timezone
+
+    from orders.models import Order, OrderStatus
+
+    from .customer import REVIEW_PROMPT_DELAY_DAYS, review_prompt
+
+    due = (
+        Order.objects.filter(
+            status=OrderStatus.DELIVERED,
+            delivered_at__lte=timezone.now() - timedelta(days=REVIEW_PROMPT_DELAY_DAYS),
+        )
+        .exclude(notifications__kind="review_prompt")
+        .select_related("user")
+        .prefetch_related("items__product")
+    )
+    sent = 0
+    for order in due:
+        try:
+            sent += bool(review_prompt(order))
+        except EmailNotSent:
+            continue
+    return sent

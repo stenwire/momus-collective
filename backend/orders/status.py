@@ -35,7 +35,10 @@ def change_status(order_id, status, by, note=""):
             entry["note"] = note
         order.status = status
         order.status_history = [*order.status_history, entry]
-        order.save(update_fields=["status", "status_history", "updated_at"])
+        order.delivered_at = timezone.now() if status == OrderStatus.DELIVERED else None
+        order.save(
+            update_fields=["status", "status_history", "delivered_at", "updated_at"]
+        )
         notify_status(order)
     return order, True
 

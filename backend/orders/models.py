@@ -102,6 +102,8 @@ class Order(models.Model):
     customer_choice = models.CharField(
         max_length=10, choices=CustomerChoice.choices, blank=True
     )
+    # When it last reached Delivered: the review prompt waits 3 days from here.
+    delivered_at = models.DateTimeField(null=True, blank=True)
     confirmation_sent_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -79,6 +79,13 @@ REDIS_URL = env("REDIS_URL")
 
 CELERY_BROKER_URL = REDIS_URL
 CELERY_RESULT_BACKEND = REDIS_URL
+# Run by `celery -A config beat` alongside the worker.
+CELERY_BEAT_SCHEDULE = {
+    "review-prompts": {
+        "task": "notifications.tasks.send_review_prompts",
+        "schedule": 60 * 60,
+    },
+}
 
 CACHES = {
     "default": {
