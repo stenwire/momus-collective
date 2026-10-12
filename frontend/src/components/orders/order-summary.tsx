@@ -98,6 +98,14 @@ export function OrderItems({ order }: { order: Order }) {
         ) : null}
         <dt className="font-semibold text-zinc-50">Total</dt>
         <dd className="text-right font-semibold text-zinc-50">{formatNaira(order.total)}</dd>
+        {order.payment_fee ? (
+          <>
+            <dt>Paystack fee</dt>
+            <dd className="text-right">{formatNaira(order.payment_fee)}</dd>
+            <dt className="font-semibold text-zinc-50">Total paid</dt>
+            <dd className="text-right font-semibold text-zinc-50">{formatNaira(order.amount_paid)}</dd>
+          </>
+        ) : null}
       </dl>
     </div>
   );

@@ -104,14 +104,21 @@ def settle(reference, paystack_data):
             session.status = CheckoutSession.Status.FAILED
             session.save(update_fields=["status"])
             return session, False
+        # With fees passed to the customer, Paystack charges our total plus
+        # its fee and reports our total as requested_amount (D-098).
+        charged = paystack_data.get("amount")
+        requested = paystack_data.get("requested_amount", charged)
         if (
-            paystack_data.get("amount") != session.total
+            requested != session.total
+            or not isinstance(charged, int)
+            or charged < session.total
             or paystack_data.get("currency") != "NGN"
         ):
             raise AmountMismatch(reference)
         session.status = CheckoutSession.Status.PAID
         session.paid_at = timezone.now()
-        session.save(update_fields=["status", "paid_at"])
+        session.payment_fee = charged - session.total
+        session.save(update_fields=["status", "paid_at", "payment_fee"])
         # Same transaction: if the order can't be created, the payment isn't
         # recorded either, and Paystack's retry or the next verify tries again.
         from .fulfilment import fulfil

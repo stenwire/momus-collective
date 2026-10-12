@@ -38,6 +38,8 @@ export type Order = {
   delivery_fee: number;
   discount: number;
   total: number;
+  payment_fee: number;
+  amount_paid: number;
   estimated_delivery: { earliest: string; latest: string };
   tracking_url: string;
   shipping_address?: Record<string, string>;

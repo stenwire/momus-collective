@@ -40,6 +40,7 @@ def event(reference, amount=1300000, kind="charge.success", status="success"):
             "data": {
                 "reference": reference,
                 "amount": amount,
+                "requested_amount": amount,
                 "currency": "NGN",
                 "status": status,
             },
@@ -200,6 +201,7 @@ def test_webhook_settles_off_the_request_path_without_customer_details(
             "data": {
                 "reference": session.reference,
                 "amount": 1300000,
+                "requested_amount": 1300000,
                 "currency": "NGN",
                 "status": "success",
                 "customer": {"email": "g@example.com", "phone": "+2348000000000"},
@@ -215,6 +217,7 @@ def test_webhook_settles_off_the_request_path_without_customer_details(
             "reference": session.reference,
             "status": "success",
             "amount": 1300000,
+            "requested_amount": 1300000,
             "currency": "NGN",
         }
     ]
@@ -246,6 +249,7 @@ def test_settle_charge_ignores_unknown_references_and_bad_amounts(session):
             "reference": session.reference,
             "status": "success",
             "amount": 1,
+            "requested_amount": 1,
             "currency": "NGN",
         }
     )

@@ -83,6 +83,7 @@ def webhook(reference, amount):
             "data": {
                 "reference": reference,
                 "amount": amount,
+                "requested_amount": amount,
                 "currency": "NGN",
                 "status": "success",
             },
