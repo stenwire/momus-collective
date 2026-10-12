@@ -105,6 +105,19 @@ describe("TrackOrderPage", () => {
     expect(screen.getByText(/we've got your revised design/)).toBeInTheDocument();
   });
 
+  it("shows Paystack's fee and the total paid when the customer bore it", async () => {
+    respond(200, { ...order, payment_fee: 52031, amount_paid: 2212031 });
+    await renderPage("tok");
+    expect(screen.getByText("Paystack fee").nextSibling).toHaveTextContent("₦520.31");
+    expect(screen.getByText("Total paid").nextSibling).toHaveTextContent("₦22,120.31");
+  });
+
+  it("shows no fee lines when there was no fee", async () => {
+    respond(200, order);
+    await renderPage("tok");
+    expect(screen.queryByText("Paystack fee")).not.toBeInTheDocument();
+  });
+
   it("is a 404 for a token that matches no order", async () => {
     respond(404, {});
     await expect(TrackOrderPage({ params: Promise.resolve({ token: "MOM-20261011-001" }), searchParams: Promise.resolve({}) })).rejects.toThrow(

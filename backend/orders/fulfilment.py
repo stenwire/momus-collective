@@ -38,6 +38,7 @@ def _create_order(session):
                     delivery_fee=session.delivery_fee,
                     discount=session.discount,
                     total=session.total,
+                    payment_fee=session.payment_fee,
                     status=status,
                     paystack_reference=session.reference,
                     paid_at=session.paid_at,

@@ -24,7 +24,9 @@
             <tr><td style="color:#a1a1aa;">Subtotal</td><td align="right">{{ subtotal }}</td></tr>
             <tr><td style="color:#a1a1aa;">Delivery</td><td align="right">{{ delivery }}</td></tr>
             {% if discount %}<tr><td style="color:#a1a1aa;">Discount</td><td align="right">&minus;{{ discount }}</td></tr>{% endif %}
-            <tr><td style="font-weight:bold;padding-top:4px;">Total paid</td><td align="right" style="font-weight:bold;padding-top:4px;">{{ total }}</td></tr>
+            <tr><td style="color:#a1a1aa;">Order total</td><td align="right">{{ total }}</td></tr>
+            {% if fee %}<tr><td style="color:#a1a1aa;">Paystack fee</td><td align="right">{{ fee }}</td></tr>{% endif %}
+            <tr><td style="font-weight:bold;padding-top:4px;">Total paid</td><td align="right" style="font-weight:bold;padding-top:4px;">{{ paid }}</td></tr>
           </table>
         </td></tr>
         <tr><td style="padding:12px 0;border-top:1px solid #27272a;font-size:14px;line-height:1.5;">

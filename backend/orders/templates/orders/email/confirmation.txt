@@ -7,7 +7,9 @@ Order {{ order.order_number }}
 Subtotal: {{ subtotal }}
 Delivery: {{ delivery }}{% if discount %}
 Discount: -{{ discount }}{% endif %}
-Total paid: {{ total }}
+Order total: {{ total }}{% if fee %}
+Paystack fee: {{ fee }}{% endif %}
+Total paid: {{ paid }}
 
 Shipping to:
 {{ address.full_name }}

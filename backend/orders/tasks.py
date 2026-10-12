@@ -61,6 +61,8 @@ def send_order_confirmation(order):
         "delivery": naira(order.delivery_fee) if order.delivery_fee else "Free",
         "discount": naira(order.discount) if order.discount else "",
         "total": naira(order.total),
+        "fee": naira(order.payment_fee) if order.payment_fee else "",
+        "paid": naira(order.total + order.payment_fee),
         "address": order.shipping_address,
         "window": _window(order),
         "tracking_url": f"{settings.FRONTEND_URL}/track/{order.tracking_token}",
@@ -106,12 +108,17 @@ def order_paid(order_id):
 def settle_charge(data):
     """A verified `charge.success` from the webhook. `settle` is idempotent
     and row-locked, so Paystack's retries and the browser's verify are safe."""
+    from . import paystack
     from .models import CheckoutSession
     from .payments import AmountMismatch, settle
 
     reference = data.get("reference") or ""
     if not CheckoutSession.objects.filter(reference=reference).exists():
         return
+    if "requested_amount" not in data:
+        # Without it a passed-on fee can't be told from a wrong amount, so
+        # ask Paystack for the full record.
+        data = paystack.verify_transaction(reference)
     try:
         settle(reference, data)
     except AmountMismatch:

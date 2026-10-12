@@ -118,6 +118,8 @@ def order_payload(order, delivery, include_shipping=False):
         "delivery_fee": order.delivery_fee,
         "discount": order.discount,
         "total": order.total,
+        "payment_fee": order.payment_fee,
+        "amount_paid": order.total + order.payment_fee,
         "estimated_delivery": estimated_delivery(order, delivery),
         "tracking_url": f"{settings.FRONTEND_URL}/track/{order.tracking_token}",
     }
