@@ -5,6 +5,7 @@ const OPTIONS = [
   { value: "price_asc", label: "Price: Low to High" },
   { value: "price_desc", label: "Price: High to Low" },
   { value: "popular", label: "Most Popular" },
+  { value: "top_rated", label: "Top Rated" },
 ] as const;
 
 type Props = {

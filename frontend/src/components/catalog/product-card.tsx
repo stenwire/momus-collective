@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { Product } from "@/lib/api";
 import { formatNaira } from "@/lib/format";
 import { HeartButton } from "../wishlist/heart-button";
+import { RatingSummary } from "./product-reviews";
 
 export function ProductCard({ product }: { product: Product }) {
   const mockup = product.mockup_images[0];
@@ -38,6 +39,7 @@ export function ProductCard({ product }: { product: Product }) {
         <p className="text-sm font-semibold text-amber-400">
           {formatNaira(product.price)}
         </p>
+        <RatingSummary average={product.avg_rating} count={product.review_count} />
       </Link>
       <div className="absolute right-5 top-5">
         <HeartButton productId={product.id} slogan={product.slogan} />

@@ -24,6 +24,7 @@ export type Product = {
   tags: string[];
   total_orders: number;
   avg_rating: string;
+  review_count: number;
   created_at: string;
 };
 

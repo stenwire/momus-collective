@@ -14,6 +14,7 @@ function makeProduct(id: string, slogan: string) {
     tags: [],
     total_orders: 0,
     avg_rating: "0.00",
+    review_count: 0,
     created_at: "2026-01-01T00:00:00Z",
   };
 }

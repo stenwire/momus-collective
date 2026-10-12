@@ -236,7 +236,7 @@ because every one of these acts on orders that M4 creates.
 | 12 | Only verified purchasers can review; reviews carry the Verified Purchase badge (FR-REV-01, FR-REV-02) | [x] |
 | 13 | Review text caps at 500 characters with a 1-5 rating (FR-REV-01) | [x] |
 | 14 | Admin can flag and hide reviews (FR-REV-03) | [x] |
-| 15 | Products show average rating and review count on card and detail; Top Rated collection works (FR-REV-04) | [ ] |
+| 15 | Products show average rating and review count on card and detail; Top Rated collection works (FR-REV-04) | [x] |
 | 16 | A review prompt email fires 3 days after Delivered (FR-REV-05) | [ ] |
 | 17 | Every admin route asserts an explicit `is_staff` permission class — test passes (NFR-04) | [ ] |
 | 18 | Load testing confirms 1,000 concurrent users and 500 orders/month are served (NFR-06) | [ ] |

@@ -108,3 +108,19 @@ describe("ProductReviews", () => {
     expect(await screen.findByText("review 2")).toBeInTheDocument();
   });
 });
+
+describe("RatingSummary", () => {
+  it("shows the average and count, with a full sentence for screen readers", async () => {
+    const { RatingSummary } = await import("./product-reviews");
+    render(<RatingSummary average="4.50" count={2} href="#reviews" />);
+    const link = screen.getByRole("link", { name: "Rated 4.5 out of 5 from 2 reviews" });
+    expect(link).toHaveAttribute("href", "#reviews");
+    expect(link).toHaveTextContent("4.5 (2)");
+  });
+
+  it("shows nothing for an unreviewed shirt", async () => {
+    const { RatingSummary } = await import("./product-reviews");
+    const { container } = render(<RatingSummary average="0.00" count={0} />);
+    expect(container).toBeEmptyDOMElement();
+  });
+});

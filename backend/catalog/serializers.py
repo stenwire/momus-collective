@@ -24,6 +24,7 @@ class ProductListSerializer(serializers.ModelSerializer):
             "tags",
             "total_orders",
             "avg_rating",
+            "review_count",
             "created_at",
         ]
 
@@ -48,6 +49,29 @@ class ProductDetailSerializer(ProductListSerializer):
             .order_by("-created_at")[:4]
         )
         return ProductListSerializer(related, many=True).data
+
+
+TOP_RATED_SIZE = 8
+
+
+def top_rated_collection():
+    """FR-REV-04: a computed Top Rated carousel, best average first, among
+    shirts with at least one visible review; none until there are some."""
+    products = (
+        Product.objects.filter(is_active=True, review_count__gt=0)
+        .select_related("category")
+        .order_by("-avg_rating", "-review_count", "-created_at")[:TOP_RATED_SIZE]
+    )
+    data = ProductListSerializer(products, many=True).data
+    if not data:
+        return None
+    return {
+        "id": "top-rated",
+        "name": "Top Rated",
+        "slug": "top-rated",
+        "is_featured": False,
+        "products": data,
+    }
 
 
 class CollectionSerializer(serializers.ModelSerializer):

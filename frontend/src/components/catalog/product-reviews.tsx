@@ -180,3 +180,27 @@ export function ProductReviews({ slug }: { slug: string }) {
     </section>
   );
 }
+
+// FR-REV-04: the average and count on cards and the product page.
+export function RatingSummary({ average, count, href }: { average: string; count: number; href?: string }) {
+  if (!count) return null;
+  const value = Number(average);
+  const text = `${value.toFixed(1)} (${count})`;
+  const label = `Rated ${value.toFixed(1)} out of 5 from ${count} ${count === 1 ? "review" : "reviews"}`;
+  const body = (
+    <>
+      <span aria-hidden className="text-amber-400">
+        ★
+      </span>{" "}
+      <span aria-hidden>{text}</span>
+      <span className="sr-only">{label}</span>
+    </>
+  );
+  return href ? (
+    <a href={href} className="inline-flex min-h-11 items-center text-sm text-zinc-300 hover:underline">
+      {body}
+    </a>
+  ) : (
+    <p className="text-xs text-zinc-300">{body}</p>
+  );
+}

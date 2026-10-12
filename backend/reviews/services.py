@@ -4,7 +4,7 @@ delivered may review it, once; the badge comes from that order."""
 from decimal import ROUND_HALF_UP, Decimal
 
 from django.db import IntegrityError, transaction
-from django.db.models import Avg
+from django.db.models import Avg, Count
 from rest_framework.exceptions import ValidationError
 
 from orders.models import Order, OrderStatus
@@ -48,11 +48,14 @@ def eligible_order(product, user=None, token=None):
 
 
 def refresh_rating(product):
-    average = product.reviews.filter(is_visible=True).aggregate(a=Avg("rating"))["a"]
-    product.avg_rating = Decimal(average or 0).quantize(
+    stats = product.reviews.filter(is_visible=True).aggregate(
+        a=Avg("rating"), n=Count("id")
+    )
+    product.avg_rating = Decimal(stats["a"] or 0).quantize(
         Decimal("0.01"), rounding=ROUND_HALF_UP
     )
-    product.save(update_fields=["avg_rating"])
+    product.review_count = stats["n"]
+    product.save(update_fields=["avg_rating", "review_count"])
 
 
 def leave_review(product, rating, text, user=None, token=None):
