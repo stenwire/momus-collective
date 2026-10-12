@@ -238,7 +238,7 @@ because every one of these acts on orders that M4 creates.
 | 14 | Admin can flag and hide reviews (FR-REV-03) | [x] |
 | 15 | Products show average rating and review count on card and detail; Top Rated collection works (FR-REV-04) | [x] |
 | 16 | A review prompt email fires 3 days after Delivered (FR-REV-05) | [x] |
-| 17 | Every admin route asserts an explicit `is_staff` permission class — test passes (NFR-04) | [ ] |
+| 17 | Every admin route asserts an explicit `is_staff` permission class — test passes (NFR-04) | [x] |
 | 18 | Load testing confirms 1,000 concurrent users and 500 orders/month are served (NFR-06) | [ ] |
 | 19 | Daily database backups and weekly asset backups to secondary storage are configured (NFR-07) | [ ] |
 | 20 | Customer PII does not appear in application logs — confirmed by opening the logging config | [ ] |
