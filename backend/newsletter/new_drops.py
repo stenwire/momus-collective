@@ -11,7 +11,7 @@ from django.utils import timezone
 
 from catalog.models import Product
 from config.email import EmailNotSent
-from orders.tasks import naira
+from config.money import naira
 
 from .models import NewsletterSubscriber
 from .services import unsubscribe_url

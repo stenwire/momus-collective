@@ -6,8 +6,8 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 
 from accounts.models import User
+from config.money import naira
 from designs.storage import design_storage, order_item_file_name
-from orders.tasks import naira
 
 from . import whatsapp
 from .models import Channel
@@ -82,25 +82,24 @@ def _email(order):
     message.send()
 
 
-def whatsapp_summary(order):
+def whatsapp_summary(order, personal=True):
+    """The admin's WhatsApp. Without `personal` (a free relay, D-093) it
+    leaves out the customer's name, phone and address; the email has them."""
     c = _context(order)
     lines = [f"New order {order.order_number}: {c['paid']} paid"]
-    lines.append(f"{c['customer']['name']}, {c['customer']['phone']}")
+    if personal:
+        lines.append(f"{c['customer']['name']}, {c['customer']['phone']}")
     for line in c["items"]:
         item = line["item"]
         title = f'Custom: "{item.slogan_text}"' if line["custom"] else item.slogan_text
         detail = ", ".join(filter(None, [item.size, item.color]))
         lines.append(f"- {item.quantity}x {title} ({detail})")
-    a = c["address"]
-    lines.append(
-        "Ship to: "
-        + ", ".join(
-            filter(
-                None,
-                [a.get("address_line_1"), a.get("city"), a.get("lga"), a.get("state")],
-            )
-        )
-    )
+    if personal:
+        a = c["address"]
+        place = [a.get("address_line_1"), a.get("city"), a.get("lga"), a.get("state")]
+        lines.append("Ship to: " + ", ".join(filter(None, place)))
+    else:
+        lines.append("Customer and address are in the order email.")
     if any(line["custom"] for line in c["items"]):
         lines.append("Print files are attached to the order email.")
     lines.append(f"Open: {c['admin_url']}")
@@ -115,5 +114,7 @@ def notify_new_order(order):
             order,
             KIND,
             Channel.WHATSAPP,
-            lambda: sender.send_to_admin(whatsapp_summary(order)),
+            lambda: sender.send_to_admin(
+                whatsapp_summary(order, personal=sender.carries_personal_data)
+            ),
         )

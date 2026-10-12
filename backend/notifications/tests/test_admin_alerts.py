@@ -110,7 +110,10 @@ def test_the_admin_bot_sends_the_whatsapp_summary(product, staff, paid, wa):
     assert params["phone"] == "+2348011111111" and params["apikey"] == "cmb-key"
     text = params["text"]
     assert text.startswith(f"New order {order.order_number}: ₦23,000 paid")
-    assert "Ada Lovelace, +2348000000000" in text
+    # A free relay gets no customer details (D-093, finding 6).
+    for private in ("Ada Lovelace", "+2348000000000", "Admiralty", "Eti-Osa"):
+        assert private not in text
+    assert "Customer and address are in the order email." in text
     assert "- 2x touch grass (M)" in text
     assert f"/admin/orders/{order.id}" in text
 
@@ -129,6 +132,9 @@ def test_termii_is_chosen_automatically_once_keyed(product, staff, paid, wa, set
         "Momus",
         "termii-key",
     )
+    # Termii is a business API with a data agreement: the full summary.
+    assert "Ada Lovelace, +2348000000000" in body["sms"]
+    assert "Ship to: 12 Admiralty Way, Lekki, Eti-Osa, Lagos" in body["sms"]
 
 
 def test_the_env_variable_overrides_the_automatic_choice(wa, settings):

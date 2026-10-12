@@ -8,6 +8,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 
 from config.email import EmailNotSent
+from config.money import naira
 from notifications.whatsapp import WhatsAppError
 
 from .delivery import delivery_settings, estimated_delivery
@@ -26,11 +27,6 @@ def _image_url(order, item):
     return (
         images[0] if images[0].startswith("http") else settings.BACKEND_URL + images[0]
     )
-
-
-def naira(kobo):
-    naira, rest = divmod(kobo, 100)
-    return f"₦{naira:,}" + (f".{rest:02d}" if rest else "")
 
 
 def _window(order):

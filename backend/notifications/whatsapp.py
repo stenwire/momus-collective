@@ -13,6 +13,9 @@ class WhatsAppError(Exception):
 class Provider:
     name = ""
     can_message_customers = False
+    # Whether customer details may pass through it (a business API with a
+    # data agreement), not a free relay.
+    carries_personal_data = False
 
     def configured(self):
         raise NotImplementedError
@@ -57,6 +60,7 @@ class Termii(Provider):
 
     name = "termii"
     can_message_customers = True
+    carries_personal_data = True
 
     def configured(self):
         return bool(settings.TERMII_API_KEY and settings.TERMII_SENDER_ID)
