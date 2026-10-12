@@ -2,6 +2,7 @@ from datetime import timedelta
 from pathlib import Path
 
 import environ
+from celery.schedules import crontab
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -39,6 +40,7 @@ INSTALLED_APPS = [
     "newsletter",
     "designs",
     "notifications",
+    "backups",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
@@ -91,6 +93,15 @@ CELERY_BEAT_SCHEDULE = {
         "task": "notifications.tasks.send_review_prompts",
         "schedule": 60 * 60,
     },
+    # NFR-07, Lagos time (CELERY_TIMEZONE).
+    "daily-database-backup": {
+        "task": "backups.tasks.daily_database_backup",
+        "schedule": crontab(hour=2, minute=0),
+    },
+    "weekly-asset-backup": {
+        "task": "backups.tasks.weekly_asset_backup",
+        "schedule": crontab(hour=3, minute=0, day_of_week="sunday"),
+    },
 }
 
 CACHES = {
@@ -116,6 +127,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "Africa/Lagos"
+CELERY_TIMEZONE = TIME_ZONE
 USE_I18N = True
 USE_TZ = True
 
@@ -166,7 +178,6 @@ BACKEND_URL = env("BACKEND_URL", default="http://localhost:8000")
 DESIGN_FILES_ROOT = Path(
     env("DESIGN_FILES_ROOT", default=str(BASE_DIR / "private" / "design-files"))
 )
-
 BACKUP_ROOT = Path(env("BACKUP_ROOT", default=str(BASE_DIR / "private" / "backups")))
 
 # D-097: each purpose picks a storage provider. The S3 settings are read
