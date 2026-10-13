@@ -16,6 +16,7 @@ import {
   removeFromWishlist,
   type WishlistEntry,
 } from "@/lib/wishlist/api";
+import { buttonClasses } from "@/components/ui/button";
 
 const SELECT =
   "min-h-11 rounded-md border border-zinc-700 bg-zinc-950 px-3 text-base text-zinc-50 focus:border-amber-400 focus:outline-none";
@@ -110,7 +111,7 @@ function WishlistItem({
               move.mutate();
             }}
             aria-label={`Move ${product.slogan} to bag`}
-            className="min-h-11 rounded-md bg-amber-400 px-4 text-sm font-medium text-black hover:bg-amber-300 disabled:opacity-60"
+            className={buttonClasses({ size: "sm" })}
           >
             Move to bag
           </button>

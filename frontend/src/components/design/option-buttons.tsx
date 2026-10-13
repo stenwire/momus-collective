@@ -1,5 +1,7 @@
 "use client";
 
+import { Chip } from "@/components/ui/chip";
+
 export function OptionButtons({
   legend,
   options,
@@ -13,22 +15,17 @@ export function OptionButtons({
 }) {
   return (
     <fieldset>
-      <legend className="mb-2 text-sm font-medium text-zinc-300">{legend}</legend>
+      <legend className="mb-2 font-mono text-xs uppercase tracking-widest text-bone-muted">{legend}</legend>
       <div className="flex flex-wrap gap-2">
         {options.map((option) => (
-          <button
+          <Chip
             key={option.key}
-            type="button"
+            selected={value === option.key}
             onClick={() => onChange(option.key)}
-            aria-pressed={value === option.key}
-            className={`min-h-11 flex-1 rounded-md border px-3 text-sm whitespace-nowrap transition-colors ${
-              value === option.key
-                ? "border-amber-400 bg-amber-400 text-black"
-                : "border-zinc-700 text-zinc-300 hover:border-zinc-500"
-            }`}
+            className="flex-1"
           >
             {option.label}
-          </button>
+          </Chip>
         ))}
       </div>
     </fieldset>

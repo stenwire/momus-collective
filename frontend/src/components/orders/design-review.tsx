@@ -6,6 +6,7 @@ import { useState } from "react";
 import { errorMessages } from "@/lib/auth/api";
 import { requestRefund } from "@/lib/orders/api";
 import type { Order } from "@/lib/orders/types";
+import { buttonClasses } from "@/components/ui/button";
 
 // FR-NOT-03: a rejected design can be revised or refunded from here.
 export function DesignReview({ order, token }: { order: Order; token: string }) {
@@ -42,7 +43,7 @@ export function DesignReview({ order, token }: { order: Order; token: string }) 
               <Link
                 key={item.id}
                 href={`/track/${encodeURIComponent(token)}/revise/${item.id}`}
-                className="inline-flex min-h-11 items-center rounded-md bg-amber-400 px-4 text-sm font-medium text-black hover:bg-amber-300"
+                className={buttonClasses({ size: "sm" })}
               >
                 {designs.length > 1 ? `Revise design ${i + 1}` : "Revise my design"}
               </Link>

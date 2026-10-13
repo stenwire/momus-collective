@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { errorMessages, register, safeNext } from "@/lib/auth/api";
 import { FormErrors, FormField } from "./form-field";
+import { buttonClasses } from "@/components/ui/button";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -53,7 +54,7 @@ export function RegisterForm() {
       <button
         type="submit"
         disabled={pending}
-        className="min-h-11 rounded-md bg-amber-400 px-6 font-medium text-black hover:bg-amber-300 disabled:opacity-60"
+        className={buttonClasses()}
       >
         {pending ? "Creating account…" : "Create account"}
       </button>

@@ -2,6 +2,8 @@
 
 import { useId, useState } from "react";
 import { subscribeToNewsletter } from "@/lib/newsletter";
+import { buttonClasses } from "@/components/ui/button";
+import { cn } from "@/lib/cn";
 
 // FR-NOT-04: new drops by email, from the footer and the homepage.
 export function NewsletterForm() {
@@ -43,7 +45,7 @@ export function NewsletterForm() {
         <button
           type="submit"
           disabled={state.kind === "busy"}
-          className="min-h-11 shrink-0 rounded-md bg-amber-400 px-4 text-sm font-medium text-black hover:bg-amber-300 disabled:opacity-60"
+          className={cn(buttonClasses({ size: "sm" }), "shrink-0")}
         >
           Subscribe
         </button>

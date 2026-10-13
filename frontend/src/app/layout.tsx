@@ -7,6 +7,7 @@ import { MotionProvider } from "@/components/providers/motion-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteNav } from "@/components/site-nav";
+import { Toaster } from "@/components/ui/toaster";
 import { fontVariables } from "@/lib/fonts";
 import "./globals.css";
 
@@ -30,6 +31,9 @@ export default function RootLayout({
       className={`${fontVariables} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-ink font-sans text-bone">
+        <noscript>
+          <style>{"[data-reveal]{opacity:1!important;transform:none!important}"}</style>
+        </noscript>
         <QueryProvider>
           <MotionProvider>
             <AuthBootstrap />
@@ -40,6 +44,7 @@ export default function RootLayout({
             {modal}
             <SiteFooter />
             <CartDrawer />
+            <Toaster />
           </MotionProvider>
         </QueryProvider>
       </body>

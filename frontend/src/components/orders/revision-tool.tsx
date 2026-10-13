@@ -10,6 +10,8 @@ import type { DesignConfig } from "@/lib/design/types";
 import { fetchTrackedOrder, submitRevision } from "@/lib/orders/api";
 import { DesignControls } from "../design/design-controls";
 import { ShirtCanvas } from "../design/shirt-canvas";
+import { buttonClasses } from "@/components/ui/button";
+import { cn } from "@/lib/cn";
 
 // Local state on purpose: a revision never touches the saved design draft.
 export function RevisionTool({ token, itemId }: { token: string; itemId: string }) {
@@ -61,7 +63,7 @@ export function RevisionTool({ token, itemId }: { token: string; itemId: string 
               setSending(false);
             }
           }}
-          className="mt-3 min-h-11 w-full rounded-md bg-amber-400 px-4 font-medium text-black hover:bg-amber-300 disabled:opacity-60"
+          className={cn(buttonClasses({ block: true }), "mt-3")}
         >
           Send revised design
         </button>

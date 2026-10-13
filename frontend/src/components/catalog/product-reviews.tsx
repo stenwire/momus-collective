@@ -6,6 +6,8 @@ import { useId, useState } from "react";
 import { errorMessages } from "@/lib/auth/api";
 import { useSignedIn } from "@/lib/auth/use-signed-in";
 import { fetchReviewEligibility, fetchReviews, postReview, type Review } from "@/lib/reviews";
+import { buttonClasses } from "@/components/ui/button";
+import { cn } from "@/lib/cn";
 
 const posted = new Intl.DateTimeFormat("en-NG", { dateStyle: "medium" });
 
@@ -82,7 +84,7 @@ function ReviewForm({ slug, token, onDone }: { slug: string; token: string; onDo
       <button
         type="submit"
         disabled={busy || rating === 0}
-        className="min-h-11 self-start rounded-md bg-amber-400 px-4 text-sm font-medium text-black hover:bg-amber-300 disabled:opacity-60"
+        className={cn(buttonClasses({ size: "sm" }), "self-start")}
       >
         Post review
       </button>

@@ -25,6 +25,7 @@ import { cancelCheckout, openPaystack, startCheckout, verifyPayment } from "@/li
 import { formatNaira } from "@/lib/format";
 import { CartLines } from "../cart/cart-lines";
 import { ShippingForm } from "./shipping-form";
+import { buttonClasses } from "@/components/ui/button";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   const id = useId();
@@ -285,7 +286,7 @@ export function CheckoutPage() {
             type="button"
             onClick={pay}
             disabled={paying || paidReference !== null}
-            className="min-h-11 rounded-md bg-amber-400 px-6 font-medium text-black hover:bg-amber-300 disabled:opacity-60"
+            className={buttonClasses({ size: "lg" })}
           >
             {quote.data ? `Pay ${formatNaira(quote.data.total)}` : "Pay now"}
           </button>

@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { unsubscribeFromNewsletter } from "@/lib/newsletter";
+import { buttonClasses } from "@/components/ui/button";
+import { cn } from "@/lib/cn";
 
 export function UnsubscribeButton({ token }: { token: string }) {
   const [state, setState] = useState<{ done: boolean; message: string; error: boolean }>({
@@ -29,7 +31,7 @@ export function UnsubscribeButton({ token }: { token: string }) {
             setState({ done: false, message: (error as Error).message, error: true });
           }
         }}
-        className="min-h-11 self-start rounded-md bg-amber-400 px-4 text-sm font-medium text-black hover:bg-amber-300"
+        className={cn(buttonClasses({ size: "sm" }), "self-start")}
       >
         Unsubscribe
       </button>

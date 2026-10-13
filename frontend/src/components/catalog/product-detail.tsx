@@ -10,6 +10,8 @@ import { SIZES } from "@/lib/constants";
 import { formatNaira } from "@/lib/format";
 import { ProductCard } from "./product-card";
 import { ProductReviews, RatingSummary } from "./product-reviews";
+import { buttonClasses } from "@/components/ui/button";
+import { Chip } from "@/components/ui/chip";
 
 export function ProductDetailView({ product }: { product: ProductDetail }) {
   const [size, setSize] = useState<string>(SIZES[0]);
@@ -79,19 +81,9 @@ export function ProductDetailView({ product }: { product: ProductDetail }) {
           </legend>
           <div className="flex gap-2">
             {SIZES.map((s) => (
-              <button
-                key={s}
-                type="button"
-                onClick={() => setSize(s)}
-                aria-pressed={size === s}
-                className={`min-h-11 min-w-11 rounded-md border px-3 text-sm transition-colors ${
-                  size === s
-                    ? "border-amber-400 bg-amber-400 text-black"
-                    : "border-zinc-700 text-zinc-300 hover:border-zinc-500"
-                }`}
-              >
+              <Chip key={s} selected={size === s} onClick={() => setSize(s)}>
                 {s}
-              </button>
+              </Chip>
             ))}
           </div>
         </fieldset>
@@ -103,19 +95,9 @@ export function ProductDetailView({ product }: { product: ProductDetail }) {
             </legend>
             <div className="flex flex-wrap gap-2">
               {product.shirt_colors.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => setColor(c)}
-                  aria-pressed={color === c}
-                  className={`min-h-11 rounded-md border px-3 text-sm transition-colors ${
-                    color === c
-                      ? "border-amber-400 bg-amber-400 text-black"
-                      : "border-zinc-700 text-zinc-300 hover:border-zinc-500"
-                  }`}
-                >
+                <Chip key={c} selected={color === c} onClick={() => setColor(c)}>
                   {c}
-                </button>
+                </Chip>
               ))}
             </div>
           </fieldset>
@@ -124,7 +106,7 @@ export function ProductDetailView({ product }: { product: ProductDetail }) {
         <button
           type="button"
           onClick={addToBag}
-          className="min-h-11 rounded-md bg-amber-400 px-6 py-2 font-medium text-black transition-colors hover:bg-amber-300"
+          className={buttonClasses({ size: "lg" })}
         >
           Add to Bag
         </button>

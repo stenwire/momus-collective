@@ -33,6 +33,7 @@ const TEXT_PAIRS: [string, string][] = [
   ["laurel", "ink"],
   ["laurel", "ink-raised"],
   ["ink", "laurel"],
+  ["ink", "laurel-hi"],
   ["error", "ink"],
   ["error", "ink-raised"],
   ["ok", "ink"],

@@ -5,6 +5,7 @@ import { useEffect, useRef } from "react";
 import { useCartDrawer } from "@/lib/cart/drawer-store";
 import { useCart } from "@/lib/cart/use-cart";
 import { CartLines } from "./cart-lines";
+import { buttonClasses } from "@/components/ui/button";
 
 // FR-CART-03: a bottom sheet on mobile, a right-hand drawer from md up.
 export function CartDrawer() {
@@ -62,7 +63,7 @@ export function CartDrawer() {
             <button
               type="button"
               disabled
-              className="min-h-11 w-full rounded-md bg-amber-400 px-6 font-medium text-black opacity-40"
+              className={buttonClasses({ block: true })}
             >
               Checkout
             </button>
@@ -70,7 +71,7 @@ export function CartDrawer() {
             <Link
               href="/checkout"
               onClick={() => setOpen(false)}
-              className="flex min-h-11 w-full items-center justify-center rounded-md bg-amber-400 px-6 font-medium text-black hover:bg-amber-300"
+              className={buttonClasses({ block: true })}
             >
               Checkout
             </Link>

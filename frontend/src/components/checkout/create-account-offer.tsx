@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { buttonClasses } from "@/components/ui/button";
 
 export type GuestDetails = {
   email: string;
@@ -21,7 +22,7 @@ export function CreateAccountOffer({ details }: { details: GuestDetails }) {
       </p>
       <Link
         href={`/register?${query}`}
-        className="flex min-h-11 items-center justify-center rounded-md bg-amber-400 px-6 font-medium text-black hover:bg-amber-300"
+        className={buttonClasses({ block: true })}
       >
         Create my account
       </Link>

@@ -8,11 +8,10 @@ import { defaultDesignName, exportDesign, saveDesign } from "@/lib/design/saved"
 import { sameConfig, useDesignStore } from "@/lib/design/store";
 import type { DesignConfig } from "@/lib/design/types";
 import { FormErrors } from "../auth/form-field";
+import { buttonClasses } from "@/components/ui/button";
 
-const BUTTON =
-  "min-h-11 rounded-md bg-amber-400 px-6 font-medium text-black hover:bg-amber-300 disabled:opacity-60";
-const SECONDARY =
-  "min-h-11 rounded-md border border-amber-400 px-6 font-medium text-amber-400 hover:bg-amber-400/10 disabled:opacity-60";
+const BUTTON = buttonClasses();
+const SECONDARY = buttonClasses({ variant: "secondary" });
 
 export function SaveDesign({ config }: { config: DesignConfig }) {
   const signedIn = useSignedIn();

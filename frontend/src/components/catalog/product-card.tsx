@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Product } from "@/lib/api";
 import { formatNaira } from "@/lib/format";
+import { Tag } from "../ui/tag";
 import { HeartButton } from "../wishlist/heart-button";
 import { RatingSummary } from "./product-reviews";
 
@@ -27,9 +28,7 @@ export function ProductCard({ product }: { product: Product }) {
             />
           ) : null}
           {product.tags[0] ? (
-            <span className="absolute left-2 top-2 rounded-full bg-amber-400 px-2 py-0.5 text-xs font-medium text-black">
-              {product.tags[0]}
-            </span>
+            <Tag className="absolute left-2 top-2">{product.tags[0]}</Tag>
           ) : null}
         </div>
         <p className="text-xs uppercase tracking-wide text-zinc-400">

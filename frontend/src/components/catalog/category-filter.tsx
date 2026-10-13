@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { fetchCategories } from "@/lib/api";
+import { Chip } from "@/components/ui/chip";
 
 type Props = {
   selected: string | null;
@@ -18,32 +19,18 @@ export function CategoryFilter({ selected, onSelect }: Props) {
 
   return (
     <div className="flex flex-wrap gap-2 px-4 pb-4">
-      <button
-        type="button"
-        onClick={() => onSelect(null)}
-        aria-pressed={selected === null}
-        className={`min-h-11 rounded-full border px-3 py-1.5 text-sm transition-colors ${
-          selected === null
-            ? "border-amber-400 bg-amber-400 text-black"
-            : "border-zinc-700 text-zinc-300 hover:border-zinc-500"
-        }`}
-      >
+      <Chip shape="pill" selected={selected === null} onClick={() => onSelect(null)}>
         All ({data.all_count})
-      </button>
+      </Chip>
       {data.categories.map((category) => (
-        <button
+        <Chip
           key={category.id}
-          type="button"
+          shape="pill"
+          selected={selected === category.slug}
           onClick={() => onSelect(category.slug)}
-          aria-pressed={selected === category.slug}
-          className={`min-h-11 rounded-full border px-3 py-1.5 text-sm transition-colors ${
-            selected === category.slug
-              ? "border-amber-400 bg-amber-400 text-black"
-              : "border-zinc-700 text-zinc-300 hover:border-zinc-500"
-          }`}
         >
           {category.name} ({category.product_count})
-        </button>
+        </Chip>
       ))}
     </div>
   );
