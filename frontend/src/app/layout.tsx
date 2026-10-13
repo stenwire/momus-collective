@@ -3,6 +3,7 @@ import { AuthBootstrap } from "@/components/auth/auth-bootstrap";
 import { CartDrawer } from "@/components/cart/cart-drawer";
 import { CartNotice } from "@/components/cart/cart-notice";
 import { CartSync } from "@/components/cart/cart-sync";
+import { MotionProvider } from "@/components/providers/motion-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteNav } from "@/components/site-nav";
@@ -30,14 +31,16 @@ export default function RootLayout({
     >
       <body className="flex min-h-full flex-col bg-ink font-sans text-bone">
         <QueryProvider>
-          <AuthBootstrap />
-          <CartSync />
-          <SiteNav />
-          <CartNotice />
-          {children}
-          {modal}
-          <SiteFooter />
-          <CartDrawer />
+          <MotionProvider>
+            <AuthBootstrap />
+            <CartSync />
+            <SiteNav />
+            <CartNotice />
+            {children}
+            {modal}
+            <SiteFooter />
+            <CartDrawer />
+          </MotionProvider>
         </QueryProvider>
       </body>
     </html>
