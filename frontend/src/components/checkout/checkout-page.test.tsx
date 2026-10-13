@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useGuestCart } from "@/lib/cart/guest-store";
@@ -8,6 +8,9 @@ import { CheckoutPage } from "./checkout-page";
 
 const replace = vi.fn();
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace }) }));
+
+const haptic = vi.fn();
+vi.mock("@/lib/haptics", () => ({ haptic: (p: string) => haptic(p) }));
 
 const product = { id: "p1", slug: "tg", slogan: "touch grass", image: null, price: 1500000 };
 const options = { states: ["Abia", "Lagos", "Oyo"], lagos_lgas: ["Eti-Osa", "Ikeja"] };
@@ -130,6 +133,9 @@ describe("CheckoutPage", () => {
     const name = screen.getByLabelText("Full name");
     expect(name).toHaveAttribute("aria-invalid", "true");
     expect(name).toHaveAccessibleDescription("Enter the recipient's full name.");
+    // The guest's email comes first, so it is the first field to fix.
+    await waitFor(() => expect(document.activeElement).toHaveAttribute("aria-invalid", "true"));
+    expect(haptic).toHaveBeenCalledWith("error");
   });
 
   it("edits the cart from checkout and re-quotes the total", async () => {
@@ -301,6 +307,7 @@ describe("CheckoutPage", () => {
     await fillAddress();
     await userEvent.click(await screen.findByRole("button", { name: "Pay ₦18,000" }));
     expect(await screen.findByText(/Payment confirmed/)).toBeInTheDocument();
+    expect(haptic).toHaveBeenCalledWith("success");
     const urls = fetchMock.mock.calls.map(([u]) => u);
     expect(urls.some((u) => u.endsWith("/checkout/verify/"))).toBe(true);
     expect(useGuestCart.getState().lines).toEqual([]);

@@ -3,7 +3,14 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useId, useState } from "react";
+import { useId, useRef, useState } from "react";
+import { Raven } from "@/components/brand/raven";
+import { Button } from "@/components/ui/button";
+import { inputClasses, labelClasses } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useRemoveWithUndo } from "@/lib/cart/use-remove-with-undo";
+import { cn } from "@/lib/cn";
+import { haptic } from "@/lib/haptics";
 import { errorMessages } from "@/lib/auth/api";
 import { useSignedIn } from "@/lib/auth/use-signed-in";
 import { useGuestCart } from "@/lib/cart/guest-store";
@@ -27,11 +34,22 @@ import { CartLines } from "../cart/cart-lines";
 import { ShippingForm } from "./shipping-form";
 import { buttonClasses } from "@/components/ui/button";
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  step,
+  title,
+  children,
+}: {
+  step: string;
+  title: string;
+  children: React.ReactNode;
+}) {
   const id = useId();
   return (
-    <section aria-labelledby={id} className="flex flex-col gap-4">
-      <h2 id={id} className="text-lg font-semibold text-zinc-50">
+    <section aria-labelledby={id} className="flex flex-col gap-4 border-t border-rule pt-6">
+      <h2 id={id} className="flex items-baseline gap-3 font-display text-3xl uppercase tracking-tight">
+        <span aria-hidden="true" className="font-mono text-xs tracking-widest text-laurel">
+          {step}
+        </span>
         {title}
       </h2>
       {children}
@@ -42,7 +60,10 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 // FR-CART-04: one page, three sections, and the cart stays editable here.
 export function CheckoutPage() {
   const signedIn = useSignedIn();
-  const { cart, ready, setQuantity, remove } = useCart();
+  const { cart, ready, setQuantity } = useCart();
+  const removeWithUndo = useRemoveWithUndo(cart);
+  const formRef = useRef<HTMLDivElement>(null);
+  const [failed, setFailed] = useState(false);
   const options = useQuery({ queryKey: ["checkout-options"], queryFn: fetchCheckoutOptions });
   const addresses = useQuery({
     queryKey: ["addresses"],
@@ -84,22 +105,33 @@ export function CheckoutPage() {
 
   if (paidReference) {
     return (
-      <p role="status" className="px-4 text-emerald-400">
+      <p role="status" className="px-4 text-ok">
         Payment confirmed. Thank you! Reference {paidReference}.
       </p>
     );
   }
   if (!ready || !options.data) {
-    return <p className="px-4 text-zinc-400">Loading checkout…</p>;
+    return (
+      <div aria-busy="true" className="grid gap-8 px-4 pb-12 md:grid-cols-[1fr_24rem]">
+        <p role="status" className="sr-only">
+          Loading checkout…
+        </p>
+        <Skeleton className="h-96" />
+        <Skeleton className="h-72" />
+      </div>
+    );
   }
   if (cart.items.length === 0) {
     return (
-      <p className="px-4 text-zinc-400">
-        Your bag is empty.{" "}
-        <Link href="/shop" className="inline-flex min-h-11 items-center text-amber-400 underline">
-          Find something to wear
-        </Link>
-      </p>
+      <div className="flex flex-col items-center gap-4 px-4 py-12 text-center">
+        <Raven className="w-28" sizes="112px" />
+        <p className="text-bone-muted">
+          Your bag is empty.{" "}
+          <Link href="/shop" className="inline-flex min-h-11 items-center text-laurel underline underline-offset-4">
+            Find something to wear
+          </Link>
+        </p>
+      </div>
     );
   }
 
@@ -107,20 +139,36 @@ export function CheckoutPage() {
   const guest = signedIn === false;
   const guestEmailError = guest && touched ? emailError(email) : undefined;
 
+  // Move focus to the first field the person needs to fix (after paint, once
+  // the error states have rendered).
+  function focusFirstInvalid() {
+    requestAnimationFrame(() =>
+      formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus(),
+    );
+  }
+
+  function fail(message: string) {
+    haptic("error");
+    setFailed(true);
+    setStatus(message);
+  }
+
   async function pay() {
     setTouched(true);
+    setFailed(false);
     const invalid =
       Object.keys(shippingErrors(shipping)).length > 0 || (guest && emailError(email));
     if (!quote.data) {
-      setStatus("Your total couldn't be worked out. Check your bag.");
+      fail("Your total couldn't be worked out. Check your bag.");
       return;
     }
     if (invalid) {
-      setStatus("Check the highlighted delivery details.");
+      fail("Check the highlighted delivery details.");
+      focusFirstInvalid();
       return;
     }
     if (quote.data.delivery_fee === null) {
-      setStatus("Delivery is still being priced for this address. Try again in a moment.");
+      fail("Delivery is still being priced for this address. Try again in a moment.");
       return;
     }
     setPaying(true);
@@ -139,11 +187,12 @@ export function CheckoutPage() {
         return;
       }
       if (outcome.kind === "error") {
-        setStatus(`Payment failed: ${outcome.message} You weren't charged; please try again.`);
+        fail(`Payment failed: ${outcome.message} You weren't charged; please try again.`);
         return;
       }
       setStatus("Confirming your payment…");
       const paid = await verifyPayment(outcome.reference);
+      haptic("success");
       setPaidReference(outcome.reference);
       if (guest) {
         const [first_name, ...rest] = shipping.full_name.trim().split(/\s+/);
@@ -154,18 +203,18 @@ export function CheckoutPage() {
       setStatus("Payment confirmed. Thank you!");
       if (paid.tracking_token) router.replace(`/checkout/confirmation/${paid.tracking_token}`);
     } catch (error) {
-      setStatus(errorMessages(error).join(" "));
+      fail(errorMessages(error).join(" "));
     } finally {
       setPaying(false);
     }
   }
 
   return (
-    <div className="grid gap-8 px-4 pb-12 md:grid-cols-[1fr_24rem]">
-      <Section title="Shipping information">
+    <div ref={formRef} className="grid gap-8 px-4 pb-12 md:grid-cols-[1fr_24rem]">
+      <Section step="01" title="Shipping information">
         {guest ? (
           <div className="flex flex-col gap-1">
-            <label htmlFor={emailFieldId} className="text-sm font-medium text-zinc-300">
+            <label htmlFor={emailFieldId} className={labelClasses}>
               Email
             </label>
             <input
@@ -176,14 +225,15 @@ export function CheckoutPage() {
               onChange={(e) => setEmail(e.target.value)}
               aria-invalid={Boolean(guestEmailError)}
               aria-describedby={guestEmailError ? emailErrorId : undefined}
-              className="min-h-11 rounded-md border border-zinc-700 bg-zinc-950 px-3 text-base text-zinc-50 focus:border-amber-400 focus:outline-none"
+              spellCheck={false}
+              className={cn(inputClasses, "w-full aria-[invalid=true]:border-error")}
             />
             {guestEmailError ? (
-              <span id={emailErrorId} className="text-xs text-red-400">
+              <span id={emailErrorId} className="text-xs text-error">
                 {guestEmailError}
               </span>
             ) : (
-              <p className="text-xs text-zinc-400">
+              <p className="text-xs text-bone-muted">
                 No account needed. Your receipt and tracking link go here.
               </p>
             )}
@@ -198,10 +248,10 @@ export function CheckoutPage() {
         />
       </Section>
       <div className="flex flex-col gap-8">
-        <Section title="Order summary">
-          <CartLines cart={cart} onQuantity={setQuantity} onRemove={remove} showTotals={false} />
+        <Section step="02" title="Order summary">
+          <CartLines cart={cart} onQuantity={setQuantity} onRemove={removeWithUndo} showTotals={false} />
           {quote.isError ? (
-            <p role="alert" className="text-sm text-red-400">
+            <p role="alert" className="text-sm text-error">
               {errorMessages(quote.error).join(" ")}
             </p>
           ) : null}
@@ -219,24 +269,23 @@ export function CheckoutPage() {
               id={promoFieldId}
               value={promoInput}
               onChange={(e) => setPromoInput(e.target.value)}
-              placeholder="Promo code"
+              placeholder="Promo code…"
               autoCapitalize="characters"
-              className="min-h-11 min-w-0 flex-1 rounded-md border border-zinc-700 bg-zinc-950 px-3 text-base uppercase text-zinc-50 focus:border-amber-400 focus:outline-none"
+              autoComplete="off"
+              spellCheck={false}
+              className={cn(inputClasses, "flex-1 font-mono uppercase")}
             />
-            <button
-              type="submit"
-              className="min-h-11 rounded-md border border-zinc-600 px-4 text-sm text-zinc-100 hover:border-zinc-400"
-            >
+            <button type="submit" className={buttonClasses({ variant: "secondary", size: "sm" })}>
               Apply
             </button>
           </form>
           {quote.data?.promo_error ? (
-            <p role="alert" className="text-sm text-red-400">
+            <p role="alert" className="text-sm text-error">
               {quote.data.promo_error}
             </p>
           ) : null}
           {quote.data?.promo_code ? (
-            <p className="flex items-center justify-between text-sm text-emerald-400">
+            <p className="flex items-center justify-between text-sm text-ok">
               Code {quote.data.promo_code} applied
               <button
                 type="button"
@@ -245,7 +294,7 @@ export function CheckoutPage() {
                   setPromoInput("");
                 }}
                 aria-label={`Remove code ${quote.data.promo_code}`}
-                className="min-h-11 px-2 text-zinc-400 underline"
+                className="min-h-11 px-2 text-bone-muted underline underline-offset-4"
               >
                 Remove
               </button>
@@ -253,10 +302,10 @@ export function CheckoutPage() {
           ) : null}
           {quote.data ? (
             <dl className="grid grid-cols-2 gap-y-1 text-sm">
-              <dt className="text-zinc-400">Subtotal</dt>
-              <dd className="text-right text-zinc-50">{formatNaira(quote.data.subtotal)}</dd>
-              <dt className="text-zinc-400">Delivery</dt>
-              <dd className="text-right text-zinc-50">
+              <dt className="text-bone-muted">Subtotal</dt>
+              <dd className="text-right font-mono tabular-nums text-bone">{formatNaira(quote.data.subtotal)}</dd>
+              <dt className="text-bone-muted">Delivery</dt>
+              <dd className="text-right font-mono tabular-nums text-bone">
                 {quote.data.delivery_fee === null
                   ? "Add your address"
                   : quote.data.delivery_fee === 0
@@ -265,32 +314,29 @@ export function CheckoutPage() {
               </dd>
               {quote.data.discount ? (
                 <>
-                  <dt className="text-zinc-400">Discount</dt>
-                  <dd className="text-right text-emerald-400">−{formatNaira(quote.data.discount)}</dd>
+                  <dt className="text-bone-muted">Discount</dt>
+                  <dd className="text-right font-mono tabular-nums text-ok">−{formatNaira(quote.data.discount)}</dd>
                 </>
               ) : null}
-              <dt className="font-semibold text-zinc-50">Total</dt>
-              <dd className="text-right font-semibold text-amber-400">{formatNaira(quote.data.total)}</dd>
+              <dt className="border-t border-rule pt-2 font-semibold text-bone">Total</dt>
+              <dd className="border-t border-rule pt-2 text-right font-mono text-lg font-bold tabular-nums text-laurel">
+                {formatNaira(quote.data.total)}
+              </dd>
             </dl>
           ) : null}
         </Section>
-        <Section title="Payment">
-          <p className="text-sm text-zinc-400">
+        <Section step="03" title="Payment">
+          <p className="text-sm text-bone-muted">
             Pay securely with card or bank transfer through Paystack.
           </p>
-          <p className="text-sm text-zinc-400">
+          <p className="text-sm text-bone-muted">
             Paystack&apos;s processing fee is paid by you and added in the payment window, so the
             amount there will be slightly higher than this total.
           </p>
-          <button
-            type="button"
-            onClick={pay}
-            disabled={paying || paidReference !== null}
-            className={buttonClasses({ size: "lg" })}
-          >
+          <Button size="lg" onClick={pay} loading={paying} disabled={paidReference !== null}>
             {quote.data ? `Pay ${formatNaira(quote.data.total)}` : "Pay now"}
-          </button>
-          <p role="status" className="text-sm text-amber-300">
+          </Button>
+          <p role="status" className={cn("text-sm", failed ? "text-error" : "text-bone-muted")}>
             {status}
           </p>
         </Section>

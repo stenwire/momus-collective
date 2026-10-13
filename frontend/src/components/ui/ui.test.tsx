@@ -95,6 +95,8 @@ describe("Counter", () => {
     rerender(<Counter value={12} />);
     expect(screen.getByText("12", { selector: ".sr-only" })).toBeInTheDocument();
     const columns = container.querySelectorAll("[data-digit]");
+    // jsdom can't lay out; a stretched column showed "0" for 1 in the browser.
+    columns.forEach((c) => expect(c).toHaveClass("self-start"));
     expect([...columns].map((c) => (c as HTMLElement).style.transform)).toEqual([
       "translateY(-10%)",
       "translateY(-20%)",

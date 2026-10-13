@@ -6,12 +6,14 @@ import { buttonClasses } from "@/components/ui/button";
 import { Sheet } from "@/components/ui/sheet";
 import { useCartDrawer } from "@/lib/cart/drawer-store";
 import { useCart } from "@/lib/cart/use-cart";
+import { useRemoveWithUndo } from "@/lib/cart/use-remove-with-undo";
 import { CartLines } from "./cart-lines";
 
 // FR-CART-03: a bottom sheet on mobile, a right-hand drawer from md up.
 export function CartDrawer() {
   const { open, setOpen } = useCartDrawer();
-  const { cart, setQuantity, remove } = useCart();
+  const { cart, setQuantity } = useCart();
+  const removeWithUndo = useRemoveWithUndo(cart);
   const close = useCallback(() => setOpen(false), [setOpen]);
   const empty = cart.items.length === 0;
 
@@ -45,7 +47,7 @@ export function CartDrawer() {
       }
     >
       <div className="p-4">
-        <CartLines cart={cart} onQuantity={setQuantity} onRemove={remove} />
+        <CartLines cart={cart} onQuantity={setQuantity} onRemove={removeWithUndo} />
       </div>
     </Sheet>
   );

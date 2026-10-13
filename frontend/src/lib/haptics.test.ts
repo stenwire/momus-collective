@@ -7,9 +7,9 @@ function stubVibrate(impl: (p: VibratePattern) => boolean = () => true) {
   return vibrate;
 }
 
-function stubActivation(isActive: boolean) {
+function stubActivation(isActive: boolean, hasBeenActive = isActive) {
   Object.defineProperty(navigator, "userActivation", {
-    value: { isActive },
+    value: { isActive, hasBeenActive },
     configurable: true,
   });
 }
@@ -40,11 +40,18 @@ describe("haptic on a vibrating device", () => {
     expect(haptic("tick")).toBe(true);
   });
 
-  it("does nothing outside a user gesture", () => {
+  it("does nothing before the person has interacted with the page", () => {
     const vibrate = stubVibrate();
-    stubActivation(false);
+    stubActivation(false, false);
     expect(haptic("success")).toBe(false);
     expect(vibrate).not.toHaveBeenCalled();
+  });
+
+  it("still vibrates after an async step once the page has been used", () => {
+    const vibrate = stubVibrate();
+    stubActivation(false, true);
+    expect(haptic("success")).toBe(true);
+    expect(vibrate).toHaveBeenCalledWith(PATTERNS.success);
   });
 
   it("swallows a vibrate that throws", () => {
@@ -58,6 +65,16 @@ describe("haptic on a vibrating device", () => {
 describe("haptic without vibrate", () => {
   it("is a silent no-op on a device with neither vibrate nor a switch", () => {
     expect(haptic("success")).toBe(false);
+  });
+
+  it("leaves the iOS switch alone outside a live gesture", () => {
+    Object.defineProperty(HTMLInputElement.prototype, "switch", {
+      value: false,
+      configurable: true,
+      writable: true,
+    });
+    stubActivation(false, true);
+    expect(haptic("tick")).toBe(false);
   });
 
   it("toggles a hidden native switch on iOS Safari", () => {

@@ -44,12 +44,13 @@ export function hapticsSupported(): boolean {
   return canVibrate() || hasSwitchInput();
 }
 
-// Vibration is only honoured inside a user gesture; skip it otherwise
-// rather than let the browser log an intervention.
-function inUserGesture(): boolean {
-  const activation = (navigator as Navigator & { userActivation?: { isActive: boolean } })
-    .userActivation;
-  return activation ? activation.isActive : true;
+type Activation = { isActive: boolean; hasBeenActive: boolean };
+
+// Chrome vibrates once the person has interacted with the page (sticky
+// activation), so a payment confirmed after an async round-trip can still
+// buzz. The iOS switch only plays inside a live gesture.
+function activation(): Activation | undefined {
+  return (navigator as Navigator & { userActivation?: Activation }).userActivation;
 }
 
 let switchLabel: HTMLLabelElement | null = null;
@@ -75,12 +76,15 @@ function iosTick() {
 }
 
 export function haptic(pattern: HapticPattern): boolean {
-  if (typeof window === "undefined" || !hapticsEnabled() || !inUserGesture()) {
-    return false;
-  }
+  if (typeof window === "undefined" || !hapticsEnabled()) return false;
+  const state = activation();
   try {
-    if (canVibrate()) return navigator.vibrate(PATTERNS[pattern]);
+    if (canVibrate()) {
+      if (state && !state.hasBeenActive) return false;
+      return navigator.vibrate(PATTERNS[pattern]);
+    }
     if (hasSwitchInput()) {
+      if (state && !state.isActive) return false;
       iosTick();
       return true;
     }

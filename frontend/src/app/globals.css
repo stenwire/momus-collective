@@ -62,6 +62,24 @@
 
   --animate-strike: strike 0.5s var(--ease-out-expo) 0.6s both;
   --animate-burst: burst 0.6s var(--ease-out-expo) both;
+  --animate-stamp: stamp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
+  --animate-flip: flip 0.9s var(--ease-out-expo) 0.7s both;
+
+  @keyframes stamp {
+    from {
+      opacity: 0;
+      transform: scale(1.8) rotate(-18deg);
+    }
+  }
+
+  @keyframes flip {
+    from {
+      transform: rotateY(0deg);
+    }
+    to {
+      transform: rotateY(180deg);
+    }
+  }
 
   @keyframes burst {
     from {
@@ -138,5 +156,15 @@
 
   .animate-burst {
     display: none;
+  }
+
+  .animate-stamp {
+    animation: none;
+  }
+
+  /* Show the comedy side straight away. */
+  .animate-flip {
+    animation: none;
+    transform: rotateY(180deg);
   }
 }

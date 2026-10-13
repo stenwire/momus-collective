@@ -9,7 +9,9 @@ export const metadata: Metadata = {
 export default function Checkout() {
   return (
     <main className="flex flex-1 flex-col">
-      <h1 className="px-4 pt-8 pb-4 text-2xl font-semibold text-zinc-50">Checkout</h1>
+      <h1 className="px-4 pb-6 pt-10 font-display text-[clamp(3rem,10vw,6rem)] uppercase leading-[0.9] tracking-tight">
+        Checkout
+      </h1>
       <CheckoutPage />
     </main>
   );

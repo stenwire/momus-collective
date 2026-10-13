@@ -14,7 +14,9 @@ export function Counter({ value, className }: { value: number; className?: strin
           <span
             key={text.length - i}
             data-digit={digit}
-            className="flex flex-col transition-transform duration-300 ease-[var(--ease-out-expo)] motion-reduce:transition-none"
+            // self-start: a stretched column would be one line tall, so
+            // -10% would move it a fraction of a digit.
+            className="flex flex-col self-start transition-transform duration-300 ease-[var(--ease-out-expo)] motion-reduce:transition-none"
             style={{ transform: `translateY(-${Number(digit) * 10}%)` }}
           >
             {DIGITS.map((d) => (
