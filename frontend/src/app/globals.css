@@ -42,7 +42,9 @@
     }
   }
 
-  --animate-route: route-in 0.2s var(--ease-out-expo) both;
+  /* backwards, not both: a held transform would keep every route wrapper a
+     stacking context and trap the modal's z-index under later content. */
+  --animate-route: route-in 0.2s var(--ease-out-expo) backwards;
   --animate-bump: bump 0.32s var(--ease-out-expo);
 
   @keyframes route-in {
@@ -59,6 +61,18 @@
   }
 
   --animate-strike: strike 0.5s var(--ease-out-expo) 0.6s both;
+  --animate-burst: burst 0.6s var(--ease-out-expo) both;
+
+  @keyframes burst {
+    from {
+      transform: rotate(var(--angle)) translateY(0) scale(1);
+      opacity: 1;
+    }
+    to {
+      transform: rotate(var(--angle)) translateY(-26px) scale(0.5);
+      opacity: 0;
+    }
+  }
 
   @keyframes strike {
     from {
@@ -120,5 +134,9 @@
   .animate-bump,
   .animate-strike {
     animation: none;
+  }
+
+  .animate-burst {
+    display: none;
   }
 }

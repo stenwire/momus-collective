@@ -4,9 +4,7 @@ import { ShoppingBag } from "lucide-react";
 import { Counter } from "@/components/ui/counter";
 import { useCartDrawer } from "@/lib/cart/drawer-store";
 import { useCart } from "@/lib/cart/use-cart";
-
-// The flight-to-bag animation (T-609) lands on this id.
-export const BAG_TARGET_ID = "bag-target";
+import { BAG_TARGET_ID } from "@/lib/fly-to-bag";
 
 export function CartButton() {
   const { cart } = useCart();

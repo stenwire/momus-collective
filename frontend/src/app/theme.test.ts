@@ -49,6 +49,12 @@ describe("theme tokens", () => {
     expect(css).toMatch(/color-scheme:\s*dark/);
   });
 
+  // A held transform would keep every route wrapper a stacking context and
+  // let later page content paint over the product modal.
+  it("does not hold the route entrance after it ends", () => {
+    expect(css).toMatch(/--animate-route:\s*route-in[^;]*\bbackwards;/);
+  });
+
   it("draws a laurel focus ring", () => {
     expect(css).toMatch(/:focus-visible\s*{\s*outline:\s*2px solid var\(--color-laurel\)/);
   });

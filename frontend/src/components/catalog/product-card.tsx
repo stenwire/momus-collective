@@ -1,6 +1,10 @@
+"use client";
+
+import * as m from "motion/react-m";
 import Image from "next/image";
 import Link from "next/link";
-import type { CSSProperties } from "react";
+import { useId, type CSSProperties } from "react";
+import { mockupLayoutId, useSharedMockup } from "@/lib/shared-mockup";
 import type { Product } from "@/lib/api";
 import { formatNaira } from "@/lib/format";
 import { Tag } from "../ui/tag";
@@ -13,6 +17,9 @@ export function productNumber(index: number): string {
 
 export function ProductCard({ product, index }: { product: Product; index?: number }) {
   const mockup = product.mockup_images[0];
+  const owner = useId();
+  const shared = useSharedMockup((s) => s.productId === product.id && s.owner === owner);
+  const claim = useSharedMockup((s) => s.claim);
   // Cards rise in on CSS, so the first rows show before hydration; each
   // fetched page staggers from its own start.
   const style: CSSProperties | undefined =
@@ -24,9 +31,13 @@ export function ProductCard({ product, index }: { product: Product; index?: numb
     <div className={index === undefined ? "relative" : "relative animate-rise"} style={style}>
       <Link
         href={`/product/${product.slug}`}
+        onClick={() => claim(product.id, owner)}
         className="group flex flex-col gap-2 border border-rule bg-ink-raised p-3 transition-[border-color,box-shadow,transform] duration-150 hover:border-bone-muted hover:shadow-press active:translate-x-1 active:translate-y-1 active:shadow-none motion-reduce:transition-none"
       >
-        <div className="relative aspect-square overflow-hidden bg-ink">
+        <m.div
+          layoutId={shared ? mockupLayoutId(product.id) : undefined}
+          className="relative aspect-square overflow-hidden bg-ink"
+        >
           {mockup ? (
             <Image
               src={mockup}
@@ -52,7 +63,7 @@ export function ProductCard({ product, index }: { product: Product; index?: numb
               {productNumber(index)}
             </span>
           ) : null}
-        </div>
+        </m.div>
         <p className="font-mono text-xs uppercase tracking-widest text-bone-muted">
           {product.category.name}
         </p>
