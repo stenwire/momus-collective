@@ -191,7 +191,7 @@ export function RatingSummary({ average, count, href }: { average: string; count
   const label = `Rated ${value.toFixed(1)} out of 5 from ${count} ${count === 1 ? "review" : "reviews"}`;
   const body = (
     <>
-      <span aria-hidden className="text-amber-400">
+      <span aria-hidden className="text-laurel">
         ★
       </span>{" "}
       <span aria-hidden>{text}</span>
@@ -199,10 +199,10 @@ export function RatingSummary({ average, count, href }: { average: string; count
     </>
   );
   return href ? (
-    <a href={href} className="inline-flex min-h-11 items-center text-sm text-zinc-300 hover:underline">
+    <a href={href} className="inline-flex min-h-11 items-center font-mono text-sm text-bone-muted hover:text-bone hover:underline">
       {body}
     </a>
   ) : (
-    <p className="text-xs text-zinc-300">{body}</p>
+    <p className="font-mono text-xs text-bone-muted">{body}</p>
   );
 }

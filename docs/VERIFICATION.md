@@ -1,19 +1,26 @@
 # Verification Report
 
 **Milestone:** M6 - Storefront Redesign
-**Scope:** Partial pre-commit audit of T-607's uncommitted diff on `m6-storefront-redesign` at `bdcde77`. This is not a completion audit.
+**Scope:** Partial, pre-commit audit of T-608's uncommitted diff on `m6-storefront-redesign` at `d3c5381`; not a completion audit.
 
-Files in the diff: `hero.tsx`, `home/raven-tilt.tsx`, `home/slogan-marquee.tsx`, `home/home.test.tsx`, `catalog/collection-carousel.tsx`, `our-story.tsx`, `new-drops.tsx`, `app/page.tsx`, `globals.css`, and the tracker rows.
+Files in the diff:
+- `catalog/`: `product-card.tsx`, `product-grid.tsx`, `category-filter.tsx`, `shop.tsx`, `search-input.tsx`, `sort-select.tsx`, `product-reviews.tsx` (`RatingSummary`)
+- `wishlist/heart-button.tsx`
+- `ui/chip.tsx`, `ui/input.ts`
+- `app/shop/page.tsx`, `app/shop/[category]/page.tsx`
+- the tests and the tracker rows
 
-Cross-cutting checks they touch: NFR-03 (home page server-rendered), NFR-02 (hero image priority), NFR-05, the PRD L29 and L31 placements, DRY-07, tests and types. Earlier partial audits' open findings (T-615..T-624) are not re-counted.
+Cross-cutting checks these files touch: FR-CAT-01..04 and 07, EFF-04, EFF-05, NFR-01, NFR-05, DRY-07, tests, types.
+
+Open findings from earlier partial audits (T-615..T-625) are not re-counted.
 **Date:** 2026-10-13
 **Blockers:** 0
 **Major:** 0
 **Minor:** 1
 **Verdict:** PASS
 **Dimensions not verified:**
-- **BLD-01:** this skill may not run `pnpm build`. The T-607 `/implement` run built with exit 0, and the built HTML was read below.
-- **EFF-08:** Lighthouse is scheduled for T-613.
+- **BLD-01:** this skill may not run `pnpm build`. The T-608 `/implement` run built with exit 0 and checked the shop in a browser.
+- **EFF-08:** Lighthouse, scheduled in T-613.
 - **Backend:** no backend change.
 - **BLD-07:** the branch has not been pushed.
 
@@ -21,42 +28,38 @@ Cross-cutting checks they touch: NFR-03 (home page server-rendered), NFR-02 (her
 
 | # | Severity | Dimension | Location | Finding | Remediation |
 |---|---|---|---|---|---|
-| 1 | minor | Spec conformance (NFR-05) | `frontend/src/components/catalog/collection-carousel.tsx:32-33` | The decorative `№ 01` count sits inside the collection's `<h2>`, so a screen reader announces "Top Rated number 01" and heading navigation lists it that way. | Mark the count `aria-hidden="true"`, or move it outside the heading (T-625). |
+| 1 | minor | Spec conformance (NFR-01 usability) | `frontend/src/components/catalog/category-filter.tsx:36` | The effect that centres the active chip calls `scrollIntoView({ block: "nearest", inline: "center" })` whenever the categories data changes. The query client keeps TanStack's default refetch-on-focus. If category counts change while someone is scrolled down the grid, `block: "nearest"` scrolls the whole page back up to the chip row. | Scroll only the row: set `row.scrollLeft` from the active chip's offset, instead of calling `scrollIntoView` (T-626). |
 
 ## Commands run
 
 ```
 --- TST-05
- Test Files  57 passed (57)
-      Tests  312 passed (312)
+ Test Files  58 passed (58)
+      Tests  317 passed (317)
 --- BLD-02
 typecheck exit 0
 --- BLD-03
 lint exit 0
 --- DRY-07 (changed files)
 DRY-07 done   (no block over 5 lines)
---- NFR-03: strings in the built .next/server/app/index.html (count)
-dressed up, filtered out.</span>: 1
-Exiled for telling the truth.: 1
-New drops, weekly.: 1
-war bad naps good: 1
-mascot-human: 1
-mascot-raven: 1
---- hero image priority
-<link rel="preload" as="image" imageSrcSet="/_next/image?url=%2Fmascot-raven.png&amp;w=32&amp;q=75 32w, ...   (preloaded, not lazy)
---- carousel heading
-32:          <span className="ml-3 align-middle font-mono text-xs tracking-widest text-bone-muted">
-33:            № {String(collection.products.length).padStart(2, "0")}
+--- FR-CAT-01 grid columns, FR-CAT-03 debounce, data layer untouched
+46:      <div aria-busy="true" className="grid grid-cols-2 gap-4 p-4 md:grid-cols-4">
+86:      <div className="grid grid-cols-2 gap-4 p-4 md:grid-cols-4">
+15:  const debouncedSearch = useDebouncedValue(search, 300);
+git diff HEAD --stat -- src/lib/api.ts src/lib/use-intersection-observer.ts   -> (no changes)
+--- opened
+36:    active?.scrollIntoView?.({ block: "nearest", inline: "center" });
+grep refetchOnWindowFocus|staleTime in get-query-client.ts, query-provider.tsx -> (none: TanStack defaults apply)
 ```
 
 ## Dimension summary
 
 | Dimension | Result | Notes |
 |---|---|---|
-| 1. Security and input trust | pass | Slogans render as React text in the marquee and the cards. |
-| 2. Efficiency | pass, EFF-08 not verified | The hero raven is preloaded. The headline and strike are CSS. The marquee reuses the hydrated collections query and makes no new request. |
-| 3. DRY and layering | pass | Raven artwork goes through one `Raven` component. |
-| 4. Tests | pass | 5 home tests. The existing home and carousel tests are unchanged. The known-failure run is recorded in the T-607 change log. |
-| 5. Spec conformance | 1 minor | Finding 1. The raven sits right of the text on desktop and above it on mobile (PRD L31). Our Story uses `mascot-human.png` beside the origin story (L29). The tagline is in the H1 and the title. |
+| 1. Security and input trust | pass | Slogans render as React text. The print uses `attr(data-slogan)`, which is not parsed as markup. |
+| 2. Efficiency | pass, EFF-08 not verified | EFF-04: infinite scroll unchanged, 20 per page. EFF-05: 300ms debounce unchanged. Card entrance is CSS. |
+| 3. DRY and layering | pass | `Chip`, `inputClasses` and `Tag` are reused. Input widths moved to callers, with a test (cn does not merge). |
+| 4. Tests | pass | 4 catalog tests and 1 input test; the existing catalog tests are unchanged. The known-failure run is recorded in the change log. |
+| 5. Spec conformance | 1 minor | Finding 1. FR-CAT-01: card fields intact; 2 columns on mobile, 4 on desktop. FR-CAT-02: counts on chips. FR-CAT-03: friendly empty state with the raven. 44px chips and controls. |
 | 6. Build and types | typecheck and lint pass; BLD-01 not verified | |
-| 7. Client contract and acceptance | pass | No API change. The home page stays server-rendered (NFR-03). |
+| 7. Client contract and acceptance | pass | No API change; the shop pages stay server-prefetched (NFR-03). |

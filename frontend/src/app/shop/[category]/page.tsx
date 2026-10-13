@@ -43,10 +43,11 @@ export default async function ShopCategoryPage({ params }: Props) {
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <main className="flex flex-1 flex-col">
-        <h1 className="px-4 pt-8 text-2xl font-semibold text-zinc-50">
+        <h1 className="px-4 pb-6 pt-10 font-display text-[clamp(3rem,10vw,6rem)] uppercase leading-[0.9] tracking-tight">
           {category.name}
         </h1>
-        <Shop category={slug} />
+        {/* Keyed so Back/Forward between categories resets the selection. */}
+        <Shop key={slug} category={slug} />
       </main>
     </HydrationBoundary>
   );

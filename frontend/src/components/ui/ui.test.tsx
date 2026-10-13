@@ -6,6 +6,7 @@ import { Button, buttonClasses } from "./button";
 import { Chip } from "./chip";
 import { Counter } from "./counter";
 import { IconButton } from "./icon-button";
+import { inputClasses } from "./input";
 import { KineticText } from "./kinetic-text";
 import { Marquee } from "./marquee";
 import { Toaster } from "./toaster";
@@ -66,6 +67,14 @@ describe("Chip and IconButton", () => {
       </IconButton>,
     );
     expect(screen.getByRole("button", { name: "Close bag" })).toHaveClass("size-11");
+  });
+});
+
+describe("inputClasses", () => {
+  // cn() does not merge conflicting utilities, so a width here would beat
+  // whatever width a caller adds (the shop's search box collapsed that way).
+  it("leaves width to the caller", () => {
+    expect(inputClasses).not.toMatch(/(^|\s)(w-|flex-1)/);
   });
 });
 

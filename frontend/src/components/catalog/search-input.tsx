@@ -1,5 +1,9 @@
 "use client";
 
+import { Search } from "lucide-react";
+import { inputClasses } from "@/components/ui/input";
+import { cn } from "@/lib/cn";
+
 type Props = {
   value: string;
   onChange: (value: string) => void;
@@ -7,13 +11,21 @@ type Props = {
 
 export function SearchInput({ value, onChange }: Props) {
   return (
-    <input
-      type="search"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      placeholder="Search by slogan or category…"
-      aria-label="Search products"
-      className="mb-4 mr-2 min-h-11 flex-1 rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-50 placeholder:text-zinc-500 focus:border-amber-400 focus:outline-none"
-    />
+    <div className="relative min-w-0 flex-1">
+      <Search
+        aria-hidden="true"
+        className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-bone-muted"
+      />
+      <input
+        type="search"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Search by slogan or category…"
+        aria-label="Search products"
+        autoComplete="off"
+        spellCheck={false}
+        className={cn(inputClasses, "w-full pl-9")}
+      />
+    </div>
   );
 }

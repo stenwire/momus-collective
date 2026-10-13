@@ -13,21 +13,21 @@ export function Shop({ category }: { category?: string | null }) {
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState("newest");
   const debouncedSearch = useDebouncedValue(search, 300);
+  // Selected at once, so the indicator slides while the route loads.
+  const [selected, setSelected] = useState(category ?? null);
 
   function handleCategorySelect(slug: string | null) {
+    setSelected(slug);
     router.push(slug ? `/shop/${slug}` : "/shop");
   }
 
   return (
     <>
-      <div className="flex flex-wrap items-center px-4">
+      <div className="flex items-center gap-2 px-4 pb-4">
         <SearchInput value={search} onChange={setSearch} />
         <SortSelect value={sort} onChange={setSort} />
       </div>
-      <CategoryFilter
-        selected={category ?? null}
-        onSelect={handleCategorySelect}
-      />
+      <CategoryFilter selected={selected} onSelect={handleCategorySelect} />
       <ProductGrid
         category={category ?? null}
         search={debouncedSearch}

@@ -7,7 +7,7 @@ import { useSignedIn } from "@/lib/auth/use-signed-in";
 import { addToWishlist, fetchWishlist, removeFromWishlist } from "@/lib/wishlist/api";
 
 const BUTTON =
-  "flex size-11 items-center justify-center rounded-full bg-black/60 backdrop-blur hover:bg-black/80";
+  "flex size-11 items-center justify-center bg-ink/80 transition-[color,transform] duration-150 hover:bg-ink active:scale-90 motion-reduce:transition-none motion-reduce:active:scale-100";
 
 function Heart({ filled }: { filled: boolean }) {
   return (
@@ -32,7 +32,7 @@ function MemberHeart({ productId, slogan }: { productId: string; slogan: string 
       aria-label={`Save ${slogan} to wishlist`}
       disabled={toggle.isPending || !wishlist.data}
       onClick={() => toggle.mutate()}
-      className={`${BUTTON} ${saved ? "text-amber-400" : "text-zinc-50"}`}
+      className={`${BUTTON} ${saved ? "text-laurel" : "text-bone"}`}
     >
       <Heart filled={saved} />
     </button>
@@ -50,7 +50,7 @@ export function HeartButton({ productId, slogan }: { productId: string; slogan: 
       <Link
         href={`/login?next=${encodeURIComponent(pathname)}`}
         aria-label={`Log in to save ${slogan} to your wishlist`}
-        className={`${BUTTON} text-zinc-50`}
+        className={`${BUTTON} text-bone`}
       >
         <Heart filled={false} />
       </Link>
