@@ -2,23 +2,7 @@ import Link from "next/link";
 import { Raven } from "@/components/brand/raven";
 import { RavenTilt } from "@/components/home/raven-tilt";
 import { buttonClasses } from "@/components/ui/button";
-
-const TAGLINE = "dressed up, filtered out.";
-
-function Words({ text, from }: { text: string; from: number }) {
-  const words = text.split(" ");
-  return words.map((word, i) => (
-    <span key={i} className="inline-block overflow-hidden pb-[0.08em] align-bottom">
-      <span
-        className="inline-block animate-rise"
-        style={{ animationDelay: `${(from + i) * 80}ms` }}
-      >
-        {word}
-        {i < words.length - 1 ? "\u00a0" : null}
-      </span>
-    </span>
-  ));
-}
+import { KineticText } from "@/components/ui/kinetic-text";
 
 export function Hero() {
   return (
@@ -39,13 +23,11 @@ export function Hero() {
             № 001 — Satire, printed in Lagos
           </p>
           <h1 className="font-display text-[clamp(3.25rem,13vw,8.5rem)] uppercase leading-[0.88] tracking-tight">
-            <span className="sr-only">{TAGLINE}</span>
-            <span aria-hidden="true" className="block">
-              <Words text="dressed up," from={0} />
-            </span>
-            <span aria-hidden="true" className="relative inline-block text-laurel">
-              <Words text="filtered out." from={2} />
+            <KineticText text="dressed up," className="block" stepMs={80} />{" "}
+            <span className="relative inline-block text-laurel">
+              <KineticText text="filtered out." delayMs={160} stepMs={80} />
               <span
+                aria-hidden="true"
                 data-testid="strike"
                 className="absolute inset-x-0 top-[48%] h-[0.07em] origin-left animate-strike bg-bone"
               />

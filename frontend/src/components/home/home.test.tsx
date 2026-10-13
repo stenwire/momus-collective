@@ -43,6 +43,10 @@ describe("Hero", () => {
       screen.getByRole("heading", { level: 1, name: "dressed up, filtered out." }),
     ).toBeInTheDocument();
     expect(screen.getByTestId("strike")).toHaveClass("animate-strike");
+    // The words come from the shared KineticText, masks and all (T-629).
+    const words = screen.getByRole("heading", { level: 1 }).querySelectorAll(".animate-rise");
+    expect(words).toHaveLength(4);
+    words.forEach((w) => expect(w.parentElement).toHaveClass("pb-[0.15em]", "-mb-[0.15em]"));
     expect(screen.getByRole("link", { name: "Design your own" })).toHaveAttribute("href", "/design");
   });
 });

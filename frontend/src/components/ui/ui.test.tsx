@@ -85,6 +85,11 @@ describe("KineticText", () => {
     expect(heading).toHaveTextContent("dressed up, filtered out.");
     const animated = heading.querySelector('[aria-hidden="true"]');
     expect(animated?.querySelectorAll(".animate-rise")).toHaveLength(4);
+    // Spaces sit between the inline-block masks, never trimmed inside one.
+    expect(animated?.textContent).toBe("dressed up, filtered out.");
+    animated?.querySelectorAll(":scope > span").forEach((mask) => {
+      expect(mask.textContent).not.toMatch(/\s/);
+    });
   });
 });
 
