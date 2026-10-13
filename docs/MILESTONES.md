@@ -268,7 +268,7 @@ of scope. The design system lives in `design-system/momus-collective/MASTER.md`.
 
 | # | Criterion | State |
 |---|---|---|
-| 1 | Storefront components style through the semantic tokens in `globals.css` `@theme`; no `zinc-*` or `amber-*` utility remains outside `components/admin/` and `app/admin/` (grep) | [ ] |
+| 1 | Storefront components style through the semantic tokens in `globals.css` `@theme`; no `zinc-*` or `amber-*` utility remains outside `components/admin/` and `app/admin/` (grep) | [x] |
 | 2 | Every token text/background pair in use meets WCAG AA contrast, 4.5:1 for body text and 3:1 for large text, with the measured ratios recorded (NFR-05) | [ ] |
 | 3 | Every animation honours `prefers-reduced-motion`: under `reduce`, no transform or position animation runs and no marquee moves (test and manual check) | [ ] |
 | 4 | Haptics fire only for add to bag, wishlist toggle, size and colour selection, quantity limit, form errors on submit, payment confirmed and the sheet's drag-dismiss threshold; they do nothing when unsupported or switched off, and the footer toggle persists | [ ] |

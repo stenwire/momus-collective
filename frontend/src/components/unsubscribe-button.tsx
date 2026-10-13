@@ -13,14 +13,14 @@ export function UnsubscribeButton({ token }: { token: string }) {
   });
   if (state.done) {
     return (
-      <p role="status" className="text-emerald-400">
+      <p role="status" className="text-ok">
         {state.message} You won&apos;t get new-drop emails any more.
       </p>
     );
   }
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-zinc-300">Stop receiving the weekly new-drops email?</p>
+      <p className="text-bone-muted">Stop receiving the weekly new-drops email?</p>
       <button
         type="button"
         onClick={async () => {
@@ -36,7 +36,7 @@ export function UnsubscribeButton({ token }: { token: string }) {
         Unsubscribe
       </button>
       {state.error ? (
-        <p role="alert" className="text-sm text-red-400">
+        <p role="alert" className="text-sm text-error">
           {state.message}
         </p>
       ) : null}

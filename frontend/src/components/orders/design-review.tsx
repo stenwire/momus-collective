@@ -22,22 +22,22 @@ export function DesignReview({ order, token }: { order: Order; token: string }) 
     <section
       id="design-review"
       aria-labelledby="design-review-heading"
-      className="flex flex-col gap-3 rounded-lg border border-amber-400/60 p-4"
+      className="flex flex-col gap-3 border border-laurel/60 p-4"
     >
-      <h2 id="design-review-heading" className="text-lg font-semibold text-zinc-50">
+      <h2 id="design-review-heading" className="text-lg font-semibold text-bone">
         We can&apos;t print your design as it is
       </h2>
-      <p className="text-sm text-zinc-200">
+      <p className="text-sm text-bone">
         <span className="font-medium">Reason:</span> {review.reason_label}
       </p>
-      {review.details ? <p className="text-sm text-zinc-300">{review.details}</p> : null}
+      {review.details ? <p className="text-sm text-bone-muted">{review.details}</p> : null}
       {refunding ? (
-        <p role="status" className="text-sm text-emerald-400">
+        <p role="status" className="text-sm text-ok">
           You asked for a refund. We&apos;ll refund your payment and email you when it&apos;s done.
         </p>
       ) : (
         <>
-          <p className="text-sm text-zinc-300">Revise your design and send it back, or ask for a full refund.</p>
+          <p className="text-sm text-bone-muted">Revise your design and send it back, or ask for a full refund.</p>
           <div className="flex flex-wrap gap-2">
             {designs.map((item, i) => (
               <Link
@@ -63,7 +63,7 @@ export function DesignReview({ order, token }: { order: Order; token: string }) 
                   setBusy(false);
                 }
               }}
-              className="min-h-11 rounded-md border border-zinc-600 px-4 text-sm text-zinc-100 hover:border-zinc-400 disabled:opacity-60"
+              className="min-h-11 border border-rule px-4 text-sm text-bone hover:border-bone-muted disabled:opacity-60"
             >
               Request a refund
             </button>
@@ -71,7 +71,7 @@ export function DesignReview({ order, token }: { order: Order; token: string }) 
         </>
       )}
       {errors.length ? (
-        <p role="alert" className="text-sm text-red-400">
+        <p role="alert" className="text-sm text-error">
           {errors.join(" ")}
         </p>
       ) : null}

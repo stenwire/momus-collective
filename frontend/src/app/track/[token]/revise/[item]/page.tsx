@@ -13,7 +13,7 @@ export default async function RevisePage({ params }: Props) {
   const { token, item } = await params;
   return (
     <main className="flex flex-1 flex-col">
-      <h1 className="px-4 pt-8 pb-4 text-2xl font-semibold text-zinc-50">Revise your design</h1>
+      <h1 className="px-4 pt-8 pb-4 text-2xl font-semibold text-bone">Revise your design</h1>
       <RevisionTool token={token} itemId={item} />
     </main>
   );

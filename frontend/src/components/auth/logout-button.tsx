@@ -16,7 +16,7 @@ export function LogoutButton() {
         useDesignStore.getState().reset();
         router.push("/");
       }}
-      className="min-h-11 rounded-md border border-zinc-700 px-4 text-sm text-zinc-300 hover:border-zinc-500"
+      className="min-h-11 border border-rule px-4 text-sm text-bone-muted hover:border-bone-muted"
     >
       Log out
     </button>

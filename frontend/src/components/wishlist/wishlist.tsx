@@ -17,11 +17,12 @@ import {
   type WishlistEntry,
 } from "@/lib/wishlist/api";
 import { buttonClasses } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 
 const SELECT =
-  "min-h-11 rounded-md border border-zinc-700 bg-zinc-950 px-3 text-base text-zinc-50 focus:border-amber-400 focus:outline-none";
+  "min-h-11  border border-rule bg-ink-raised px-3 text-base text-bone focus-visible:border-laurel ";
 const ACTION =
-  "min-h-11 rounded-md border border-zinc-700 px-4 text-sm text-zinc-100 hover:border-zinc-500 disabled:opacity-60";
+  "min-h-11  border border-rule px-4 text-sm text-bone hover:border-bone-muted disabled:opacity-60";
 
 function WishlistItem({
   entry,
@@ -55,29 +56,29 @@ function WishlistItem({
   const busy = move.isPending || remove.isPending;
 
   return (
-    <li className="flex flex-col gap-3 rounded-lg border border-zinc-800 p-4">
+    <li className="flex flex-col gap-3 border border-rule p-4">
       <div className="flex gap-3">
-        <div className="relative size-20 shrink-0 overflow-hidden rounded-md bg-zinc-900">
+        <div className="relative size-20 shrink-0 overflow-hidden bg-ink-raised">
           {product.image ? (
             <Image src={product.image} alt={product.slogan} fill sizes="80px" className="object-cover" />
           ) : null}
         </div>
         <div className="min-w-0 flex-1">
-          <h2 className="text-sm font-medium text-zinc-50">
+          <h2 className="text-sm font-medium text-bone">
             <Link href={`/product/${product.slug}`} className="hover:underline">
               {product.slogan}
             </Link>
           </h2>
-          <p className="text-sm text-amber-400">{formatNaira(product.price)}</p>
+          <p className="text-sm text-laurel">{formatNaira(product.price)}</p>
           {!product.available ? (
-            <p className="text-xs text-red-400">No longer available</p>
+            <p className="text-xs text-error">No longer available</p>
           ) : null}
         </div>
       </div>
       {product.available ? (
         <div className="flex flex-wrap items-end gap-3">
           <div className="flex flex-col gap-1">
-            <label htmlFor={sizeId} className="text-xs text-zinc-400">
+            <label htmlFor={sizeId} className="text-xs text-bone-muted">
               Size
             </label>
             <select id={sizeId} value={size} onChange={(e) => setSize(e.target.value)} className={SELECT}>
@@ -91,7 +92,7 @@ function WishlistItem({
           </div>
           {product.shirt_colors.length > 1 ? (
             <div className="flex flex-col gap-1">
-              <label htmlFor={colorId} className="text-xs text-zinc-400">
+              <label htmlFor={colorId} className="text-xs text-bone-muted">
                 Colour
               </label>
               <select id={colorId} value={color} onChange={(e) => setColor(e.target.value)} className={SELECT}>
@@ -127,7 +128,7 @@ function WishlistItem({
         Remove
       </button>
       {errors.length ? (
-        <p role="alert" className="text-sm text-red-400">
+        <p role="alert" className="text-sm text-error">
           {errors.join(" ")}
         </p>
       ) : null}
@@ -157,28 +158,28 @@ export function Wishlist() {
 
   if (!signedIn) return null;
   if (wishlist.isError) {
-    return <p className="text-zinc-400">Your wishlist could not load. Refresh to try again.</p>;
+    return <p className="text-bone-muted">Your wishlist could not load. Refresh to try again.</p>;
   }
-  if (!wishlist.data) return <p className="text-zinc-400">Loading your wishlist…</p>;
+  if (!wishlist.data) return <p className="text-bone-muted">Loading your wishlist…</p>;
   return (
     <div className="flex flex-col gap-4">
-      <div aria-live="polite" className="flex items-center gap-3 text-sm text-emerald-400">
+      <div aria-live="polite" className="flex items-center gap-3 text-sm text-ok">
         {moved ? (
           <>
             <span>Moved {moved} to your bag.</span>
-            <button type="button" onClick={() => openBag(true)} className="min-h-11 text-amber-400 underline">
+            <button type="button" onClick={() => openBag(true)} className="min-h-11 text-laurel underline">
               View bag
             </button>
           </>
         ) : null}
       </div>
       {wishlist.data.length === 0 ? (
-        <p className="text-zinc-400">
+        <EmptyState title="No favourites">
           Nothing saved yet. Tap the heart on any shirt to keep it here.{" "}
-          <Link href="/shop" className="inline-flex min-h-11 items-center text-amber-400 underline">
+          <Link href="/shop" className="inline-flex min-h-11 items-center text-laurel underline">
             Browse the shop
           </Link>
-        </p>
+        </EmptyState>
       ) : (
         <ul className="flex flex-col gap-4">
           {wishlist.data.map((entry) => (

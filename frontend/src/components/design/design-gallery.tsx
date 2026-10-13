@@ -19,9 +19,10 @@ import type { DesignOptions } from "@/lib/design/types";
 import { formatNaira } from "@/lib/format";
 import { FormErrors } from "../auth/form-field";
 import { ShirtCanvas } from "./shirt-canvas";
+import { EmptyState } from "@/components/ui/empty-state";
 
 const ACTION =
-  "min-h-11 rounded-md border border-zinc-700 px-3 text-sm text-zinc-100 hover:border-zinc-500 disabled:opacity-60";
+  "min-h-11  border border-rule px-3 text-sm text-bone hover:border-bone-muted disabled:opacity-60";
 
 const created = new Intl.DateTimeFormat("en-NG", { dateStyle: "medium" });
 
@@ -71,32 +72,32 @@ function DesignCard({
   const fonts = options.fonts.map((f) => ({ key: f.key, label: f.label }));
 
   return (
-    <li className="flex flex-col gap-3 rounded-lg border border-zinc-800 p-3">
+    <li className="flex flex-col gap-3 border border-rule p-3">
       <ShirtCanvas config={config} options={options} label={`Preview of ${design.name}`} />
       <div>
-        <h2 className="font-semibold text-zinc-50">{design.name}</h2>
-        <p className="text-xs text-zinc-400">
+        <h2 className="font-semibold text-bone">{design.name}</h2>
+        <p className="text-xs text-bone-muted">
           Created {created.format(new Date(design.created_at))}
         </p>
       </div>
       <dl className="grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
-        <dt className="text-zinc-400">Shirt</dt>
-        <dd className="text-zinc-200">{config.shirt_color}</dd>
-        <dt className="text-zinc-400">Font</dt>
-        <dd className="text-zinc-200">{labelOf(fonts, config.font)}</dd>
-        <dt className="text-zinc-400">Size</dt>
-        <dd className="text-zinc-200">{labelOf(options.font_sizes, config.font_size)}</dd>
-        <dt className="text-zinc-400">Text colour</dt>
-        <dd className="text-zinc-200">{config.text_color}</dd>
-        <dt className="text-zinc-400">Placement</dt>
-        <dd className="text-zinc-200">{labelOf(options.placements, config.placement)}</dd>
-        <dt className="text-zinc-400">Price</dt>
-        <dd className="text-amber-400">
+        <dt className="text-bone-muted">Shirt</dt>
+        <dd className="text-bone">{config.shirt_color}</dd>
+        <dt className="text-bone-muted">Font</dt>
+        <dd className="text-bone">{labelOf(fonts, config.font)}</dd>
+        <dt className="text-bone-muted">Size</dt>
+        <dd className="text-bone">{labelOf(options.font_sizes, config.font_size)}</dd>
+        <dt className="text-bone-muted">Text colour</dt>
+        <dd className="text-bone">{config.text_color}</dd>
+        <dt className="text-bone-muted">Placement</dt>
+        <dd className="text-bone">{labelOf(options.placements, config.placement)}</dd>
+        <dt className="text-bone-muted">Price</dt>
+        <dd className="text-laurel">
           {design.price === null ? "—" : formatNaira(design.price)}
         </dd>
       </dl>
       <FormErrors messages={errors} />
-      <p aria-live="polite" className="text-xs text-emerald-400">
+      <p aria-live="polite" className="text-xs text-ok">
         {status}
       </p>
       <div className="grid grid-cols-2 gap-2">
@@ -138,7 +139,7 @@ function DesignCard({
             <button
               type="button"
               disabled={busy}
-              className={`${ACTION} border-red-500 text-red-400`}
+              className={`${ACTION} border-error text-error`}
               onClick={() => remove.mutate()}
             >
               Confirm delete
@@ -185,19 +186,19 @@ export function DesignGallery() {
 
   if (!signedIn) return null;
   if (designs.isError || options.isError) {
-    return <p className="text-zinc-400">Your designs could not load. Refresh to try again.</p>;
+    return <p className="text-bone-muted">Your designs could not load. Refresh to try again.</p>;
   }
   if (!designs.data || !options.data) {
-    return <p className="text-zinc-400">Loading your designs…</p>;
+    return <p className="text-bone-muted">Loading your designs…</p>;
   }
   if (designs.data.length === 0) {
     return (
-      <p className="text-zinc-400">
+      <EmptyState title="A blank canvas">
         No saved designs yet.{" "}
-        <Link href="/design" className="inline-flex min-h-11 items-center text-amber-400 underline">
+        <Link href="/design" className="inline-flex min-h-11 items-center text-laurel underline">
           Design your first shirt
         </Link>
-      </p>
+      </EmptyState>
     );
   }
   return (
