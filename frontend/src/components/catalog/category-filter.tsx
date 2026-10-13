@@ -54,7 +54,7 @@ export function CategoryFilter({ selected, onSelect }: Props) {
             fill={false}
             selected={active}
             onClick={() => onSelect(option.slug)}
-            className="shrink-0"
+            className="shrink-0 whitespace-nowrap"
           >
             {active && <Indicator />}
             {option.label}

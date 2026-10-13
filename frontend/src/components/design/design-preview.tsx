@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { buttonClasses } from "@/components/ui/button";
 import type { DesignConfig, DesignOptions } from "@/lib/design/types";
 import { ShirtCanvas } from "./shirt-canvas";
 
@@ -29,7 +30,7 @@ export function DesignPreview({
       role="dialog"
       aria-modal="true"
       aria-label="Design preview"
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-black p-4"
+      className="marble fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-ink p-4"
     >
       <div className="w-full max-w-xl">
         <ShirtCanvas
@@ -42,7 +43,7 @@ export function DesignPreview({
         ref={closeRef}
         type="button"
         onClick={onClose}
-        className="min-h-11 rounded-md border border-zinc-600 px-6 text-sm font-medium text-zinc-100 hover:border-zinc-400"
+        className={buttonClasses({ variant: "secondary" })}
       >
         Back to editing
       </button>

@@ -1,5 +1,6 @@
 "use client";
 
+import { labelClasses } from "@/components/ui/input";
 import { fontFor } from "@/lib/design/fonts";
 import type { FontOption } from "@/lib/design/types";
 import { Chip } from "@/components/ui/chip";
@@ -15,7 +16,7 @@ export function FontPicker({
 }) {
   return (
     <fieldset>
-      <legend className="mb-2 text-sm font-medium text-zinc-300">Font</legend>
+      <legend className={`mb-2 ${labelClasses}`}>Font</legend>
       <div className="grid grid-cols-2 gap-2">
         {fonts.map((font) => {
           const { family, weight } = fontFor(font.key);

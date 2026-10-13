@@ -1,5 +1,6 @@
 "use client";
 
+import { labelClasses } from "@/components/ui/input";
 import type { NamedColor } from "@/lib/design/types";
 
 export function SwatchPicker({
@@ -15,8 +16,8 @@ export function SwatchPicker({
 }) {
   return (
     <fieldset>
-      <legend className="mb-2 text-sm font-medium text-zinc-300">
-        {legend}: <span className="text-zinc-50">{value}</span>
+      <legend className={`mb-2 ${labelClasses}`}>
+        {legend}: <span className="text-bone">{value}</span>
       </legend>
       <div className="flex flex-wrap gap-2">
         {colors.map((color) => (
@@ -28,10 +29,10 @@ export function SwatchPicker({
             aria-label={color.name}
             title={color.name}
             style={{ backgroundColor: color.hex }}
-            className={`size-11 rounded-full border-2 transition-shadow ${
+            className={`size-11 border transition-[box-shadow,transform] duration-150 active:scale-90 motion-reduce:transition-none motion-reduce:active:scale-100 ${
               value === color.name
-                ? "border-amber-400 ring-2 ring-amber-400 ring-offset-2 ring-offset-black"
-                : "border-zinc-600 hover:border-zinc-400"
+                ? "border-ink shadow-[0_0_0_2px_var(--color-ink),0_0_0_4px_var(--color-laurel)]"
+                : "border-rule hover:border-bone-muted"
             }`}
           />
         ))}

@@ -22,7 +22,8 @@ export function OptionButtons({
             key={option.key}
             selected={value === option.key}
             onClick={() => onChange(option.key)}
-            className="flex-1"
+            // Labels like "Upper Chest" wrap inside the chip rather than spill.
+            className="flex-1 whitespace-normal py-1 text-center leading-tight"
           >
             {option.label}
           </Chip>

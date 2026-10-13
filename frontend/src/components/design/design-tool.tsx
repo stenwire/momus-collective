@@ -3,6 +3,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useState } from "react";
 import { fetchDesignOptions, fetchDesignPricing } from "@/lib/api";
+import { buttonClasses } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/cn";
 import { formatNaira } from "@/lib/format";
 import { useDesignStore } from "@/lib/design/store";
 import { DesignPreview } from "./design-preview";
@@ -31,13 +34,21 @@ export function DesignTool() {
 
   if (isError) {
     return (
-      <p className="px-4 text-zinc-400">
+      <p role="alert" className="px-4 text-bone-muted">
         The design tool could not load. Refresh to try again.
       </p>
     );
   }
   if (!options || !config) {
-    return <p className="px-4 text-zinc-400">Loading the design tool…</p>;
+    return (
+      <div aria-busy="true" className="flex flex-col gap-6 px-4 pb-10 md:flex-row">
+        <p role="status" className="sr-only">
+          Loading the design tool…
+        </p>
+        <Skeleton className="aspect-square w-full md:max-w-xl md:flex-1" />
+        <Skeleton className="h-96 w-full md:w-80" />
+      </div>
+    );
   }
 
   const price = pricing?.prices[config.shirt_color];
@@ -49,8 +60,8 @@ export function DesignTool() {
   }
 
   return (
-    <div className="flex flex-col gap-6 px-4 pb-10 md:flex-row md:items-start">
-      <div className="w-full md:sticky md:top-4 md:max-w-xl md:flex-1">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 pb-10 md:flex-row md:items-start">
+      <div className="w-full md:sticky md:top-20 md:max-w-xl md:flex-1">
         <ShirtCanvas
           config={config}
           options={options}
@@ -60,13 +71,13 @@ export function DesignTool() {
         <button
           type="button"
           onClick={() => setPreviewing(true)}
-          className="mt-3 min-h-11 w-full rounded-md border border-zinc-600 px-4 text-sm font-medium text-zinc-100 hover:border-zinc-400"
+          className={cn(buttonClasses({ variant: "secondary", block: true }), "mt-3")}
         >
           Preview
         </button>
-        <p className="mt-4 text-lg font-semibold text-amber-400">
+        <p className="mt-4 font-mono text-xl font-bold tabular-nums text-laurel">
           {price === undefined ? "\u00a0" : formatNaira(price)}
-          <span className="ml-2 text-sm font-normal text-zinc-400">
+          <span className="ml-2 font-sans text-sm font-normal text-bone-muted">
             on a {config.shirt_color} shirt
           </span>
         </p>

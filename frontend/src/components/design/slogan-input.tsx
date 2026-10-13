@@ -1,6 +1,8 @@
 "use client";
 
 import { characterCount, sanitizeDesignText } from "@/lib/design/sanitize";
+import { inputClasses, labelClasses } from "@/components/ui/input";
+import { cn } from "@/lib/cn";
 import type { TextLimits } from "@/lib/design/types";
 
 export function SloganInput({
@@ -17,7 +19,7 @@ export function SloganInput({
     <div className="flex flex-col gap-2">
       <label
         htmlFor="design-slogan"
-        className="text-sm font-medium text-zinc-300"
+        className={labelClasses}
       >
         Your slogan
       </label>
@@ -27,14 +29,14 @@ export function SloganInput({
         onChange={(e) => onChange(sanitizeDesignText(e.target.value, limits))}
         rows={3}
         aria-describedby="design-slogan-count"
-        placeholder="Type something unhinged"
-        className="min-h-11 rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-base text-zinc-50 placeholder:text-zinc-500 focus:border-amber-400 focus:outline-none"
+        placeholder="Type something unhinged…"
+        className={cn(inputClasses, "w-full py-2 font-display text-2xl uppercase leading-tight tracking-tight")}
       />
       <p
         id="design-slogan-count"
         aria-live="polite"
-        className={`self-end text-xs ${
-          count >= limits.max_length ? "text-amber-400" : "text-zinc-400"
+        className={`self-end font-mono text-xs tabular-nums ${
+          count >= limits.max_length ? "text-laurel" : "text-bone-muted"
         }`}
       >
         {count}/{limits.max_length}

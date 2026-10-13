@@ -23,15 +23,15 @@ export function RevisionTool({ token, itemId }: { token: string; itemId: string 
   const [errors, setErrors] = useState<string[]>([]);
 
   if (options.isError || order.isError) {
-    return <p className="px-4 text-zinc-400">This page could not load. Refresh to try again.</p>;
+    return <p role="alert" className="px-4 text-bone-muted">This page could not load. Refresh to try again.</p>;
   }
-  if (!options.data || order.data === undefined) return <p className="px-4 text-zinc-400">Loading your design…</p>;
+  if (!options.data || order.data === undefined) return <p role="status" className="px-4 text-bone-muted">Loading your design…</p>;
   const item = order.data?.items.find((i) => i.id === itemId);
   if (!order.data || !item?.design_config || !order.data.design_review || order.data.design_review.customer_choice) {
     return (
-      <p className="px-4 text-zinc-400">
+      <p className="px-4 text-bone-muted">
         This design isn&apos;t waiting for a revision.{" "}
-        <Link href={`/track/${encodeURIComponent(token)}`} className="inline-flex min-h-11 items-center text-amber-400 underline">
+        <Link href={`/track/${encodeURIComponent(token)}`} className="inline-flex min-h-11 items-center text-laurel underline underline-offset-4">
           Back to your order
         </Link>
       </p>
@@ -41,14 +41,14 @@ export function RevisionTool({ token, itemId }: { token: string; itemId: string 
   const update = (change: Partial<DesignConfig>) => setDraft({ ...config, ...change });
 
   return (
-    <div className="flex flex-col gap-6 px-4 pb-10 md:flex-row md:items-start">
-      <div className="w-full md:sticky md:top-4 md:max-w-xl md:flex-1">
-        <p className="mb-3 text-sm text-zinc-300">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 pb-10 md:flex-row md:items-start">
+      <div className="w-full md:sticky md:top-20 md:max-w-xl md:flex-1">
+        <p className="mb-3 font-mono text-xs uppercase tracking-widest text-bone-muted">
           Order {order.data.order_number}. Reason: {order.data.design_review.reason_label}
           {order.data.design_review.details ? `. ${order.data.design_review.details}` : ""}
         </p>
         <ShirtCanvas config={config} options={options.data} label={`Shirt mockup: ${config.text || "no text yet"}`} guide />
-        <p className="mt-3 text-sm text-zinc-400">Your {config.shirt_color} shirt stays the same; the price doesn&apos;t change.</p>
+        <p className="mt-3 text-sm text-bone-muted">Your {config.shirt_color} shirt stays the same; the price doesn&apos;t change.</p>
         <button
           type="button"
           disabled={sending || !draft}
@@ -68,7 +68,7 @@ export function RevisionTool({ token, itemId }: { token: string; itemId: string 
           Send revised design
         </button>
         {errors.length ? (
-          <p role="alert" className="mt-2 text-sm text-red-400">
+          <p role="alert" className="mt-2 text-sm text-error">
             {errors.join(" ")}
           </p>
         ) : null}
