@@ -1,10 +1,11 @@
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import type { ButtonHTMLAttributes, ReactNode, Ref } from "react";
 import { cn } from "@/lib/cn";
 
 type IconButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> & {
   label: string;
   children: ReactNode;
   tone?: "plain" | "solid";
+  ref?: Ref<HTMLButtonElement>;
 };
 
 export function IconButton({
