@@ -15,6 +15,7 @@ let search = "";
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push }),
   useSearchParams: () => new URLSearchParams(search),
+  usePathname: () => "/",
 }));
 
 const json = (status: number, body: unknown) =>

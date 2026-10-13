@@ -1,9 +1,9 @@
-import { act, render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import Link from "next/link";
 import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
-import { MotionProvider } from "@/components/providers/motion-provider";
+import { LazyMotion, domMax } from "motion/react";
 import { ProductModal } from "@/components/catalog/product-modal";
 import { DISMISS_PX, Sheet, shouldDismiss } from "./sheet";
 
@@ -92,16 +92,19 @@ describe("ProductModal on Sheet", () => {
 
   it("plays its exit before navigating back", async () => {
     mockBack.mockClear();
+    // Features given synchronously: waiting on the app's lazy import made
+    // this timing-dependent under a loaded test run.
     render(
-      <MotionProvider>
+      <LazyMotion features={domMax}>
         <ProductModal>
           <p>content</p>
         </ProductModal>
-      </MotionProvider>,
+      </LazyMotion>,
     );
-    await act(async () => {
-      await new Promise((r) => setTimeout(r, 20));
-    });
+    // Escape before the first enter frame would exit from the initial
+    // values, which equal the exit target, so motion finishes at once.
+    const dialog = screen.getByRole("dialog");
+    await waitFor(() => expect(dialog.style.opacity).toBe("1"));
     await userEvent.keyboard("{Escape}");
     expect(mockBack).not.toHaveBeenCalled();
     await waitFor(() => expect(mockBack).toHaveBeenCalledTimes(1));

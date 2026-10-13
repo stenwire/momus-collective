@@ -1,22 +1,23 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useSignedIn } from "@/lib/auth/use-signed-in";
+import { navLinkClasses } from "../site-nav-links";
 
-const LINK =
-  "inline-flex min-h-11 min-w-11 items-center justify-center text-sm font-medium whitespace-nowrap text-zinc-300 hover:text-zinc-50";
-
-// Log out lives on the account pages: four links overflow a 360px nav.
-export function AuthNav() {
+export function AuthNav({ className }: { className?: string }) {
   const signedIn = useSignedIn();
+  const pathname = usePathname();
   if (signedIn === null) return null;
-  return signedIn ? (
-    <Link href="/account/orders" className={LINK}>
-      Account
-    </Link>
-  ) : (
-    <Link href="/login" className={LINK}>
-      Log in
+  const href = signedIn ? "/account/orders" : "/login";
+  const active = signedIn ? pathname.startsWith("/account") : pathname === "/login";
+  return (
+    <Link
+      href={href}
+      aria-current={active ? "page" : undefined}
+      className={className ?? navLinkClasses(active)}
+    >
+      {signedIn ? "Account" : "Log in"}
     </Link>
   );
 }

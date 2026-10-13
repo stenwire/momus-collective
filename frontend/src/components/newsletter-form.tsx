@@ -4,6 +4,7 @@ import { useId, useState } from "react";
 import { subscribeToNewsletter } from "@/lib/newsletter";
 import { buttonClasses } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
+import { inputClasses, labelClasses } from "@/components/ui/input";
 
 // FR-NOT-04: new drops by email, from the footer and the homepage.
 export function NewsletterForm() {
@@ -28,7 +29,7 @@ export function NewsletterForm() {
         }
       }}
     >
-      <label htmlFor={id} className="text-sm text-zinc-300">
+      <label htmlFor={id} className={labelClasses}>
         Get new drops by email
       </label>
       <div className="flex gap-2">
@@ -37,10 +38,10 @@ export function NewsletterForm() {
           type="email"
           required
           autoComplete="email"
-          placeholder="you@example.com"
+          placeholder="you@example.com…"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="min-h-11 min-w-0 flex-1 rounded-md border border-zinc-700 bg-zinc-950 px-3 text-base text-zinc-50 focus:border-amber-400 focus:outline-none"
+          className={cn(inputClasses, "flex-1")}
         />
         <button
           type="submit"
@@ -52,7 +53,7 @@ export function NewsletterForm() {
       </div>
       <p
         role={state.kind === "error" ? "alert" : "status"}
-        className={`text-sm ${state.kind === "error" ? "text-red-400" : "text-emerald-400"}`}
+        className={cn("text-sm", state.kind === "error" ? "text-error" : "text-ok")}
       >
         {state.message}
       </p>
