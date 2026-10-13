@@ -3,8 +3,18 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { HapticsToggle } from "./haptics-toggle";
 
+function device({ coarse }: { coarse: boolean }) {
+  Object.defineProperty(navigator, "vibrate", { value: vi.fn(), configurable: true });
+  vi.stubGlobal("matchMedia", (q: string) => ({
+    matches: coarse && q.includes("coarse"),
+    addEventListener: () => {},
+    removeEventListener: () => {},
+  }));
+}
+
 afterEach(() => {
   Reflect.deleteProperty(navigator, "vibrate");
+  vi.unstubAllGlobals();
   localStorage.clear();
 });
 
@@ -14,8 +24,14 @@ describe("HapticsToggle", () => {
     expect(screen.queryByRole("switch")).not.toBeInTheDocument();
   });
 
+  it("stays hidden on desktop Chrome, whose vibrate does nothing", () => {
+    device({ coarse: false });
+    render(<HapticsToggle />);
+    expect(screen.queryByRole("switch")).not.toBeInTheDocument();
+  });
+
   it("switches haptics off and remembers it", async () => {
-    Object.defineProperty(navigator, "vibrate", { value: vi.fn(), configurable: true });
+    device({ coarse: true });
     render(<HapticsToggle />);
     const toggle = screen.getByRole("switch", { name: /haptics on/i });
     expect(toggle).toHaveAttribute("aria-checked", "true");

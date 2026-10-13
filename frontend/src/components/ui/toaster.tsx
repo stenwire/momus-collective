@@ -3,7 +3,7 @@
 import { X } from "lucide-react";
 import { AnimatePresence } from "motion/react";
 import * as m from "motion/react-m";
-import { useToasts } from "@/lib/toast";
+import { pauseToast, resumeToast, useToasts } from "@/lib/toast";
 import { duration, exitDuration, spring } from "@/lib/motion";
 import { cn } from "@/lib/cn";
 import { IconButton } from "./icon-button";
@@ -26,6 +26,12 @@ export function Toaster() {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0, transition: spring.settle }}
             exit={{ opacity: 0, y: 12, transition: { duration: exitDuration(duration.short) } }}
+            onPointerEnter={() => pauseToast(t.id)}
+            onPointerLeave={() => resumeToast(t.id)}
+            onFocus={() => pauseToast(t.id)}
+            onBlur={(e) => {
+              if (!e.currentTarget.contains(e.relatedTarget)) resumeToast(t.id);
+            }}
             className={cn(
               "pointer-events-auto flex w-full max-w-sm items-center gap-3 border bg-ink-raised py-1 pl-4 text-sm shadow-[4px_4px_0_0_rgb(0_0_0/0.6)]",
               t.tone === "error" ? "border-error text-bone" : "border-rule text-bone",

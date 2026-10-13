@@ -32,8 +32,11 @@ export function CategoryFilter({ selected, onSelect }: Props) {
 
   // On a phone the row scrolls sideways: bring the chosen chip into view.
   useEffect(() => {
-    const active = rowRef.current?.querySelector<HTMLElement>('[aria-pressed="true"]');
-    active?.scrollIntoView?.({ block: "nearest", inline: "center" });
+    const row = rowRef.current;
+    const active = row?.querySelector<HTMLElement>('[aria-pressed="true"]');
+    if (!row || !active) return;
+    // Only the row moves; scrollIntoView could also scroll the page.
+    row.scrollLeft = active.offsetLeft - (row.clientWidth - active.offsetWidth) / 2;
   }, [data]);
 
   if (!data) return null;

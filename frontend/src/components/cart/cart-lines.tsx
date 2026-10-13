@@ -12,7 +12,14 @@ import { fetchDesignOptions } from "@/lib/api";
 import { fetchDeliveryInfo } from "@/lib/checkout/api";
 import { type CartData, type CartLine, MAX_LINE_QUANTITY } from "@/lib/cart/types";
 import { formatNaira } from "@/lib/format";
-import { ShirtCanvas } from "../design/shirt-canvas";
+import dynamic from "next/dynamic";
+
+// Loaded on demand: it carries the nine design-tool fonts, which every
+// page would otherwise preload because the bag lives in the root layout.
+const ShirtCanvas = dynamic(
+  () => import("../design/shirt-canvas").then((mod) => mod.ShirtCanvas),
+  { ssr: false },
+);
 
 const STEP =
   "flex size-11 items-center justify-center border border-rule text-bone transition-colors duration-150 hover:border-bone-muted active:bg-bone/10 disabled:opacity-40 motion-reduce:transition-none";

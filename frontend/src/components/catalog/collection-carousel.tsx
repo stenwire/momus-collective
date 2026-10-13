@@ -29,7 +29,7 @@ export function CollectionCarousel({ collection }: { collection: Collection }) {
           className="font-display text-3xl uppercase leading-none tracking-tight md:text-4xl"
         >
           {collection.name}
-          <span className="ml-3 align-middle font-mono text-xs tracking-widest text-bone-muted">
+          <span aria-hidden="true" className="ml-3 align-middle font-mono text-xs tracking-widest text-bone-muted">
             № {String(collection.products.length).padStart(2, "0")}
           </span>
         </h2>

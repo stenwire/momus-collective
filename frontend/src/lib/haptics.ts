@@ -40,8 +40,11 @@ function hasSwitchInput(): boolean {
   return typeof document !== "undefined" && "switch" in document.createElement("input");
 }
 
+// Desktop Chrome has a no-op vibrate and macOS Safari has the switch, so a
+// coarse pointer is what tells us there is something to feel.
 export function hapticsSupported(): boolean {
-  return canVibrate() || hasSwitchInput();
+  const touch = typeof window !== "undefined" && window.matchMedia?.("(pointer: coarse)").matches;
+  return Boolean(touch) && (canVibrate() || hasSwitchInput());
 }
 
 type Activation = { isActive: boolean; hasBeenActive: boolean };
@@ -69,6 +72,9 @@ function iosTick() {
     switchLabel.setAttribute("aria-hidden", "true");
     switchLabel.style.cssText =
       "position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;overflow:hidden;";
+    // Keep the synthetic click (and the input's echo) from reaching
+    // outside-click handlers.
+    switchLabel.addEventListener("click", (e) => e.stopPropagation());
     switchLabel.append(input);
     document.body.append(switchLabel);
   }

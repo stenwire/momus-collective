@@ -34,13 +34,21 @@ export default function RootLayout({
         <noscript>
           <style>{"[data-reveal]{opacity:1!important;transform:none!important}"}</style>
         </noscript>
+        <a
+          href="#content"
+          className="sr-only z-[80] bg-laurel px-4 py-3 font-semibold text-ink focus-visible:not-sr-only focus-visible:fixed focus-visible:left-4 focus-visible:top-4"
+        >
+          Skip to content
+        </a>
         <QueryProvider>
           <MotionProvider>
             <AuthBootstrap />
             <CartSync />
             <SiteNav />
             <CartNotice />
-            {children}
+            <div id="content" className="flex flex-1 flex-col">
+              {children}
+            </div>
             {modal}
             <SiteFooter />
             <CartDrawer />

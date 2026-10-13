@@ -120,15 +120,22 @@ export function ShirtCanvas({
     const targetHex = hexFor(options.shirt_colors, config.shirt_color);
     const previous = drawn.current;
     drawn.current = { hex: targetHex, font: config.font };
-    const draw = (shirtHex?: string, reveal?: number) => {
+    // Resizing reallocates the backing store, so it happens once per run
+    // and on window resize, never per tween frame.
+    const fit = () => {
       const scale =
         (canvas.clientWidth * window.devicePixelRatio) / options.canvas_size;
       canvas.width = Math.round(options.canvas_size * scale);
       canvas.height = canvas.width;
       ctx.setTransform(scale, 0, 0, scale, 0, 0);
-      drawDesign(ctx, config, options, { guide, shirtHex, reveal });
     };
-    const render = () => draw();
+    const draw = (shirtHex?: string, reveal?: number) =>
+      drawDesign(ctx, config, options, { guide, shirtHex, reveal });
+    const render = () => {
+      fit();
+      draw();
+    };
+    fit();
 
     // A new shirt colour fades in and a new font writes itself in; a first
     // draw, any other change, or reduced motion draws the final frame.
@@ -145,13 +152,13 @@ export function ShirtCanvas({
       };
       frame = requestAnimationFrame(step);
     } else {
-      render();
+      draw();
     }
     // Canvas text never triggers a webfont load, so load it, then redraw.
     let live = true;
     document.fonts
       ?.load(canvasFont(config.font, 40))
-      .then(() => live && render());
+      .then(() => live && draw());
     window.addEventListener("resize", render);
     return () => {
       live = false;

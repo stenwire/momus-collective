@@ -172,8 +172,10 @@ export function Sheet({
                 </div>
               </div>
             ) : (
-              <div className="sticky top-0 z-10 flex justify-end p-1">
-                <div className="bg-ink-raised/80">{close}</div>
+              // Floats over the content: the row takes no height and only
+              // the button takes clicks.
+              <div className="pointer-events-none sticky top-0 z-10 -mb-[3.25rem] flex justify-end p-1">
+                <div className="pointer-events-auto bg-ink-raised/80">{close}</div>
               </div>
             )}
             <div

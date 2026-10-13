@@ -22,7 +22,7 @@ export function KineticText({
       <span className="sr-only">{text}</span>
       <span aria-hidden="true">
         {words.map((word, i) => (
-          <span key={i} className="inline-block overflow-hidden align-bottom">
+          <span key={i} className="-mb-[0.15em] inline-block overflow-hidden pb-[0.15em] align-bottom">
             <span
               className={cn("inline-block animate-rise")}
               style={{ animationDelay: `${delayMs + i * stepMs}ms` } as CSSProperties}
