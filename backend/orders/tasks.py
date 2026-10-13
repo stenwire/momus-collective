@@ -8,6 +8,8 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 
 from config.email import EmailNotSent
+from config.money import naira
+from notifications.whatsapp import WhatsAppError
 
 from .delivery import delivery_settings, estimated_delivery
 from .serializers import item_payload
@@ -25,11 +27,6 @@ def _image_url(order, item):
     return (
         images[0] if images[0].startswith("http") else settings.BACKEND_URL + images[0]
     )
-
-
-def naira(kobo):
-    naira, rest = divmod(kobo, 100)
-    return f"₦{naira:,}" + (f".{rest:02d}" if rest else "")
 
 
 def _window(order):
@@ -81,13 +78,13 @@ def send_order_confirmation(order):
 
 
 @shared_task(
-    autoretry_for=(EmailNotSent,),
+    autoretry_for=(EmailNotSent, WhatsAppError),
     retry_backoff=True,
     max_retries=5,
 )
 def order_paid(order_id):
     """After the order commits: freeze each custom design's print file and
-    email thumbnail, then confirm to the customer."""
+    email thumbnail, confirm to the customer, then alert the admin."""
     from designs.tasks import render_order_item_file
 
     from .models import Order
@@ -98,6 +95,9 @@ def order_paid(order_id):
             render_order_item_file(str(item.id), item.design_config)
     if order.confirmation_sent_at is None:
         send_order_confirmation(order)
+    from notifications.admin_alerts import notify_new_order
+
+    notify_new_order(order)
 
 
 @shared_task(autoretry_for=(DatabaseError,), retry_backoff=True, max_retries=5)

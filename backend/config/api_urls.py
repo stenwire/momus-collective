@@ -4,7 +4,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.routers import DefaultRouter
 
-from accounts import account_views
+from accounts import account_views, admin_customers
 from accounts.address_views import AddressViewSet
 from catalog.admin_views import (
     AdminCategoryViewSet,
@@ -12,6 +12,7 @@ from catalog.admin_views import (
     AdminProductViewSet,
 )
 from designs.views import SavedDesignViewSet
+from promocodes.admin_views import AdminPromoCodeViewSet
 
 router = DefaultRouter()
 router.register("addresses", AddressViewSet, basename="address")
@@ -21,6 +22,7 @@ router.register("admin/categories", AdminCategoryViewSet, basename="admin-catego
 router.register(
     "admin/collections", AdminCollectionViewSet, basename="admin-collection"
 )
+router.register("admin/promo-codes", AdminPromoCodeViewSet, basename="admin-promo-code")
 
 
 @api_view(["GET"])
@@ -46,9 +48,19 @@ urlpatterns = [
         name="account-email-change-confirm",
     ),
     path("account/password/", account_views.change_password, name="account-password"),
+    path(
+        "admin/customers/", admin_customers.admin_customer_list, name="admin-customers"
+    ),
+    path(
+        "admin/customers/<uuid:pk>/",
+        admin_customers.admin_customer_detail,
+        name="admin-customer-detail",
+    ),
     path("", include("catalog.urls")),
     path("", include("designs.urls")),
     path("", include("carts.urls")),
     path("", include("orders.urls")),
+    path("", include("newsletter.urls")),
+    path("", include("reviews.urls")),
     path("", include(router.urls)),
 ]

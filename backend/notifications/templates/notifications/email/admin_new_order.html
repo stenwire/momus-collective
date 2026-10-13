@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<body style="margin:0;padding:16px;font-family:Helvetica,Arial,sans-serif;color:#18181b;">
+  <h1 style="font-size:20px;margin:0 0 4px;">New order {{ order.order_number }}</h1>
+  <p style="margin:0 0 16px;font-size:16px;"><strong>{{ paid }}</strong> paid</p>
+  <h2 style="font-size:15px;margin:16px 0 4px;">Customer</h2>
+  <p style="margin:0;font-size:14px;line-height:1.5;">
+    {{ customer.name }}{% if not customer.account %} (guest){% endif %}<br>
+    {{ customer.phone }}<br>{{ customer.email }}
+  </p>
+  <h2 style="font-size:15px;margin:16px 0 4px;">Items</h2>
+  <table role="presentation" cellpadding="4" cellspacing="0" style="font-size:14px;border-collapse:collapse;">
+    {% for line in items %}
+    <tr>
+      <td>{{ line.item.quantity }}&times;</td>
+      <td>{% if line.custom %}Custom design: &ldquo;{{ line.item.slogan_text }}&rdquo; <em>(print file attached)</em>{% else %}{{ line.item.slogan_text }}{% endif %}</td>
+      <td>{{ line.item.size }}{% if line.item.color %}, {{ line.item.color }}{% endif %}</td>
+      <td align="right">{{ line.line_total }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+  <p style="font-size:14px;line-height:1.5;">
+    Subtotal {{ subtotal }} &middot; Delivery {{ delivery }}{% if discount %} &middot; Discount &minus;{{ discount }}{% endif %}<br>
+    Order total {{ total }}{% if fee %} &middot; Paystack fee {{ fee }}{% endif %}<br>
+    <strong>Total paid {{ paid }}</strong><br>
+    Paystack reference: {{ order.paystack_reference }}
+  </p>
+  <h2 style="font-size:15px;margin:16px 0 4px;">Ship to</h2>
+  <p style="margin:0;font-size:14px;line-height:1.5;">
+    {{ address.full_name }}<br>{{ address.address_line_1 }}<br>
+    {% if address.address_line_2 %}{{ address.address_line_2 }}<br>{% endif %}
+    {{ address.city }}, {% if address.lga %}{{ address.lga }}, {% endif %}{{ address.state }}
+    {% if address.notes %}<br>Delivery notes: {{ address.notes }}{% endif %}
+  </p>
+  {% if order.notes %}<p style="font-size:14px;color:#b45309;">Note: {{ order.notes }}</p>{% endif %}
+  <p style="margin-top:20px;"><a href="{{ admin_url }}" style="background:#18181b;color:#fff;padding:10px 16px;border-radius:6px;text-decoration:none;">Open in the admin panel</a></p>
+</body>
+</html>

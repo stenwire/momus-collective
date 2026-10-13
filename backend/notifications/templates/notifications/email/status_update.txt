@@ -1,0 +1,8 @@
+{% autoescape off %}Order {{ order.order_number }}: {{ label }}
+
+{{ description }}
+
+Track your order: {{ tracking_url }}
+
+momus collective
+{% endautoescape %}

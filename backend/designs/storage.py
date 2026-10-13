@@ -3,13 +3,21 @@ import hashlib
 import json
 import os
 
-from django.conf import settings
-from django.core.files.storage import FileSystemStorage
+from config.storage import get_storage
 
 
 def design_storage():
-    # Read at call time so tests (and settings overrides) take effect.
-    return FileSystemStorage(location=settings.DESIGN_FILES_ROOT)
+    """Design and print files, on whichever provider D-097 selects."""
+    return get_storage("design_files")
+
+
+def listdir(storage, folder):
+    """Object stores have no folders, so `exists(folder)` is always false
+    there; list instead, and treat a missing local folder as empty."""
+    try:
+        return storage.listdir(folder)
+    except FileNotFoundError:
+        return [], []
 
 
 def design_file_name(design_id, config):
@@ -22,12 +30,11 @@ def design_file_name(design_id, config):
 def discard_design_files(design_id):
     # One prefix per design, so this never scans other designs' files.
     storage, prefix = design_storage(), str(design_id)
-    if storage.exists(prefix):
-        for name in storage.listdir(prefix)[1]:
-            storage.delete(f"{prefix}/{name}")
-        # Local disk keeps empty folders; object stores have none to remove.
-        with contextlib.suppress(OSError, NotImplementedError):
-            os.rmdir(storage.path(prefix))
+    for name in listdir(storage, prefix)[1]:
+        storage.delete(f"{prefix}/{name}")
+    # Local disk keeps empty folders; object stores have none to remove.
+    with contextlib.suppress(OSError, NotImplementedError):
+        os.rmdir(storage.path(prefix))
 
 
 def order_item_file_name(item_id):

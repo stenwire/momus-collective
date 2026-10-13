@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import type { ProductDetail } from "@/lib/api";
 import { errorMessages } from "@/lib/auth/api";
 import { useCartDrawer } from "@/lib/cart/drawer-store";
@@ -9,6 +9,7 @@ import { useCart } from "@/lib/cart/use-cart";
 import { SIZES } from "@/lib/constants";
 import { formatNaira } from "@/lib/format";
 import { ProductCard } from "./product-card";
+import { ProductReviews, RatingSummary } from "./product-reviews";
 
 export function ProductDetailView({ product }: { product: ProductDetail }) {
   const [size, setSize] = useState<string>(SIZES[0]);
@@ -69,6 +70,7 @@ export function ProductDetailView({ product }: { product: ProductDetail }) {
           <p className="mt-1 text-lg font-semibold text-amber-400">
             {formatNaira(product.price)}
           </p>
+          <RatingSummary average={product.avg_rating} count={product.review_count} href="#reviews" />
         </div>
 
         <fieldset>
@@ -147,6 +149,10 @@ export function ProductDetailView({ product }: { product: ProductDetail }) {
             {product.description}
           </p>
         ) : null}
+
+        <Suspense>
+          <ProductReviews slug={product.slug} />
+        </Suspense>
 
         {product.related_products.length > 0 ? (
           <div className="mt-4">

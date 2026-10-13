@@ -2,9 +2,10 @@ import pytest
 from django.core import mail
 from rest_framework.test import APIClient
 
+from config.money import naira
 from orders import paystack
 from orders.models import CheckoutSession, Order
-from orders.tasks import naira, settle_charge
+from orders.tasks import settle_charge
 from orders.tests.test_fulfilment import (  # noqa: F401 (keys is a fixture)
     guest_start,
     keys,

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-export type SessionUser = { email: string; first_name: string };
+export type SessionUser = { email: string; first_name: string; is_staff?: boolean };
 
 // No tokens here: they live in httpOnly cookies no script can read (D-080).
 // The CSRF token is held in memory only, never persisted.

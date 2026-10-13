@@ -1,0 +1,28 @@
+{% autoescape off %}New order {{ order.order_number }}: {{ paid }} paid
+
+Customer: {{ customer.name }}{% if not customer.account %} (guest){% endif %}
+Phone: {{ customer.phone }}
+Email: {{ customer.email }}
+
+Items:{% for line in items %}
+- {{ line.item.quantity }}x {% if line.custom %}Custom design: "{{ line.item.slogan_text }}"{% else %}{{ line.item.slogan_text }}{% endif %} ({{ line.item.size }}{% if line.item.color %}, {{ line.item.color }}{% endif %})  {{ line.line_total }}{% if line.custom %}  [print file attached]{% endif %}{% endfor %}
+
+Subtotal: {{ subtotal }}
+Delivery: {{ delivery }}{% if discount %}
+Discount: -{{ discount }}{% endif %}
+Order total: {{ total }}{% if fee %}
+Paystack fee (paid by the customer): {{ fee }}{% endif %}
+Total paid: {{ paid }}
+Paystack reference: {{ order.paystack_reference }}
+
+Ship to:
+{{ address.full_name }}
+{{ address.address_line_1 }}{% if address.address_line_2 %}
+{{ address.address_line_2 }}{% endif %}
+{{ address.city }}, {% if address.lga %}{{ address.lga }}, {% endif %}{{ address.state }}{% if address.notes %}
+Delivery notes: {{ address.notes }}{% endif %}{% if order.notes %}
+
+Note: {{ order.notes }}{% endif %}
+
+Open in the admin panel: {{ admin_url }}
+{% endautoescape %}

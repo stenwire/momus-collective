@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { DesignReview } from "@/components/orders/design-review";
 import { EstimatedDelivery, OrderItems, OrderProgress } from "@/components/orders/order-summary";
 import { fetchTrackedOrder } from "@/lib/orders/api";
 
@@ -11,10 +12,14 @@ export const metadata: Metadata = {
   referrer: "no-referrer",
 };
 
-type Props = { params: Promise<{ token: string }> };
+type Props = {
+  params: Promise<{ token: string }>;
+  searchParams: Promise<{ revised?: string }>;
+};
 
-export default async function TrackOrderPage({ params }: Props) {
+export default async function TrackOrderPage({ params, searchParams }: Props) {
   const { token } = await params;
+  const { revised } = await searchParams;
   const order = await fetchTrackedOrder(token);
   if (!order) notFound();
   return (
@@ -23,6 +28,12 @@ export default async function TrackOrderPage({ params }: Props) {
         <h1 className="text-2xl font-semibold text-zinc-50">Order {order.order_number}</h1>
         <p className="text-sm text-zinc-400">Status: {order.status_label}</p>
       </div>
+      {revised ? (
+        <p role="status" className="text-sm text-emerald-400">
+          Thanks, we&apos;ve got your revised design and will review it shortly.
+        </p>
+      ) : null}
+      <DesignReview order={order} token={token} />
       <EstimatedDelivery order={order} />
       <section aria-labelledby="progress-heading" className="flex flex-col gap-3">
         <h2 id="progress-heading" className="text-lg font-semibold text-zinc-50">Progress</h2>

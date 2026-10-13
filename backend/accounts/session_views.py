@@ -32,7 +32,11 @@ from .auth_views import (
 
 
 def _user_payload(user):
-    return {"email": user.email, "first_name": user.first_name}
+    return {
+        "email": user.email,
+        "first_name": user.first_name,
+        "is_staff": user.is_staff,
+    }
 
 
 def _respond(request, user, pair=None, remember=False, retry=False):

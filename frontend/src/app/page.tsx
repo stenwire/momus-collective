@@ -2,6 +2,7 @@ import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import type { Metadata } from "next";
 import { Collections } from "@/components/catalog/collections";
 import { Hero } from "@/components/hero";
+import { NewDrops } from "@/components/new-drops";
 import { OurStory } from "@/components/our-story";
 import { fetchCollections } from "@/lib/api";
 import { getQueryClient } from "@/lib/get-query-client";
@@ -33,6 +34,7 @@ export default async function Home() {
         <Hero />
         <Collections />
         <OurStory />
+        <NewDrops />
       </main>
     </HydrationBoundary>
   );

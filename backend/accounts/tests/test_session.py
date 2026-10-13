@@ -40,7 +40,11 @@ def test_login_sets_httponly_cookies_and_returns_no_tokens(user):
     resp = log_in(client, csrf)
     assert resp.status_code == 200
     body = resp.json()
-    assert body["user"] == {"email": "ada@example.com", "first_name": "Ada"}
+    assert body["user"] == {
+        "email": "ada@example.com",
+        "first_name": "Ada",
+        "is_staff": False,
+    }
     assert "access" not in str(body) and "refresh" not in str(body)
     access, refresh = resp.cookies[ACCESS_COOKIE], resp.cookies[REFRESH_COOKIE]
     for cookie in (access, refresh):

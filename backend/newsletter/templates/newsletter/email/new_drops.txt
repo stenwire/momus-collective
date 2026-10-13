@@ -1,0 +1,9 @@
+{% autoescape off %}New this week at momus collective:
+{% for p in products %}
+- {{ p.slogan }} ({{ p.price }}): {{ p.url }}{% endfor %}
+
+See everything: {{ shop_url }}
+
+You're getting this because you signed up for new drops.
+Unsubscribe: {{ unsubscribe_url }}
+{% endautoescape %}

@@ -17,7 +17,7 @@ its own heading marks it "(Phase 2)" and the Out of Scope list repeats it.
 | M2 | Catalog and Storefront | FR-CAT-01..07, FR-ADM-04, FR-ADM-05, FR-ADM-06, NFR-02, NFR-03, NFR-05 | M1 | complete |
 | M3 | Custom Design Tool | FR-DES-01..11, FR-USR-04, NFR-01 | M2 | complete |
 | M4 | Cart, Checkout and Payment | FR-CART-01..09, FR-USR-03, FR-USR-05, FR-NOT-01 | M3 | in progress |
-| M5 | Admin Pipeline, Notifications and Reviews | FR-ADM-01, FR-ADM-02, FR-ADM-03, FR-ADM-07, FR-ADM-08, FR-ADM-09, FR-ADM-10, FR-NOT-02, FR-NOT-03, FR-NOT-04, FR-REV-01..05, NFR-06, NFR-07 | M4 | not started |
+| M5 | Admin Pipeline, Notifications and Reviews | FR-ADM-01, FR-ADM-02, FR-ADM-03, FR-ADM-07, FR-ADM-08, FR-ADM-09, FR-ADM-10, FR-NOT-02, FR-NOT-03, FR-NOT-04, FR-REV-01..05, NFR-06, NFR-07 | M4 | in progress |
 
 Branch per milestone, cut from `main`: `m0-foundation`,
 `m1-data-models-and-auth`, `m2-catalog-and-storefront`, `m3-custom-design-tool`,
@@ -223,25 +223,25 @@ because every one of these acts on orders that M4 creates.
 | # | Criterion | State |
 |---|---|---|
 | 1 | A paid order notifies the admin by email with the design file attached and by WhatsApp with a summary and link (FR-ADM-01) | [ ] |
-| 2 | Kanban board shows Paid, Shirt Acquired, Printed, Out for Delivery, Delivered and Cancelled; dragging updates status and notifies the customer (FR-ADM-02) | [ ] |
-| 3 | A sortable list view is available alongside the board (FR-ADM-02) | [ ] |
-| 4 | Order detail shows customer info, items, design file download, Paystack reference, status timeline and notes (FR-ADM-03) | [ ] |
-| 5 | Custom designs enter a moderation queue before fulfillment; approval moves the order to Shirt Acquired (FR-ADM-07) | [ ] |
-| 6 | Rejection captures a reason and notifies the customer with revise-or-refund options (FR-ADM-07, FR-NOT-03) | [ ] |
-| 7 | Analytics shows revenue by period, orders by status, top 10 products, category breakdown, custom vs catalog ratio, AOV and a 30-day trend (FR-ADM-08) | [ ] |
-| 8 | Admin manages promo codes with redemption and remaining-use tracking (FR-ADM-09) | [ ] |
-| 9 | Customer list shows name, email, phone, order count, total spent and last order date (FR-ADM-10) | [ ] |
+| 2 | Kanban board shows Paid, Shirt Acquired, Printed, Out for Delivery, Delivered and Cancelled; dragging updates status and notifies the customer (FR-ADM-02) | [x] |
+| 3 | A sortable list view is available alongside the board (FR-ADM-02) | [x] |
+| 4 | Order detail shows customer info, items, design file download, Paystack reference, status timeline and notes (FR-ADM-03) | [x] |
+| 5 | Custom designs enter a moderation queue before fulfillment; approval moves the order to Shirt Acquired (FR-ADM-07) | [x] |
+| 6 | Rejection captures a reason and notifies the customer with revise-or-refund options (FR-ADM-07, FR-NOT-03) | [x] |
+| 7 | Analytics shows revenue by period, orders by status, top 10 products, category breakdown, custom vs catalog ratio, AOV and a 30-day trend (FR-ADM-08) | [x] |
+| 8 | Admin manages promo codes with redemption and remaining-use tracking (FR-ADM-09) | [x] |
+| 9 | Customer list shows name, email, phone, order count, total spent and last order date (FR-ADM-10) | [x] |
 | 10 | Status changes notify by the customer's `notification_pref` — email, WhatsApp or both (FR-NOT-02) | [ ] |
-| 11 | Newsletter capture in footer and homepage stores subscribers in the database (FR-NOT-04) | [ ] |
-| 12 | Only verified purchasers can review; reviews carry the Verified Purchase badge (FR-REV-01, FR-REV-02) | [ ] |
-| 13 | Review text caps at 500 characters with a 1-5 rating (FR-REV-01) | [ ] |
-| 14 | Admin can flag and hide reviews (FR-REV-03) | [ ] |
-| 15 | Products show average rating and review count on card and detail; Top Rated collection works (FR-REV-04) | [ ] |
-| 16 | A review prompt email fires 3 days after Delivered (FR-REV-05) | [ ] |
-| 17 | Every admin route asserts an explicit `is_staff` permission class — test passes (NFR-04) | [ ] |
-| 18 | Load testing confirms 1,000 concurrent users and 500 orders/month are served (NFR-06) | [ ] |
-| 19 | Daily database backups and weekly asset backups to secondary storage are configured (NFR-07) | [ ] |
-| 20 | Customer PII does not appear in application logs — confirmed by opening the logging config | [ ] |
+| 11 | Newsletter capture in footer and homepage stores subscribers in the database (FR-NOT-04) | [x] |
+| 12 | Only verified purchasers can review; reviews carry the Verified Purchase badge (FR-REV-01, FR-REV-02) | [x] |
+| 13 | Review text caps at 500 characters with a 1-5 rating (FR-REV-01) | [x] |
+| 14 | Admin can flag and hide reviews (FR-REV-03) | [x] |
+| 15 | Products show average rating and review count on card and detail; Top Rated collection works (FR-REV-04) | [x] |
+| 16 | A review prompt email fires 3 days after Delivered (FR-REV-05) | [x] |
+| 17 | Every admin route asserts an explicit `is_staff` permission class — test passes (NFR-04) | [x] |
+| 18 | Load testing confirms 1,000 concurrent users and 500 orders/month are served (NFR-06) | [x] |
+| 19 | Daily database backups and weekly asset backups to secondary storage are configured (NFR-07) | [x] |
+| 20 | Customer PII does not appear in application logs — confirmed by opening the logging config | [x] |
 
 ### Verification
 

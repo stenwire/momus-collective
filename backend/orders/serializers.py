@@ -123,6 +123,12 @@ def order_payload(order, delivery, include_shipping=False):
         "estimated_delivery": estimated_delivery(order, delivery),
         "tracking_url": f"{settings.FRONTEND_URL}/track/{order.tracking_token}",
     }
+    if order.status == OrderStatus.MODERATION and order.rejected_at:
+        payload["design_review"] = {
+            "reason_label": order.get_rejection_reason_display(),
+            "details": order.rejection_details,
+            "customer_choice": order.customer_choice,
+        }
     if include_shipping:
         payload["shipping_address"] = order.shipping_address
     return payload

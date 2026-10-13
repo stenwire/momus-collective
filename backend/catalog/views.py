@@ -10,6 +10,7 @@ from .serializers import (
     CollectionSerializer,
     ProductDetailSerializer,
     ProductListSerializer,
+    top_rated_collection,
 )
 
 
@@ -24,6 +25,7 @@ SORT_OPTIONS = {
     "price_asc": ("price",),
     "price_desc": ("-price",),
     "popular": ("-total_orders",),
+    "top_rated": ("-avg_rating", "-review_count"),
 }
 
 
@@ -70,6 +72,13 @@ class CollectionListView(ListAPIView):
 
     def get_queryset(self):
         return Collection.objects.filter(is_active=True)
+
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        top = top_rated_collection()
+        if top:
+            response.data = [*response.data, top]
+        return response
 
 
 class CategoryListView(APIView):

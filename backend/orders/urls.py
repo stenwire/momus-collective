@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views, webhooks
+from . import admin_views, views, webhooks
 
 urlpatterns = [
     path("checkout/options/", views.checkout_options, name="checkout-options"),
@@ -26,6 +26,51 @@ urlpatterns = [
         name="paystack-webhook",
     ),
     path("checkout/delivery/", views.delivery_info, name="checkout-delivery"),
+    path("admin/orders/", admin_views.admin_order_list, name="admin-order-list"),
+    path(
+        "admin/orders/<uuid:pk>/",
+        admin_views.admin_order_detail,
+        name="admin-order-detail",
+    ),
+    path(
+        "admin/orders/board/", admin_views.admin_order_board, name="admin-order-board"
+    ),
+    path(
+        "admin/orders/<uuid:pk>/status/",
+        admin_views.admin_order_status,
+        name="admin-order-status",
+    ),
+    path(
+        "admin/moderation/",
+        admin_views.admin_moderation_queue,
+        name="admin-moderation",
+    ),
+    path(
+        "admin/moderation/<uuid:pk>/approve/",
+        admin_views.admin_moderation_approve,
+        name="admin-moderation-approve",
+    ),
+    path(
+        "admin/moderation/<uuid:pk>/reject/",
+        admin_views.admin_moderation_reject,
+        name="admin-moderation-reject",
+    ),
+    path(
+        "admin/moderation/<uuid:pk>/refunded/",
+        admin_views.admin_moderation_refunded,
+        name="admin-moderation-refunded",
+    ),
+    path(
+        "orders/track/<str:token>/refund-request/",
+        views.order_refund_request,
+        name="order-refund-request",
+    ),
+    path(
+        "orders/track/<str:token>/items/<uuid:item_id>/revise/",
+        views.order_item_revise,
+        name="order-item-revise",
+    ),
+    path("admin/analytics/", admin_views.admin_analytics, name="admin-analytics"),
     path(
         "admin/delivery-settings/",
         views.admin_delivery_settings,

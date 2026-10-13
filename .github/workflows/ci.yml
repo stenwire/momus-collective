@@ -55,6 +55,8 @@ jobs:
       PAYSTACK_SECRET_KEY: ci-only-placeholder-not-a-key
       PAYSTACK_PUBLIC_KEY: ci-only-placeholder-not-a-key
       RESEND_API_KEY: ""
+      TERMII_API_KEY: ""
+      CALLMEBOT_API_KEY: ""
       CORS_EXTRA_ORIGINS: http://localhost:3000
       NEXT_PUBLIC_API_URL: http://localhost:8000
 
@@ -163,6 +165,8 @@ jobs:
       PAYSTACK_SECRET_KEY: ci-only-placeholder-not-a-key
       PAYSTACK_PUBLIC_KEY: ci-only-placeholder-not-a-key
       RESEND_API_KEY: ""
+      TERMII_API_KEY: ""
+      CALLMEBOT_API_KEY: ""
 
     steps:
       - uses: actions/checkout@v4
