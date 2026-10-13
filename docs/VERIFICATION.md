@@ -1,76 +1,51 @@
 # Verification Report
 
 **Milestone:** M6 - Storefront Redesign
-**Scope:** Partial, pre-commit audit, not a completion audit. It covers T-602's uncommitted diff on `m6-storefront-redesign` at `fb3a336`:
-- the `motion` 14.1.0 and `lucide-react` 1.55.0 dependencies
-- `lib/motion.ts` and `lib/motion-features.ts`
-- `components/providers/motion-provider.tsx` and its test
-- the root layout and the tracker rows
-
-It also covers the cross-cutting checks that diff touches: the CI-SEC-05 dependency audit, NFR-02 bundle cost, DRY-07, tests, and types. Two minor findings from the T-601 audit are still open and queued (T-615, T-616); they are not re-counted here.
+**Scope:** Partial, pre-commit audit of T-603's uncommitted diff (`lib/haptics.ts`, `haptics.test.ts`, `components/haptics-toggle.tsx` and its test, `site-footer.tsx`, tracker rows) on `m6-storefront-redesign` at `67af0a8`, with the cross-cutting checks it touches (NFR-05 semantics of the toggle, DRY-07, tests, types). Not a completion audit. Still open from earlier partial audits: T-615, T-616 (minor), T-617 (major); not re-counted.
 **Date:** 2026-10-13
 **Blockers:** 0
-**Major:** 1
-**Minor:** 0
+**Major:** 0
+**Minor:** 2
 **Verdict:** PASS
-**Dimensions not verified:**
-- **BLD-01 (build).** This skill may not run `pnpm build`. The T-602 `/implement` run built with exit 0.
-- **EFF-08 (Lighthouse).** Scheduled in T-613.
-- **Backend dimensions and SEC-01..SEC-15 read checks.** M6 changes no backend file.
-- **BLD-07 (CI).** The branch has not been pushed.
+**Dimensions not verified:** BLD-01 (this skill may not run `pnpm build`; the T-603 `/implement` run built with exit 0), EFF-08 (Lighthouse, T-613), backend dimensions (no backend change), BLD-07 (not pushed).
 
 ## Findings
 
 | # | Severity | Dimension | Location | Finding | Remediation |
 |---|---|---|---|---|---|
-| 1 | major | Security (CI-SEC-05) | `frontend/package.json:18`, `frontend/next.config.ts:12` | `next` is pinned at 16.3.6. `pnpm audit --prod` lists six Next advisories fixed in 16.3.8, including a high-severity server-side request forgery (SSRF) in image optimization. That one is reachable here because `remotePatterns` allows any HTTPS host (D-062). This predates M6 (it is not from T-602's packages), but the image optimizer serves every storefront page M6 restyles. | Upgrade `next` and `eslint-config-next` to 16.3.8, then rebuild and re-run the gates (T-617). |
+| 1 | minor | Spec conformance (D-108, NFR-05) | `frontend/src/lib/haptics.ts:43-44` | `hapticsSupported()` is true wherever `navigator.vibrate` exists or `<input switch>` parses. Desktop Chrome exposes a no-op `vibrate` and macOS Safari supports the switch, so the footer's Haptics toggle appears on desktops where nothing can vibrate. | Also require a coarse pointer (`matchMedia("(pointer: coarse)")`) before reporting support (T-618). |
+| 2 | minor | DRY and layering (robustness) | `frontend/src/lib/haptics.ts:74` | The iOS fallback's `switchLabel.click()` dispatches a real click that bubbles from the hidden label to `document`. No document-level click listener exists today (grep found none), but a future outside-click handler (menu, popover) would see a phantom click on each iOS haptic. | Stop propagation on the hidden label's click (T-619). |
 
 ## Commands run
 
 ```
---- CI-SEC-05 (corepack pnpm audit --prod)
-8 vulnerabilities found
-Severity: 1 low | 4 moderate | 3 high
-(by package, from --json)
-high source-map-js >=1.0.0 <1.2.2 | via . | source-map-js allows event-loop denial of service through in
-high sharp <0.35.5 | via . | sharp : Vulnerability in librsvg dependency CVE-2026-96889
-moderate next >=16.3.0 <16.3.8 | via . | Next.js: Pending `use cache` fill can leak Draft Mode conten
-moderate next >=16.0.0 <16.3.8 | via . | Next.js has cache poisoning of SSG and ISR pages in self-hos
-low next >=16.0.0 <16.3.8 | via . | Next.js has information disclosure in development server's M
-moderate next >=16.0.0 <16.3.8 | via . | Next.js has information disclosure in App Router metadata im
-moderate next >=16.0.0 <16.3.8 | via . | Next.js has cache poisoning in SSG/ISR rendering that leads
-high next >=16.0.0 <16.3.8 | via . | Next.js has Server-Side Request Forgery in Image Optimizatio
-(none from motion or lucide-react)
-$ grep -n '"next"\|eslint-config-next' package.json
-18:    "next": "16.3.6",
-33:    "eslint-config-next": "16.3.6",
-$ grep -n -A4 remotePatterns next.config.ts
-12:    remotePatterns: [{ protocol: "https", hostname: "**" }],
-$ pnpm view next@16.3 version
-16.3.8
 --- TST-05
- Test Files  51 passed (51)
-      Tests  270 passed (270)
+ Test Files  53 passed (53)
+      Tests  283 passed (283)
 --- BLD-02
 typecheck exit 0
 --- BLD-03
 lint exit 0
 --- DRY-07 (changed files)
-none over 5
---- licences
-motion MIT, lucide-react ISC
---- full `motion` component imports outside tests
-(none outside tests)
+DRY-07: none over 5
+--- code opened
+35:function canVibrate(): boolean {
+39:function hasSwitchInput(): boolean {
+43:export function hapticsSupported(): boolean {
+44:  return canVibrate() || hasSwitchInput();
+74:  switchLabel.click();
+--- document-level click listeners (grep src, excluding tests)
+(none)
 ```
 
 ## Dimension summary
 
 | Dimension | Result | Notes |
 |---|---|---|
-| 1. Security and input trust | 1 major | Finding 1; the advisories predate M6. The new packages carry no advisories. |
-| 2. Efficiency | pass, EFF-08 not verified | The T-602 build puts drag and layout in a lazy chunk (30 KB gzip). The homepage's initial JS is 215 KB gzip, with no earlier baseline to compare against. |
-| 3. DRY and layering | pass | Motion tokens are defined once, in `lib/motion.ts`. |
-| 4. Tests | pass | 5 provider and token tests; known-failure run recorded in the T-602 change log. |
-| 5. Spec conformance | pass | The PRD names Framer Motion; `motion` is its current package (D-107, D-111). |
+| 1. Security and input trust | pass | No input reaches the network or the DOM as markup; storage access is wrapped in try/catch. |
+| 2. Efficiency | pass, EFF-08 not verified | Haptics add no dependency; the toggle mounts client-side only. |
+| 3. DRY and layering | 1 minor | Finding 2. Patterns defined once in `PATTERNS`. |
+| 4. Tests | pass | 13 new tests; known-failure run recorded in the T-603 change log. |
+| 5. Spec conformance | 1 minor | Finding 1. The toggle is a `role="switch"` button with `aria-checked`, 44px tall. |
 | 6. Build and types | typecheck and lint pass; BLD-01 not verified | |
 | 7. Client contract and acceptance | pass | No API change. |
