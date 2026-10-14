@@ -269,18 +269,18 @@ of scope. The design system lives in `design-system/momus-collective/MASTER.md`.
 | # | Criterion | State |
 |---|---|---|
 | 1 | Storefront components style through the semantic tokens in `globals.css` `@theme`; no `zinc-*` or `amber-*` utility remains outside `components/admin/` and `app/admin/` (grep) | [x] |
-| 2 | Every token text/background pair in use meets WCAG AA contrast, 4.5:1 for body text and 3:1 for large text, with the measured ratios recorded (NFR-05) | [ ] |
-| 3 | Every animation honours `prefers-reduced-motion`: under `reduce`, no transform or position animation runs and no marquee moves (test and manual check) | [ ] |
-| 4 | Haptics fire only for add to bag, wishlist toggle, size and colour selection, quantity limit, form errors on submit, payment confirmed and the sheet's drag-dismiss threshold; they do nothing when unsupported or switched off, and the footer toggle persists | [ ] |
+| 2 | Every token text/background pair in use meets WCAG AA contrast, 4.5:1 for body text and 3:1 for large text, with the measured ratios recorded (NFR-05) | [x] |
+| 3 | Every animation honours `prefers-reduced-motion`: under `reduce`, no transform or position animation runs and no marquee moves (test and manual check) | [x] |
+| 4 | Haptics fire only for add to bag, wishlist toggle, size and colour selection, quantity limit, form errors on submit, payment confirmed and the sheet's drag-dismiss threshold; they do nothing when unsupported or switched off, and the footer toggle persists | [x] |
 | 5 | The cart drawer and product modal share one `Sheet` with focus trap, Escape, focus return, scroll lock, contained overscroll and a button alternative to every gesture (NFR-05) | [x] |
-| 6 | Every interactive storefront element shows a visible `:focus-visible` ring and is at least 44x44px; every storefront page works at 360px with no horizontal scroll (NFR-01) | [ ] |
-| 7 | `not-found`, `error` and `loading` routes exist; the raven appears on the 404, empty states and the design page; the avatar watermarks the product page; the home page carries the tagline "dressed up, filtered out." | [ ] |
-| 8 | PRD placements still hold: wordmark 140px desktop and 110px mobile, hero raven right of the text on desktop and above it on mobile, product detail a modal on desktop and a page on mobile, cart a right drawer on desktop and a bottom sheet on mobile, collections as horizontal carousels | [ ] |
-| 9 | Mobile Lighthouse performance is at least 80 on home, shop and a product page (NFR-02) | [ ] |
-| 10 | A Web Interface Guidelines review of the storefront leaves no open findings | [ ] |
+| 6 | Every interactive storefront element shows a visible `:focus-visible` ring and is at least 44x44px; every storefront page works at 360px with no horizontal scroll (NFR-01) | [x] |
+| 7 | `not-found`, `error` and `loading` routes exist; the raven appears on the 404, empty states and the design page; the avatar watermarks the product page; the home page carries the tagline "dressed up, filtered out." | [x] |
+| 8 | PRD placements still hold: wordmark 140px desktop and 110px mobile, hero raven right of the text on desktop and above it on mobile, product detail a modal on desktop and a page on mobile, cart a right drawer on desktop and a bottom sheet on mobile, collections as horizontal carousels | [x] |
+| 9 | Mobile Lighthouse performance is at least 80 on home, shop and a product page (NFR-02) | [x] |
+| 10 | A Web Interface Guidelines review of the storefront leaves no open findings | [x] |
 | 11 | Final brand images replace the placeholders, each WebP/AVIF under 150 KB (waits on user-supplied assets) | [ ] |
 
 ### Verification
 
-- Verified: not yet
-- Report: none
+- Verified: audited 2026-10-14 (full M6 scope, uncommitted T-613 included); not complete: T-614 waits on user images (DoD 11) and T-628 on B-016
+- Report: `docs/VERIFICATION.md`, 0 blockers, 0 major, 1 minor (T-630)

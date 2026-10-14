@@ -1,6 +1,6 @@
 import type { DesignOptions } from "./design/types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
 // Catalog reads may be served from Next's data cache for at most this long,
 // so admin edits reach server-rendered pages within a minute (T-221, D-081).

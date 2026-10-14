@@ -85,6 +85,31 @@ Use the `motion` library through `LazyMotion` and `m.*` components, under `Motio
 - Under reduced motion, transforms are removed and opacity cross-fades stay.
 - Split text by character only for headlines under about 8 words, and keep the full string as the accessible name.
 
+## Measured contrast (M6 DoD 2)
+
+Every text/background pair the storefront uses, measured with the WCAG 2.1
+relative-luminance formula (T-613). Tints are composited over `ink`.
+`src/app/theme.test.ts` re-checks the solid pairs on every test run.
+
+| Text | Background | Where | Ratio | |
+|---|---|---|---|---|
+| `bone` | `ink` | body text, headings | 16.53:1 | AA |
+| `bone` | `ink-raised` | cards, sheets | 15.37:1 | AA |
+| `bone-muted` | `ink` | secondary text | 7.82:1 | AA |
+| `bone-muted` | `ink-raised` | secondary text on cards | 7.27:1 | AA |
+| `laurel` | `ink` | prices, kickers, links | 8.25:1 | AA |
+| `laurel` | `ink-raised` | prices on cards | 7.67:1 | AA |
+| `ink` | `laurel` | primary button label | 8.25:1 | AA |
+| `ink` | `laurel-hi` | primary button hover | 10.53:1 | AA |
+| `ink` | `bone` | bone Tag | 16.53:1 | AA |
+| `error` | `ink` | error text | 5.06:1 | AA |
+| `error` | `ink-raised` | error text in sheets | 4.70:1 | AA |
+| `ok` | `ink` | success text | 8.94:1 | AA |
+| `ok` | `ink-raised` | success in sheets | 8.31:1 | AA |
+| `bone` | `laurel/10 on ink` | cart notice text | 14.63:1 | AA |
+| `error` | `error/10 on ink` | danger button hover | 4.69:1 | AA |
+| `laurel` | `laurel/10 on ink` | Undo on hover tint | 7.30:1 | AA |
+
 ## Haptics
 
 `useHaptics()` from `lib/haptics.ts`.

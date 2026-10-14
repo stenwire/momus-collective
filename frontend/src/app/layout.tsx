@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { preconnect } from "react-dom";
 import { AuthBootstrap } from "@/components/auth/auth-bootstrap";
 import { CartDrawer } from "@/components/cart/cart-drawer";
 import { CartNotice } from "@/components/cart/cart-notice";
@@ -8,6 +9,7 @@ import { QueryProvider } from "@/components/providers/query-provider";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteNav } from "@/components/site-nav";
 import { Toaster } from "@/components/ui/toaster";
+import { API_URL } from "@/lib/api";
 import { fontVariables } from "@/lib/fonts";
 import "./globals.css";
 
@@ -25,6 +27,9 @@ export default function RootLayout({
   children,
   modal,
 }: LayoutProps<"/">) {
+  // Every page calls the API from the browser (session, bag, categories);
+  // warming the connection saves a round trip on slow networks.
+  preconnect(new URL(API_URL).origin, { crossOrigin: "use-credentials" });
   return (
     <html
       lang="en"
