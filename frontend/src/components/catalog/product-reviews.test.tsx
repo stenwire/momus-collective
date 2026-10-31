@@ -92,7 +92,18 @@ describe("ProductReviews", () => {
     api({ eligible: false, pages: { "1": { count: 0, next: null, average: "0.00", results: [] } } });
     renderReviews();
     expect(await screen.findByText("No reviews yet.")).toBeInTheDocument();
+    expect(await screen.findByText("Reviews open once your order with this shirt is delivered.")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Post review" })).not.toBeInTheDocument();
+  });
+
+  it("asks signed-out customers to sign in before checking eligibility", async () => {
+    signedOut();
+    api();
+    renderReviews();
+    expect(await screen.findByRole("link", { name: "Sign in to check if you can review" })).toHaveAttribute(
+      "href",
+      "/login?next=%2Fproduct%2Ftg%23reviews",
+    );
   });
 
   it("loads more reviews", async () => {

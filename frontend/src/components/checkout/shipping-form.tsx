@@ -1,10 +1,12 @@
 "use client";
 
 import { cloneElement, isValidElement, useId } from "react";
+import { inputClasses, labelClasses } from "@/components/ui/input";
+import { PhoneNumberInput } from "@/components/ui/phone-number-input";
+import { cn } from "@/lib/cn";
 import type { CheckoutOptions, SavedAddress, Shipping } from "@/lib/checkout/types";
 
-const FIELD =
-  "min-h-11 rounded-md border border-zinc-700 bg-zinc-950 px-3 text-base text-zinc-50 focus:border-amber-400 focus:outline-none";
+const FIELD = cn(inputClasses, "w-full aria-[invalid=true]:border-error");
 
 function Field({
   label,
@@ -21,12 +23,12 @@ function Field({
     : children;
   return (
     <div className="flex flex-col gap-1">
-      <label className="flex flex-col gap-1 text-sm font-medium text-zinc-300">
-        {label}
+      <label className="flex flex-col gap-1">
+        <span className={labelClasses}>{label}</span>
         {control}
       </label>
       {error ? (
-        <span id={errorId} className="text-xs text-red-400">
+        <span id={errorId} className="text-xs text-error">
           {error}
         </span>
       ) : null}
@@ -48,6 +50,7 @@ export function ShippingForm({
   errors: Partial<Record<keyof Shipping, string>>;
 }) {
   const set = (patch: Partial<Shipping>) => onChange({ ...value, ...patch });
+  const phoneErrorId = useId();
   const input = (key: keyof Shipping, extra: React.InputHTMLAttributes<HTMLInputElement> = {}) => (
     <input
       value={value[key]}
@@ -86,9 +89,19 @@ export function ShippingForm({
       <Field label="Full name" error={errors.full_name}>
         {input("full_name", { autoComplete: "name" })}
       </Field>
-      <Field label="Phone number" error={errors.phone}>
-        {input("phone", { type: "tel", autoComplete: "tel" })}
-      </Field>
+      <div className="flex flex-col gap-1">
+        <PhoneNumberInput
+          label="Phone number"
+          name="phone"
+          value={value.phone || "+234"}
+          onChange={(phone) => set({ phone })}
+          autoComplete="tel"
+          required
+          invalid={Boolean(errors.phone)}
+          describedBy={errors.phone ? phoneErrorId : undefined}
+        />
+        {errors.phone ? <span id={phoneErrorId} className="text-xs text-error">{errors.phone}</span> : null}
+      </div>
       <Field label="Address" error={errors.address_line_1}>
         {input("address_line_1", { autoComplete: "address-line1" })}
       </Field>

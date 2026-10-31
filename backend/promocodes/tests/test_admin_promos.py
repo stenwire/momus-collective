@@ -132,7 +132,7 @@ def test_each_code_tracks_redemptions_discount_and_remaining_uses(staff):
     unlimited = promo(code="OPEN", max_uses=None)
     redeem(limited, 1, 200000)
     redeem(limited, 2, 150000)
-    rows = {r["code"]: r for r in staff.get(URL).json()}
+    rows = {r["code"]: r for r in staff.get(URL).json()["results"]}
     assert (rows["LIMITED"]["redemptions"], rows["LIMITED"]["total_discount"]) == (
         2,
         350000,
@@ -146,7 +146,7 @@ def test_an_overused_code_shows_zero_remaining_not_negative(staff):
     code = promo(code="OVER", max_uses=1)
     redeem(code, 1, 1)
     redeem(code, 2, 1)
-    [row] = staff.get(URL).json()
+    [row] = staff.get(URL).json()["results"]
     assert row["remaining_uses"] == 0
 
 
@@ -190,5 +190,5 @@ def test_admin_promo_codes_num_queries_are_constant(staff):
         other = promo(code=f"C{n}")
         redeem(other, n, 1)
     with CaptureQueriesContext(connection) as many:
-        assert len(staff.get(URL).json()) == 9
+        assert len(staff.get(URL).json()["results"]) == 9
     assert len(few) == len(many)

@@ -137,6 +137,11 @@ export function OrderBoard() {
   );
   const move = useMutation({
     mutationFn: ({ id, to }: { id: string; to: OrderStatus }) => moveOrder(id, to),
+    meta: {
+      success: (_card: unknown, { to }: { to: OrderStatus }) =>
+        `Order moved to ${board.data?.columns.find((c) => c.status === to)?.label ?? to}.`,
+      label: "Moved",
+    },
     onMutate: ({ id, to }) => {
       setErrors([]);
       const before = queryClient.getQueryData<{ columns: BoardColumn[] }>(KEY);

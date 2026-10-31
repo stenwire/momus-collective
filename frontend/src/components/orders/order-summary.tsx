@@ -13,7 +13,7 @@ export function Thumbnail({ item, size = "size-16" }: { item: OrderItem; size?: 
     queryFn: fetchDesignOptions,
     enabled: item.design_config !== null,
   });
-  const box = `relative ${size} shrink-0 overflow-hidden rounded-md bg-zinc-900`;
+  const box = `relative ${size} shrink-0 overflow-hidden  bg-ink-raised`;
   if (item.design_config) {
     return (
       <div className={box}>
@@ -39,23 +39,38 @@ export function Thumbnail({ item, size = "size-16" }: { item: OrderItem; size?: 
 export function OrderProgress({ order }: { order: Order }) {
   const current = order.pipeline_step;
   if (current === null) {
-    return <p className="text-sm text-zinc-300">This order was {order.status_label.toLowerCase()}.</p>;
+    return <p className="text-sm text-bone-muted">This order was {order.status_label.toLowerCase()}.</p>;
   }
   return (
-    <ol aria-label="Order progress" className="flex flex-col gap-2">
+    <ol aria-label="Order progress" className="grid gap-3 md:grid-cols-5">
       {order.pipeline.map((step, i) => (
         <li
           key={step.status}
           aria-current={i === current ? "step" : undefined}
-          className={`flex items-center gap-3 text-sm ${i <= current ? "text-zinc-50" : "text-zinc-500"}`}
+          className={`flex flex-wrap content-start items-center gap-x-2 gap-y-2 text-sm ${i <= current ? "text-bone" : "text-bone-muted"}`}
         >
+          {/* Bars fill in order up to the current step. The number is drawn
+              from data-step so the item's text stays just its label. */}
+          <span aria-hidden className="relative h-1 basis-full overflow-hidden bg-rule">
+            {i <= current ? (
+              <span
+                data-testid="step-fill"
+                className="absolute inset-0 origin-left animate-fill bg-laurel"
+                style={{ animationDelay: `${i * 120}ms` }}
+              />
+            ) : null}
+          </span>
           <span
             aria-hidden
-            className={`size-3 rounded-full ${i <= current ? "bg-zinc-50" : "border border-zinc-600"}`}
+            data-step={String(i + 1).padStart(2, "0")}
+            className="font-mono text-xs text-bone-muted before:content-[attr(data-step)]"
           />
+          {i === current ? (
+            <span aria-hidden className="size-2 animate-pulse bg-laurel motion-reduce:animate-none" />
+          ) : null}
           {step.label}
           {i === current && order.status === "moderation" ? (
-            <span className="text-zinc-400">: your design is being reviewed</span>
+            <span className="text-bone-muted">: your design is being reviewed</span>
           ) : null}
         </li>
       ))}
@@ -71,21 +86,21 @@ export function OrderItems({ order }: { order: Order }) {
           <li key={item.id} className="flex gap-3">
             <Thumbnail item={item} />
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-zinc-100">
+              <p className="truncate text-sm font-medium text-bone">
                 {item.kind === "design" ? "Custom Design" : item.slogan_text}
               </p>
               {item.kind === "design" ? (
-                <p className="truncate text-xs text-zinc-400">“{item.slogan_text}”</p>
+                <p className="truncate text-xs text-bone-muted">“{item.slogan_text}”</p>
               ) : null}
-              <p className="text-xs text-zinc-400">
+              <p className="text-xs text-bone-muted">
                 {[item.size, item.color].filter(Boolean).join(" · ")} · Qty {item.quantity}
               </p>
             </div>
-            <p className="text-sm text-zinc-100">{formatNaira(item.line_total)}</p>
+            <p className="text-sm text-bone">{formatNaira(item.line_total)}</p>
           </li>
         ))}
       </ul>
-      <dl className="grid grid-cols-[1fr_auto] gap-y-1 border-t border-zinc-800 pt-3 text-sm text-zinc-300">
+      <dl className="grid grid-cols-[1fr_auto] gap-y-1 border-t border-rule pt-3 text-sm text-bone-muted">
         <dt>Subtotal</dt>
         <dd className="text-right">{formatNaira(order.subtotal)}</dd>
         <dt>Delivery</dt>
@@ -96,14 +111,14 @@ export function OrderItems({ order }: { order: Order }) {
             <dd className="text-right">−{formatNaira(order.discount)}</dd>
           </>
         ) : null}
-        <dt className="font-semibold text-zinc-50">Total</dt>
-        <dd className="text-right font-semibold text-zinc-50">{formatNaira(order.total)}</dd>
+        <dt className="font-semibold text-bone">Total</dt>
+        <dd className="text-right font-semibold text-bone">{formatNaira(order.total)}</dd>
         {order.payment_fee ? (
           <>
             <dt>Paystack fee</dt>
             <dd className="text-right">{formatNaira(order.payment_fee)}</dd>
-            <dt className="font-semibold text-zinc-50">Total paid</dt>
-            <dd className="text-right font-semibold text-zinc-50">{formatNaira(order.amount_paid)}</dd>
+            <dt className="font-semibold text-bone">Total paid</dt>
+            <dd className="text-right font-semibold text-bone">{formatNaira(order.amount_paid)}</dd>
           </>
         ) : null}
       </dl>
@@ -114,8 +129,8 @@ export function OrderItems({ order }: { order: Order }) {
 export function EstimatedDelivery({ order }: { order: Order }) {
   if (["delivered", "cancelled", "refunded"].includes(order.status)) return null;
   return (
-    <p className="text-sm text-zinc-300">
-      Estimated delivery: <span className="text-zinc-50">{formatDeliveryWindow(order.estimated_delivery)}</span>
+    <p className="text-sm text-bone-muted">
+      Estimated delivery: <span className="text-bone">{formatDeliveryWindow(order.estimated_delivery)}</span>
     </p>
   );
 }

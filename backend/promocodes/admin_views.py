@@ -3,6 +3,7 @@ from django.db.models.functions import Coalesce
 from rest_framework import status, viewsets
 from rest_framework.response import Response
 
+from config.pagination import StandardPagination
 from config.permissions import IsStaffUser
 
 from .admin_serializers import AdminPromoCodeSerializer
@@ -14,6 +15,7 @@ class AdminPromoCodeViewSet(viewsets.ModelViewSet):
 
     serializer_class = AdminPromoCodeSerializer
     permission_classes = [IsStaffUser]
+    pagination_class = StandardPagination
     queryset = PromoCode.objects.annotate(
         redemption_count=Count("redemptions"),
         total_discount=Coalesce(Sum("redemptions__discount"), 0),

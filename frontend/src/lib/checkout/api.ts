@@ -18,6 +18,30 @@ export async function fetchSavedAddresses(): Promise<SavedAddress[]> {
   return [...(body as SavedAddress[])].sort((a, b) => Number(b.is_default) - Number(a.is_default));
 }
 
+export type SavedAddressInput = Omit<SavedAddress, "id" | "created_at">;
+
+export async function saveAddress(id: string | null, body: SavedAddressInput): Promise<SavedAddress> {
+  const res = await authFetch(id ? `/api/v1/addresses/${id}/` : "/api/v1/addresses/", {
+    method: id ? "PATCH" : "POST",
+    body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new ApiError(res.status, data);
+  return data as SavedAddress;
+}
+
+export async function deleteAddress(id: string): Promise<void> {
+  const res = await authFetch(`/api/v1/addresses/${id}/`, { method: "DELETE" });
+  if (!res.ok) throw new ApiError(res.status, await res.json().catch(() => ({})));
+}
+
+export async function setDefaultAddress(id: string): Promise<SavedAddress> {
+  const res = await authFetch(`/api/v1/addresses/${id}/set_default/`, { method: "POST" });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new ApiError(res.status, data);
+  return data as SavedAddress;
+}
+
 // Identifiers and choices only: the server prices everything (SEC-06).
 export function guestItems(lines: GuestLine[]) {
   return lines.map((l) => ({

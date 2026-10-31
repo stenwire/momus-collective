@@ -12,6 +12,7 @@ type DesignState = {
   setName: (name: string) => void;
   markSaved: (id: string, name: string, config: DesignConfig) => void;
   load: (id: string, name: string, config: DesignConfig) => void;
+  startNew: (defaults?: DesignConfig) => void;
   reset: () => void;
 };
 
@@ -35,6 +36,13 @@ export const useDesignStore = create<DesignState>()(
         set({ savedId, name, savedConfig }),
       load: (savedId, name, config) =>
         set({ savedId, name, config, savedConfig: config }),
+      startNew: (defaults) =>
+        set((state) => ({
+          config: defaults ?? state.config,
+          savedId: null,
+          savedConfig: null,
+          name: "",
+        })),
       reset: () =>
         set({ config: null, savedId: null, savedConfig: null, name: "" }),
     }),

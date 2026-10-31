@@ -1,10 +1,13 @@
 "use client";
 
+import { inputClasses } from "@/components/ui/input";
+import { cn } from "@/lib/cn";
+
 const OPTIONS = [
-  { value: "newest", label: "Newest First" },
-  { value: "price_asc", label: "Price: Low to High" },
-  { value: "price_desc", label: "Price: High to Low" },
-  { value: "popular", label: "Most Popular" },
+  { value: "newest", label: "Newest" },
+  { value: "price_asc", label: "Price: low-high" },
+  { value: "price_desc", label: "Price: high-low" },
+  { value: "popular", label: "Popular" },
   { value: "top_rated", label: "Top Rated" },
 ] as const;
 
@@ -19,7 +22,7 @@ export function SortSelect({ value, onChange }: Props) {
       value={value}
       onChange={(e) => onChange(e.target.value)}
       aria-label="Sort products"
-      className="mb-4 min-h-11 rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-50 focus:border-amber-400 focus:outline-none"
+      className={cn(inputClasses, "min-h-11 max-w-[38vw] shrink-0 truncate font-mono text-xs uppercase tracking-widest md:min-h-10 md:max-w-48")}
     >
       {OPTIONS.map((option) => (
         <option key={option.value} value={option.value}>

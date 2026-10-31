@@ -78,11 +78,13 @@ function Entry({
   };
   const approve = useMutation({
     mutationFn: () => approveDesign(entry.id),
+    meta: { success: `${entry.order_number} approved. It moves to Shirt Acquired.`, label: "Approved" },
     onSuccess: () => done(`Approved ${entry.order_number}; it's now in Shirt Acquired.`),
     onError: (error) => setErrors(errorMessages(error)),
   });
   const reject = useMutation({
     mutationFn: () => rejectDesign(entry.id, reason, details.trim()),
+    meta: { success: `${entry.order_number} rejected. The customer has been emailed.`, label: "Rejected" },
     onSuccess: () => done(`Rejected ${entry.order_number}; the customer has been emailed.`),
     onError: (error) => setErrors(errorMessages(error)),
   });
@@ -186,6 +188,7 @@ function Waiting({ entry, onDone }: { entry: ModerationEntry; onDone: (message: 
   const [errors, setErrors] = useState<string[]>([]);
   const refunded = useMutation({
     mutationFn: () => markRefunded(entry.id),
+    meta: { success: `${entry.order_number} marked as refunded.`, label: "Refunded" },
     onSuccess: async () => {
       onDone(`Marked ${entry.order_number} as refunded.`);
       await queryClient.invalidateQueries({ queryKey: KEY });

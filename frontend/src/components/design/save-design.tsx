@@ -8,15 +8,17 @@ import { defaultDesignName, exportDesign, saveDesign } from "@/lib/design/saved"
 import { sameConfig, useDesignStore } from "@/lib/design/store";
 import type { DesignConfig } from "@/lib/design/types";
 import { FormErrors } from "../auth/form-field";
+import { buttonClasses } from "@/components/ui/button";
+import { inputClasses, labelClasses } from "@/components/ui/input";
+import { cn } from "@/lib/cn";
+import { toast, toastError } from "@/lib/toast";
 
-const BUTTON =
-  "min-h-11 rounded-md bg-amber-400 px-6 font-medium text-black hover:bg-amber-300 disabled:opacity-60";
-const SECONDARY =
-  "min-h-11 rounded-md border border-amber-400 px-6 font-medium text-amber-400 hover:bg-amber-400/10 disabled:opacity-60";
+const BUTTON = buttonClasses();
+const SECONDARY = buttonClasses({ variant: "secondary" });
 
 export function SaveDesign({ config }: { config: DesignConfig }) {
   const signedIn = useSignedIn();
-  const { savedId, savedConfig, name, setName, markSaved } = useDesignStore();
+  const { savedId, savedConfig, name, setName, markSaved, startNew } = useDesignStore();
   const [prompting, setPrompting] = useState(false);
   const [status, setStatus] = useState("");
   const [errors, setErrors] = useState<string[]>([]);
@@ -29,9 +31,9 @@ export function SaveDesign({ config }: { config: DesignConfig }) {
       <div
         role="region"
         aria-label="Save your design"
-        className="flex flex-col gap-3 rounded-lg border border-zinc-700 p-4"
+        className="flex flex-col gap-3 border border-rule bg-ink-raised p-4"
       >
-        <p className="text-sm text-zinc-300">
+        <p className="text-sm text-bone-muted">
           Create a free account to save this design. It&apos;ll be waiting for
           you right here.
         </p>
@@ -40,7 +42,7 @@ export function SaveDesign({ config }: { config: DesignConfig }) {
         </Link>
         <Link
           href="/login?next=/design"
-          className="flex min-h-11 items-center justify-center text-sm text-amber-400 underline"
+          className="flex min-h-11 items-center justify-center text-sm text-laurel underline underline-offset-4"
         >
           I already have one
         </Link>
@@ -64,7 +66,9 @@ export function SaveDesign({ config }: { config: DesignConfig }) {
     setErrors([]);
     setStatus("");
     try {
-      setStatus(await task());
+      const message = await task();
+      setStatus(message);
+      toast(message, { tone: "success", label: "Saved" });
     } catch (error) {
       // Deleted elsewhere: the next save creates it afresh.
       if (error instanceof ApiError && error.status === 404) {
@@ -72,6 +76,7 @@ export function SaveDesign({ config }: { config: DesignConfig }) {
       }
       setStatus("");
       setErrors(errorMessages(error));
+      toastError(error);
     } finally {
       setPending(false);
     }
@@ -103,13 +108,13 @@ export function SaveDesign({ config }: { config: DesignConfig }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <label className="flex flex-col gap-1 text-sm font-medium text-zinc-300">
-        Design name
+      <label className="flex flex-col gap-1">
+        <span className={labelClasses}>Design name</span>
         <input
           value={displayName}
           onChange={(e) => setName(e.target.value)}
           maxLength={100}
-          className="min-h-11 rounded-md border border-zinc-700 bg-zinc-950 px-3 text-base text-zinc-50 focus:border-amber-400 focus:outline-none"
+          className={cn(inputClasses, "w-full")}
         />
       </label>
       <FormErrors messages={errors} />
@@ -124,7 +129,12 @@ export function SaveDesign({ config }: { config: DesignConfig }) {
       >
         Add to cart
       </button>
-      <p aria-live="polite" className="text-sm text-emerald-400">
+      {savedId ? (
+        <button type="button" onClick={() => startNew()} className={SECONDARY}>
+          Start another design
+        </button>
+      ) : null}
+      <p aria-live="polite" className="text-sm text-ok">
         {status}
       </p>
     </div>

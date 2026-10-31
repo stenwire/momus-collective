@@ -29,5 +29,38 @@ services:
       timeout: 3s
       retries: 20
 
+  api: &app
+    build: .
+    env_file: .env
+    environment: &app-env
+      DATABASE_URL: postgres://momus:momus@db:5432/momus
+      REDIS_URL: redis://redis:6379/0
+      DESIGN_FILES_ROOT: /app/private/design-files
+      BACKUP_ROOT: /app/private/backups
+    volumes:
+      - momus-private:/app/private
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    command: >
+      sh -c "python manage.py migrate --noinput &&
+      exec gunicorn config.wsgi --worker-class gthread --workers 4
+      --threads 4 --bind 0.0.0.0:8000 --error-logfile -"
+
+  worker:
+    <<: *app
+    ports: []
+    command: celery -A config worker --loglevel info
+
+  beat:
+    <<: *app
+    ports: []
+    command: celery -A config beat --loglevel info -s /app/private/celerybeat-schedule
+
 volumes:
   momus-db:
+  momus-private:

@@ -17,6 +17,7 @@ dependencies = [
     "pillow>=12.3.0",
     "gunicorn>=26.2.0",
     "django-storages[s3]>=1.14.6",
+    "whitenoise>=6.12.0",
 ]
 
 [dependency-groups]

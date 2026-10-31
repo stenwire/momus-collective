@@ -1,46 +1,24 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useCallback, useState } from "react";
+import { Sheet } from "@/components/ui/sheet";
 
+// Closing plays the exit first, then leaves the intercepted route.
 export function ProductModal({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    closeButtonRef.current?.focus();
-
-    function onKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") {
-        router.back();
-      }
-    }
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
-  }, [router]);
+  const [open, setOpen] = useState(true);
+  const close = useCallback(() => setOpen(false), []);
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black md:bg-black/70 md:p-4"
-      onClick={() => router.back()}
+    <Sheet
+      open={open}
+      onClose={close}
+      onExitComplete={() => router.back()}
+      variant="modal"
+      label="Product details"
     >
-      <div
-        role="dialog"
-        aria-modal="true"
-        onClick={(e) => e.stopPropagation()}
-        className="h-full w-full overflow-y-auto bg-zinc-950 shadow-xl md:h-auto md:max-h-[90vh] md:w-full md:max-w-3xl md:rounded-xl"
-      >
-        <button
-          ref={closeButtonRef}
-          type="button"
-          onClick={() => router.back()}
-          aria-label="Close"
-          className="sticky left-full top-3 z-10 flex h-11 w-11 -translate-x-3 items-center justify-center rounded-full bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
-        >
-          ✕
-        </button>
-        {children}
-      </div>
-    </div>
+      {children}
+    </Sheet>
   );
 }

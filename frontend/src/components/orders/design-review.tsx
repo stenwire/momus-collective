@@ -6,6 +6,8 @@ import { useState } from "react";
 import { errorMessages } from "@/lib/auth/api";
 import { requestRefund } from "@/lib/orders/api";
 import type { Order } from "@/lib/orders/types";
+import { buttonClasses } from "@/components/ui/button";
+import { toast, toastError } from "@/lib/toast";
 
 // FR-NOT-03: a rejected design can be revised or refunded from here.
 export function DesignReview({ order, token }: { order: Order; token: string }) {
@@ -21,28 +23,28 @@ export function DesignReview({ order, token }: { order: Order; token: string }) 
     <section
       id="design-review"
       aria-labelledby="design-review-heading"
-      className="flex flex-col gap-3 rounded-lg border border-amber-400/60 p-4"
+      className="flex flex-col gap-3 border border-laurel/60 p-4"
     >
-      <h2 id="design-review-heading" className="text-lg font-semibold text-zinc-50">
+      <h2 id="design-review-heading" className="text-lg font-semibold text-bone">
         We can&apos;t print your design as it is
       </h2>
-      <p className="text-sm text-zinc-200">
+      <p className="text-sm text-bone">
         <span className="font-medium">Reason:</span> {review.reason_label}
       </p>
-      {review.details ? <p className="text-sm text-zinc-300">{review.details}</p> : null}
+      {review.details ? <p className="text-sm text-bone-muted">{review.details}</p> : null}
       {refunding ? (
-        <p role="status" className="text-sm text-emerald-400">
+        <p role="status" className="text-sm text-ok">
           You asked for a refund. We&apos;ll refund your payment and email you when it&apos;s done.
         </p>
       ) : (
         <>
-          <p className="text-sm text-zinc-300">Revise your design and send it back, or ask for a full refund.</p>
+          <p className="text-sm text-bone-muted">Revise your design and send it back, or ask for a full refund.</p>
           <div className="flex flex-wrap gap-2">
             {designs.map((item, i) => (
               <Link
                 key={item.id}
                 href={`/track/${encodeURIComponent(token)}/revise/${item.id}`}
-                className="inline-flex min-h-11 items-center rounded-md bg-amber-400 px-4 text-sm font-medium text-black hover:bg-amber-300"
+                className={buttonClasses({ size: "sm" })}
               >
                 {designs.length > 1 ? `Revise design ${i + 1}` : "Revise my design"}
               </Link>
@@ -55,14 +57,16 @@ export function DesignReview({ order, token }: { order: Order; token: string }) 
                 setErrors([]);
                 try {
                   await requestRefund(token);
+                  toast("Refund requested. We'll be in touch shortly.", { tone: "success", label: "Requested" });
                   router.refresh();
                 } catch (error) {
                   setErrors(errorMessages(error));
+                  toastError(error);
                 } finally {
                   setBusy(false);
                 }
               }}
-              className="min-h-11 rounded-md border border-zinc-600 px-4 text-sm text-zinc-100 hover:border-zinc-400 disabled:opacity-60"
+              className="min-h-11 border border-rule px-4 text-sm text-bone hover:border-bone-muted disabled:opacity-60"
             >
               Request a refund
             </button>
@@ -70,7 +74,7 @@ export function DesignReview({ order, token }: { order: Order; token: string }) 
         </>
       )}
       {errors.length ? (
-        <p role="alert" className="text-sm text-red-400">
+        <p role="alert" className="text-sm text-error">
           {errors.join(" ")}
         </p>
       ) : null}

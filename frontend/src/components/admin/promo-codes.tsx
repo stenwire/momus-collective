@@ -1,14 +1,16 @@
 "use client";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useId, useState } from "react";
 import {
   type PromoCode,
   type PromoInput,
   deletePromoCode,
   fetchPromoCodes,
+  nextPageParam,
   savePromoCode,
 } from "@/lib/admin/api";
+import { LoadMore } from "@/components/ui/load-more";
 import { errorMessages } from "@/lib/auth/api";
 import { formatNaira } from "@/lib/format";
 
@@ -77,6 +79,7 @@ function PromoForm({ promo, onDone }: { promo?: PromoCode; onDone: (message: str
         max_uses_per_user: Number(perUser),
         expires_at: expires ? new Date(expires).toISOString() : null,
       }),
+    meta: { success: (saved: { code: string }) => (promo ? `${saved.code} saved.` : `${saved.code} created.`), label: promo ? "Saved" : "Created" },
     onSuccess: async (saved) => {
       await queryClient.invalidateQueries({ queryKey: KEY });
       onDone(promo ? `Saved ${saved.code}.` : `Created ${saved.code}.`);
@@ -148,6 +151,7 @@ function PromoRow({ promo, onDone }: { promo: PromoCode; onDone: (message: strin
   const refresh = () => queryClient.invalidateQueries({ queryKey: KEY });
   const toggle = useMutation({
     mutationFn: () => savePromoCode(promo.id, { is_active: !promo.is_active }),
+    meta: { success: `${promo.code} is now ${promo.is_active ? "inactive" : "active"}.`, label: promo.is_active ? "Deactivated" : "Activated" },
     onSuccess: async () => {
       await refresh();
       onDone(`${promo.code} is now ${promo.is_active ? "inactive" : "active"}.`);
@@ -156,6 +160,7 @@ function PromoRow({ promo, onDone }: { promo: PromoCode; onDone: (message: strin
   });
   const remove = useMutation({
     mutationFn: () => deletePromoCode(promo.id),
+    meta: { success: `${promo.code} deleted.`, label: "Deleted" },
     onSuccess: async () => {
       await refresh();
       onDone(`Deleted ${promo.code}.`);
@@ -239,7 +244,13 @@ function PromoRow({ promo, onDone }: { promo: PromoCode; onDone: (message: strin
 
 // FR-ADM-09: create, edit, deactivate and delete codes, with their usage.
 export function PromoCodes() {
-  const codes = useQuery({ queryKey: KEY, queryFn: fetchPromoCodes });
+  const codes = useInfiniteQuery({
+    queryKey: KEY,
+    queryFn: ({ pageParam }) => fetchPromoCodes(pageParam),
+    initialPageParam: 1,
+    getNextPageParam: nextPageParam,
+  });
+  const rows = codes.data?.pages.flatMap((page) => page.results) ?? [];
   const [creating, setCreating] = useState(false);
   const [message, setMessage] = useState("");
   return (
@@ -269,15 +280,16 @@ export function PromoCodes() {
         <p className="text-zinc-400">Promo codes could not load. Refresh to try again.</p>
       ) : !codes.data ? (
         <p className="text-zinc-400">Loading promo codes…</p>
-      ) : codes.data.length === 0 ? (
+      ) : rows.length === 0 ? (
         <p className="text-zinc-400">No promo codes yet.</p>
       ) : (
         <ul className="flex flex-col gap-3">
-          {codes.data.map((promo) => (
+          {rows.map((promo) => (
             <PromoRow key={promo.id} promo={promo} onDone={setMessage} />
           ))}
         </ul>
       )}
+      <LoadMore hasNext={Boolean(codes.hasNextPage)} loading={codes.isFetchingNextPage} onClick={() => codes.fetchNextPage()} />
     </div>
   );
 }

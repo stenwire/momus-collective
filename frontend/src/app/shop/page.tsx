@@ -24,7 +24,14 @@ export default async function ShopPage() {
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <main className="flex flex-1 flex-col">
-        <h1 className="px-4 pt-8 text-2xl font-semibold text-zinc-50">Shop</h1>
+        <div className="flex items-end justify-between gap-4 px-4 pb-6 pt-10">
+          <h1 className="font-display text-[clamp(3rem,10vw,6rem)] uppercase leading-[0.9] tracking-tight">
+            Shop
+          </h1>
+          <p className="pb-2 font-mono text-xs uppercase tracking-widest text-bone-muted">
+            Every slogan, no apologies
+          </p>
+        </div>
         <Shop />
       </main>
     </HydrationBoundary>

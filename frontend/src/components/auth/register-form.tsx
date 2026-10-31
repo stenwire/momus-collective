@@ -5,6 +5,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { errorMessages, register, safeNext } from "@/lib/auth/api";
 import { FormErrors, FormField } from "./form-field";
+import { buttonClasses } from "@/components/ui/button";
+import { PhoneNumberInput } from "@/components/ui/phone-number-input";
+import { toast } from "@/lib/toast";
 
 export function RegisterForm() {
   const router = useRouter();
@@ -14,6 +17,7 @@ export function RegisterForm() {
   const prefill = (key: string) => params.get(key) ?? undefined;
   const [errors, setErrors] = useState<string[]>([]);
   const [pending, setPending] = useState(false);
+  const [phone, setPhone] = useState(() => prefill("phone") ?? "+234");
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -28,6 +32,7 @@ export function RegisterForm() {
         last_name: String(form.get("last_name")),
         phone: String(form.get("phone")),
       });
+      toast("Your account is ready.", { tone: "success", label: "Welcome" });
       router.push(next);
     } catch (error) {
       setErrors(errorMessages(error));
@@ -41,7 +46,14 @@ export function RegisterForm() {
       <FormField label="First name" name="first_name" defaultValue={prefill("first_name")} autoComplete="given-name" required />
       <FormField label="Last name" name="last_name" defaultValue={prefill("last_name")} autoComplete="family-name" />
       <FormField label="Email" name="email" defaultValue={prefill("email")} type="email" autoComplete="email" required />
-      <FormField label="Phone" name="phone" defaultValue={prefill("phone")} type="tel" autoComplete="tel" required />
+      <PhoneNumberInput
+        label="Phone"
+        name="phone"
+        value={phone}
+        onChange={setPhone}
+        autoComplete="tel"
+        required
+      />
       <FormField
         label="Password"
         name="password"
@@ -53,15 +65,15 @@ export function RegisterForm() {
       <button
         type="submit"
         disabled={pending}
-        className="min-h-11 rounded-md bg-amber-400 px-6 font-medium text-black hover:bg-amber-300 disabled:opacity-60"
+        className={buttonClasses()}
       >
         {pending ? "Creating account…" : "Create account"}
       </button>
-      <p className="flex flex-wrap items-center gap-x-1 text-sm text-zinc-400">
+      <p className="flex flex-wrap items-center gap-x-1 text-sm text-bone-muted">
         Already have an account?{" "}
         <Link
           href={`/login?next=${encodeURIComponent(next)}`}
-          className="inline-flex min-h-11 min-w-11 items-center justify-center text-amber-400 underline"
+          className="inline-flex min-h-11 min-w-11 items-center justify-center text-laurel underline"
         >
           Log in
         </Link>

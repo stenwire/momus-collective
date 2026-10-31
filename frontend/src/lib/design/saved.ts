@@ -55,8 +55,10 @@ export async function exportDesign(
   throw new ApiError(504, { detail: "The print file is taking too long. Try again." });
 }
 
-export async function listDesigns(): Promise<SavedDesign[]> {
-  return parse<SavedDesign[]>(await authFetch("/api/v1/designs/"));
+export type DesignPage = { count: number; next: string | null; results: SavedDesign[] };
+
+export async function listDesigns(page: number): Promise<DesignPage> {
+  return parse<DesignPage>(await authFetch(`/api/v1/designs/?page=${page}`));
 }
 
 export async function duplicateDesign(id: string): Promise<SavedDesign> {

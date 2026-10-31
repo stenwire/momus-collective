@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { GuestAccountOffer } from "@/components/checkout/guest-account-offer";
+import { PaidStamp } from "@/components/checkout/paid-stamp";
+import { buttonClasses } from "@/components/ui/button";
 import { EstimatedDelivery, OrderItems } from "@/components/orders/order-summary";
 import { fetchTrackedOrder } from "@/lib/orders/api";
 
@@ -19,23 +21,23 @@ export default async function ConfirmationPage({ params }: Props) {
   const order = await fetchTrackedOrder(token);
   if (!order) notFound();
   return (
-    <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-8">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-2xl font-semibold text-zinc-50">Thank you, your order is confirmed</h1>
-        <p className="text-sm text-zinc-300">
-          Order number <span className="font-semibold text-zinc-50">{order.order_number}</span>
+    <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-10">
+      <PaidStamp />
+      <div className="flex flex-col gap-2">
+        <h1 className="font-display text-[clamp(2.5rem,9vw,4rem)] uppercase leading-[0.9] tracking-tight">
+          Thank you, your order is confirmed
+        </h1>
+        <p className="font-mono text-sm uppercase tracking-widest text-bone-muted">
+          Order number <span className="font-bold text-laurel">{order.order_number}</span>
         </p>
-        <p className="text-sm text-zinc-400">We&apos;ve emailed you a confirmation with these details.</p>
+        <p className="text-sm text-bone-muted">We&apos;ve emailed you a confirmation with these details.</p>
       </div>
       <EstimatedDelivery order={order} />
-      <Link
-        href={`/track/${token}`}
-        className="flex min-h-11 items-center justify-center rounded-md border border-zinc-600 px-6 font-medium text-zinc-50 hover:border-zinc-400"
-      >
+      <Link href={`/track/${token}`} className={buttonClasses({ variant: "secondary", block: true })}>
         Track your order
       </Link>
-      <section aria-labelledby="summary-heading" className="flex flex-col gap-3">
-        <h2 id="summary-heading" className="text-lg font-semibold text-zinc-50">Order summary</h2>
+      <section aria-labelledby="summary-heading" className="flex flex-col gap-3 border-t border-rule pt-6">
+        <h2 id="summary-heading" className="font-display text-3xl uppercase tracking-tight">Order summary</h2>
         <OrderItems order={order} />
       </section>
       <GuestAccountOffer />

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { buttonClasses } from "@/components/ui/button";
 
 export type GuestDetails = {
   email: string;
@@ -13,15 +14,15 @@ export function CreateAccountOffer({ details }: { details: GuestDetails }) {
   return (
     <section
       aria-label="Create an account"
-      className="flex flex-col gap-3 rounded-lg border border-zinc-700 p-4"
+      className="flex flex-col gap-3 border border-rule p-4"
     >
-      <p className="text-sm text-zinc-300">
+      <p className="text-sm text-bone-muted">
         Want to track this order and check out faster next time? Create an account
         with these details already filled in.
       </p>
       <Link
         href={`/register?${query}`}
-        className="flex min-h-11 items-center justify-center rounded-md bg-amber-400 px-6 font-medium text-black hover:bg-amber-300"
+        className={buttonClasses({ block: true })}
       >
         Create my account
       </Link>

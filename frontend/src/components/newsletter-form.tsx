@@ -2,6 +2,10 @@
 
 import { useId, useState } from "react";
 import { subscribeToNewsletter } from "@/lib/newsletter";
+import { buttonClasses } from "@/components/ui/button";
+import { cn } from "@/lib/cn";
+import { inputClasses, labelClasses } from "@/components/ui/input";
+import { toast } from "@/lib/toast";
 
 // FR-NOT-04: new drops by email, from the footer and the homepage.
 export function NewsletterForm() {
@@ -21,12 +25,14 @@ export function NewsletterForm() {
           await subscribeToNewsletter(email.trim());
           setState({ kind: "done", message: "You're on the list. New drops land in your inbox every week." });
           setEmail("");
+          toast("You're on the list.", { tone: "success", label: "Subscribed" });
         } catch (error) {
           setState({ kind: "error", message: (error as Error).message });
+          toast((error as Error).message, { tone: "error" });
         }
       }}
     >
-      <label htmlFor={id} className="text-sm text-zinc-300">
+      <label htmlFor={id} className={labelClasses}>
         Get new drops by email
       </label>
       <div className="flex gap-2">
@@ -35,22 +41,22 @@ export function NewsletterForm() {
           type="email"
           required
           autoComplete="email"
-          placeholder="you@example.com"
+          placeholder="you@example.com…"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="min-h-11 min-w-0 flex-1 rounded-md border border-zinc-700 bg-zinc-950 px-3 text-base text-zinc-50 focus:border-amber-400 focus:outline-none"
+          className={cn(inputClasses, "flex-1")}
         />
         <button
           type="submit"
           disabled={state.kind === "busy"}
-          className="min-h-11 shrink-0 rounded-md bg-amber-400 px-4 text-sm font-medium text-black hover:bg-amber-300 disabled:opacity-60"
+          className={cn(buttonClasses({ size: "sm" }), "shrink-0")}
         >
           Subscribe
         </button>
       </div>
       <p
         role={state.kind === "error" ? "alert" : "status"}
-        className={`text-sm ${state.kind === "error" ? "text-red-400" : "text-emerald-400"}`}
+        className={cn("text-sm", state.kind === "error" ? "text-error" : "text-ok")}
       >
         {state.message}
       </p>

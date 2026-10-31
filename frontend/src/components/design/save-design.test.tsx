@@ -63,6 +63,21 @@ describe("SaveDesign", () => {
     expect(fetchMock.mock.calls[1][1].method).toBe("PATCH");
   });
 
+  it("starts another design without changing the saved design", async () => {
+    signedIn();
+    useDesignStore.setState({ savedId: "d1", savedConfig: config });
+    render(<SaveDesign config={config} />);
+
+    await userEvent.click(screen.getByRole("button", { name: "Start another design" }));
+
+    expect(useDesignStore.getState()).toMatchObject({
+      savedId: null,
+      savedConfig: null,
+      config,
+    });
+    expect(screen.getByRole("button", { name: "Save design" })).toBeInTheDocument();
+  });
+
   it("shows the server's validation message", async () => {
     signedIn();
     fetchMock.mockResolvedValueOnce(

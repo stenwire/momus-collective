@@ -1,7 +1,10 @@
 "use client";
 
+import { ShoppingBag } from "lucide-react";
+import { Counter } from "@/components/ui/counter";
 import { useCartDrawer } from "@/lib/cart/drawer-store";
 import { useCart } from "@/lib/cart/use-cart";
+import { BAG_TARGET_ID } from "@/lib/fly-to-bag";
 
 export function CartButton() {
   const { cart } = useCart();
@@ -9,28 +12,21 @@ export function CartButton() {
   const count = cart.item_count;
   return (
     <button
+      id={BAG_TARGET_ID}
       type="button"
       onClick={() => setOpen(true)}
       aria-label={`Bag, ${count} ${count === 1 ? "item" : "items"}`}
-      className="relative inline-flex size-11 items-center justify-center text-zinc-300 hover:text-zinc-50"
+      className="relative inline-flex size-11 items-center justify-center text-bone transition-transform duration-150 hover:text-laurel active:scale-90 motion-reduce:transition-none motion-reduce:active:scale-100"
     >
-      <svg
-        aria-hidden="true"
-        viewBox="0 0 24 24"
-        className="size-6"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={1.8}
-      >
-        <path d="M6 7h12l1 13H5L6 7Z" strokeLinejoin="round" />
-        <path d="M9 7a3 3 0 0 1 6 0" />
-      </svg>
+      <ShoppingBag aria-hidden="true" className="size-6" strokeWidth={1.6} />
       {count > 0 ? (
+        // Re-keyed on each change so the bump replays.
         <span
+          key={count}
           aria-hidden="true"
-          className="absolute right-0.5 top-0.5 min-w-5 rounded-full bg-amber-400 px-1 text-center text-xs font-semibold leading-5 text-black"
+          className="absolute right-0 top-0.5 inline-flex h-5 min-w-5 animate-bump items-center justify-center bg-laurel px-1 text-xs font-bold leading-5 text-ink"
         >
-          {count > 99 ? "99+" : count}
+          {count > 99 ? "99+" : <Counter value={count} />}
         </span>
       ) : null}
     </button>

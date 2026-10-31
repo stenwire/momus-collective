@@ -18,11 +18,12 @@ its own heading marks it "(Phase 2)" and the Out of Scope list repeats it.
 | M3 | Custom Design Tool | FR-DES-01..11, FR-USR-04, NFR-01 | M2 | complete |
 | M4 | Cart, Checkout and Payment | FR-CART-01..09, FR-USR-03, FR-USR-05, FR-NOT-01 | M3 | in progress |
 | M5 | Admin Pipeline, Notifications and Reviews | FR-ADM-01, FR-ADM-02, FR-ADM-03, FR-ADM-07, FR-ADM-08, FR-ADM-09, FR-ADM-10, FR-NOT-02, FR-NOT-03, FR-NOT-04, FR-REV-01..05, NFR-06, NFR-07 | M4 | in progress |
+| M6 | Storefront Redesign | NFR-01, NFR-02, NFR-05 (and the PRD's Brand Assets placements) | M5 | in progress |
 
 Branch per milestone, cut from `main`: `m0-foundation`,
 `m1-data-models-and-auth`, `m2-catalog-and-storefront`, `m3-custom-design-tool`,
 `m4-cart-checkout-and-payment`,
-`m5-admin-pipeline-notifications-and-reviews`.
+`m5-admin-pipeline-notifications-and-reviews`, `m6-storefront-redesign`.
 
 ---
 
@@ -247,3 +248,39 @@ because every one of these acts on orders that M4 creates.
 
 - Verified: not yet
 - Report: none
+
+---
+
+## M6 - Storefront Redesign
+
+Re-imagines the customer-facing storefront in the Kinetic Neoclassical
+Brutalism direction (D-106): bone-on-black with laurel gold, hard edges, moving
+slogans, motion-led micro-interactions (D-107) and haptic feedback (D-108). It
+comes after M5 because it restyles the cart, checkout and tracking screens M4
+and M5 built. M5's two open DoD rows wait on WhatsApp provider accounts
+(B-013, B-014) and touch no storefront code, so M6's tasks depend on M5's last
+merged task, T-528, not on M5 being `complete` (D-109). Admin screens are out
+of scope. The design system lives in `design-system/momus-collective/MASTER.md`.
+
+**Requirements:** NFR-01, NFR-02, NFR-05, and the PRD's Brand Assets placements (wordmark, avatar watermark, raven on the design page, 404 and empty states)
+
+### Definition of Done
+
+| # | Criterion | State |
+|---|---|---|
+| 1 | Storefront components style through the semantic tokens in `globals.css` `@theme`; no `zinc-*` or `amber-*` utility remains outside `components/admin/` and `app/admin/` (grep) | [x] |
+| 2 | Every token text/background pair in use meets WCAG AA contrast, 4.5:1 for body text and 3:1 for large text, with the measured ratios recorded (NFR-05) | [x] |
+| 3 | Every animation honours `prefers-reduced-motion`: under `reduce`, no transform or position animation runs and no marquee moves (test and manual check) | [x] |
+| 4 | Haptics fire only for add to bag, wishlist toggle, size and colour selection, quantity limit, form errors on submit, payment confirmed and the sheet's drag-dismiss threshold; they do nothing when unsupported or switched off, and the footer toggle persists | [x] |
+| 5 | The cart drawer and product modal share one `Sheet` with focus trap, Escape, focus return, scroll lock, contained overscroll and a button alternative to every gesture (NFR-05) | [x] |
+| 6 | Every interactive storefront element shows a visible `:focus-visible` ring and is at least 44x44px; every storefront page works at 360px with no horizontal scroll (NFR-01) | [x] |
+| 7 | `not-found`, `error` and `loading` routes exist; the raven appears on the 404, empty states and the design page; the avatar watermarks the product page; the home page carries the tagline "dressed up, filtered out." | [x] |
+| 8 | PRD placements still hold: wordmark 140px desktop and 110px mobile, hero raven right of the text on desktop and above it on mobile, product detail a modal on desktop and a page on mobile, cart a right drawer on desktop and a bottom sheet on mobile, collections as horizontal carousels | [x] |
+| 9 | Mobile Lighthouse performance is at least 80 on home, shop and a product page (NFR-02) | [x] |
+| 10 | A Web Interface Guidelines review of the storefront leaves no open findings | [x] |
+| 11 | Final brand images replace the placeholders, each WebP/AVIF under 150 KB (waits on user-supplied assets) | [ ] |
+
+### Verification
+
+- Verified: audited 2026-10-14 (full M6 scope, uncommitted T-613 included); not complete: T-614 waits on user images (DoD 11) and T-628 on B-016
+- Report: `docs/VERIFICATION.md`, 0 blockers, 0 major, 1 minor (T-630)

@@ -1,7 +1,9 @@
 "use client";
 
+import { labelClasses } from "@/components/ui/input";
 import { fontFor } from "@/lib/design/fonts";
 import type { FontOption } from "@/lib/design/types";
+import { Chip } from "@/components/ui/chip";
 
 export function FontPicker({
   fonts,
@@ -14,25 +16,20 @@ export function FontPicker({
 }) {
   return (
     <fieldset>
-      <legend className="mb-2 text-sm font-medium text-zinc-300">Font</legend>
+      <legend className={`mb-2 ${labelClasses}`}>Font</legend>
       <div className="grid grid-cols-2 gap-2">
         {fonts.map((font) => {
           const { family, weight } = fontFor(font.key);
           return (
-            <button
+            <Chip
               key={font.key}
-              type="button"
+              selected={value === font.key}
               onClick={() => onChange(font.key)}
-              aria-pressed={value === font.key}
               style={{ fontFamily: family, fontWeight: weight }}
-              className={`min-h-11 truncate rounded-md border px-2 text-sm transition-colors ${
-                value === font.key
-                  ? "border-amber-400 bg-amber-400 text-black"
-                  : "border-zinc-700 text-zinc-100 hover:border-zinc-500"
-              }`}
+              className="truncate px-2"
             >
               {font.label}
-            </button>
+            </Chip>
           );
         })}
       </div>

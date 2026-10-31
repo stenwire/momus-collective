@@ -1,47 +1,74 @@
+"use client";
+
+import * as m from "motion/react-m";
 import Image from "next/image";
 import Link from "next/link";
+import { useId, type CSSProperties } from "react";
+import { mockupLayoutId, useSharedMockup } from "@/lib/shared-mockup";
 import type { Product } from "@/lib/api";
 import { formatNaira } from "@/lib/format";
 import { HeartButton } from "../wishlist/heart-button";
-import { RatingSummary } from "./product-reviews";
 
-export function ProductCard({ product }: { product: Product }) {
+export function productNumber(index: number): string {
+  return `№ ${String(index + 1).padStart(3, "0")}`;
+}
+
+export function ProductCard({ product, index }: { product: Product; index?: number }) {
   const mockup = product.mockup_images[0];
+  const owner = useId();
+  const shared = useSharedMockup((s) => s.productId === product.id && s.owner === owner);
+  const claim = useSharedMockup((s) => s.claim);
+  // Cards rise in on CSS, so the first rows show before hydration; each
+  // fetched page staggers from its own start.
+  const style: CSSProperties | undefined =
+    index === undefined ? undefined : { animationDelay: `${(index % 20) * 40}ms` };
 
   // The heart sits beside the link, not inside it: a button can't nest in
   // an anchor.
   return (
-    <div className="relative">
+    <div className={index === undefined ? "relative" : "relative animate-rise"} style={style}>
       <Link
         href={`/product/${product.slug}`}
-        className="group flex flex-col gap-2 rounded-lg border border-zinc-800 bg-zinc-950 p-3 transition-colors hover:border-zinc-700"
+        onClick={() => claim(product.id, owner)}
+        className="group flex cursor-pointer flex-col gap-2"
       >
-        <div className="relative aspect-square overflow-hidden rounded-md bg-zinc-900">
+        <m.div
+          layoutId={shared ? mockupLayoutId(product.id) : undefined}
+          className="relative aspect-[4/5] overflow-hidden border border-rule bg-ink-raised"
+        >
           {mockup ? (
             <Image
               src={mockup}
               alt={product.slogan}
               fill
-              sizes="(max-width: 768px) 50vw, 25vw"
-              className="object-cover transition-transform group-hover:scale-105"
+              sizes="(max-width: 640px) 50vw, (max-width: 1200px) 33vw, 25vw"
+              className="object-cover transition-transform duration-300 group-hover:scale-[1.02] motion-reduce:transition-none"
             />
-          ) : null}
-          {product.tags[0] ? (
-            <span className="absolute left-2 top-2 rounded-full bg-amber-400 px-2 py-0.5 text-xs font-medium text-black">
-              {product.tags[0]}
+          ) : (
+            // No mockup yet: print the slogan itself. Drawn from a data
+            // attribute so it isn't read twice or matched as page text.
+            <div
+              aria-hidden="true"
+              data-slogan={product.slogan}
+              className="marble absolute inset-0 grid place-items-center px-3 pb-9 pt-14 text-center font-display text-lg uppercase leading-none tracking-tight text-bone before:content-[attr(data-slogan)] sm:text-2xl md:text-3xl"
+            />
+          )}
+          {index !== undefined ? (
+            <span aria-hidden="true" className="absolute bottom-2 left-2 bg-ink/80 px-1.5 py-1 font-mono text-[10px] text-bone-muted">
+              {productNumber(index)}
             </span>
           ) : null}
+        </m.div>
+        <div className="flex min-w-0 items-baseline justify-between gap-2">
+          <h3 className="min-w-0 [overflow-wrap:anywhere] text-sm font-medium text-bone group-hover:underline group-hover:decoration-laurel group-hover:underline-offset-4">
+            {product.slogan}
+          </h3>
+          <p className="shrink-0 font-mono text-xs tabular-nums text-laurel">
+            {formatNaira(product.price)}
+          </p>
         </div>
-        <p className="text-xs uppercase tracking-wide text-zinc-400">
-          {product.category.name}
-        </p>
-        <h3 className="text-sm font-medium text-zinc-50">{product.slogan}</h3>
-        <p className="text-sm font-semibold text-amber-400">
-          {formatNaira(product.price)}
-        </p>
-        <RatingSummary average={product.avg_rating} count={product.review_count} />
       </Link>
-      <div className="absolute right-5 top-5">
+      <div className="absolute right-2 top-2">
         <HeartButton productId={product.id} slogan={product.slogan} />
       </div>
     </div>

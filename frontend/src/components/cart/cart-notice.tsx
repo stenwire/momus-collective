@@ -10,7 +10,7 @@ export function CartNotice() {
   return (
     <div
       role="alert"
-      className="mx-4 mt-3 flex items-start justify-between gap-3 rounded-md border border-amber-500/50 bg-amber-500/10 p-3 text-sm text-amber-200"
+      className="mx-4 mt-3 flex items-start justify-between gap-3 border border-laurel/50 bg-laurel/10 p-3 text-sm text-bone"
     >
       <div>
         <p className="font-medium">Some items from your bag couldn&apos;t be kept:</p>
@@ -26,7 +26,7 @@ export function CartNotice() {
         type="button"
         onClick={() => setDropped([])}
         aria-label="Dismiss"
-        className="flex size-11 shrink-0 items-center justify-center rounded-full hover:bg-amber-500/20"
+        className="flex size-11 shrink-0 items-center justify-center rounded-full hover:bg-laurel/20"
       >
         ✕
       </button>

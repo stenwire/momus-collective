@@ -6,11 +6,11 @@ import { vi } from "vitest";
 vi.mock("next/font/google", () => {
   const loader = (name: string) => () => ({
     className: name,
+    variable: `--font-${name}`,
     style: { fontFamily: `'${name}'` },
   });
   const names = [
-    "Geist",
-    "Geist_Mono",
+    "Epilogue",
     "Archivo_Black",
     "Anton",
     "Bebas_Neue",

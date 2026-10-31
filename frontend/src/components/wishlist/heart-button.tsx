@@ -3,11 +3,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState, type CSSProperties } from "react";
+import { haptic } from "@/lib/haptics";
 import { useSignedIn } from "@/lib/auth/use-signed-in";
 import { addToWishlist, fetchWishlist, removeFromWishlist } from "@/lib/wishlist/api";
 
 const BUTTON =
-  "flex size-11 items-center justify-center rounded-full bg-black/60 backdrop-blur hover:bg-black/80";
+  "flex size-11 items-center justify-center bg-ink/80 transition-[color,transform] duration-150 hover:bg-ink active:scale-90 motion-reduce:transition-none motion-reduce:active:scale-100";
 
 function Heart({ filled }: { filled: boolean }) {
   return (
@@ -17,13 +19,36 @@ function Heart({ filled }: { filled: boolean }) {
   );
 }
 
+const LEAVES = [0, 60, 120, 180, 240, 300];
+
+// Six laurel leaves spray out when a shirt is saved.
+function LaurelBurst() {
+  return (
+    <span aria-hidden="true" className="pointer-events-none absolute inset-0">
+      {LEAVES.map((angle) => (
+        <span
+          key={angle}
+          data-testid="laurel-leaf"
+          className="absolute left-1/2 top-1/2 -ml-1 -mt-1.5 h-3 w-2 animate-burst rounded-[100%_0] bg-laurel"
+          style={{ "--angle": `${angle}deg` } as CSSProperties}
+        />
+      ))}
+    </span>
+  );
+}
+
 function MemberHeart({ productId, slogan }: { productId: string; slogan: string }) {
   const queryClient = useQueryClient();
+  const [bursts, setBursts] = useState(0);
   const wishlist = useQuery({ queryKey: ["wishlist"], queryFn: fetchWishlist });
   const saved = wishlist.data?.some((entry) => entry.product.id === productId) ?? false;
   const toggle = useMutation({
     mutationFn: () => (saved ? removeFromWishlist(productId) : addToWishlist(productId)),
-    onSuccess: (entries) => queryClient.setQueryData(["wishlist"], entries),
+    meta: { success: saved ? "Removed from your wishlist." : "Saved to your wishlist.", label: saved ? "Removed" : "Saved" },
+    onSuccess: (entries) => {
+      queryClient.setQueryData(["wishlist"], entries);
+      if (entries.some((entry) => entry.product.id === productId)) setBursts((n) => n + 1);
+    },
   });
   return (
     <button
@@ -31,10 +56,14 @@ function MemberHeart({ productId, slogan }: { productId: string; slogan: string 
       aria-pressed={saved}
       aria-label={`Save ${slogan} to wishlist`}
       disabled={toggle.isPending || !wishlist.data}
-      onClick={() => toggle.mutate()}
-      className={`${BUTTON} ${saved ? "text-amber-400" : "text-zinc-50"}`}
+      onClick={() => {
+        haptic("tick");
+        toggle.mutate();
+      }}
+      className={`relative ${BUTTON} ${saved ? "text-laurel" : "text-bone"}`}
     >
       <Heart filled={saved} />
+      {bursts > 0 ? <LaurelBurst key={bursts} /> : null}
     </button>
   );
 }
@@ -50,7 +79,7 @@ export function HeartButton({ productId, slogan }: { productId: string; slogan: 
       <Link
         href={`/login?next=${encodeURIComponent(pathname)}`}
         aria-label={`Log in to save ${slogan} to your wishlist`}
-        className={`${BUTTON} text-zinc-50`}
+        className={`${BUTTON} text-bone`}
       >
         <Heart filled={false} />
       </Link>

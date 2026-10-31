@@ -15,6 +15,7 @@ let search = "";
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push }),
   useSearchParams: () => new URLSearchParams(search),
+  usePathname: () => "/",
 }));
 
 const json = (status: number, body: unknown) =>
@@ -76,7 +77,7 @@ describe("auth forms", () => {
     render(<RegisterForm />);
     await userEvent.type(screen.getByLabelText("First name"), "Ada");
     await userEvent.type(screen.getByLabelText("Email"), "new@example.com");
-    await userEvent.type(screen.getByLabelText("Phone"), "+2348000000000");
+    await userEvent.type(screen.getByLabelText("Phone"), "8000000000");
     await userEvent.type(screen.getByLabelText("Password"), "correct-horse");
     await userEvent.click(screen.getByRole("button", { name: "Create account" }));
     expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({
@@ -94,7 +95,7 @@ describe("auth forms", () => {
     expect(screen.getByLabelText("Email")).toHaveValue("g@example.com");
     expect(screen.getByLabelText("First name")).toHaveValue("Ada");
     expect(screen.getByLabelText("Last name")).toHaveValue("L");
-    expect(screen.getByLabelText("Phone")).toHaveValue("+2348000000000");
+    expect(screen.getByLabelText("Phone")).toHaveValue("8000000000");
   });
 
   it("shows a duplicate-email rejection", async () => {

@@ -17,6 +17,13 @@ const mockProduct = {
   created_at: "2026-01-01T00:00:00Z",
 };
 
+const latestProduct = {
+  ...mockProduct,
+  id: "2",
+  slogan: "fresh data, fresh shirt",
+  slug: "fresh-data-fresh-shirt",
+};
+
 function renderWithQueryClient(ui: React.ReactElement) {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -43,6 +50,12 @@ describe("Home", () => {
                 products: [mockProduct],
               },
             ],
+          };
+        }
+        if (url.includes("/products/")) {
+          return {
+            ok: true,
+            json: async () => ({ count: 1, next: null, previous: null, results: [latestProduct] }),
           };
         }
         return { ok: true, json: async () => ({}) };
@@ -78,5 +91,13 @@ describe("Home", () => {
     expect(
       screen.getByRole("link", { name: "Shop All Products" }),
     ).toHaveAttribute("href", "/shop");
+  });
+
+  it("shows active products on the landing page outside curated collections", async () => {
+    renderWithQueryClient(await Home());
+    expect(
+      await screen.findByRole("heading", { name: "fresh data, fresh shirt" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Shop all" })).toHaveAttribute("href", "/shop");
   });
 });
