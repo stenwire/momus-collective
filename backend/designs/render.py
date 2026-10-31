@@ -135,3 +135,57 @@ def render_preview_png(config, size=240):
     buffer = io.BytesIO()
     image.save(buffer, format="PNG", optimize=True)
     return buffer.getvalue()
+
+
+SHIRT_POINTS = [
+    (400, 120), (250, 165), (110, 300), (190, 400), (275, 355), (275, 900),
+    (725, 900), (725, 355), (810, 400), (890, 300), (750, 165), (600, 120),
+]  # fmt: skip
+MOCKUP_BACKGROUND = "#151413"
+MOCKUP_OUTLINE = (128, 128, 128)
+SUPERSAMPLE = 2
+
+
+def _quad(p0, p1, p2, steps=24):
+    return [
+        (
+            (1 - t) ** 2 * p0[0] + 2 * (1 - t) * t * p1[0] + t**2 * p2[0],
+            (1 - t) ** 2 * p0[1] + 2 * (1 - t) * t * p1[1] + t**2 * p2[1],
+        )
+        for t in (i / steps for i in range(1, steps + 1))
+    ]
+
+
+def render_mockup_png(config, size=800):
+    """Product photo: the design printed on the shirt silhouette, matching
+    the storefront canvas preview."""
+    big = size * SUPERSAMPLE
+    scale = big / options.CANVAS_SIZE
+    shirt = [*SHIRT_POINTS, *_quad((600, 120), (500, 200), (400, 120))]
+    collar = [(400, 120), *_quad((400, 120), (500, 225), (600, 120))]
+    collar += _quad((600, 120), (500, 200), (400, 120))
+
+    def scaled(points):
+        return [(x * scale, y * scale) for x, y in points]
+
+    image = Image.new("RGB", (big, big), MOCKUP_BACKGROUND)
+    draw = ImageDraw.Draw(image, "RGBA")
+    draw.polygon(
+        scaled(shirt),
+        fill=options.SHIRT_COLORS[config["shirt_color"]],
+        outline=MOCKUP_OUTLINE,
+        width=3 * SUPERSAMPLE,
+    )
+    draw.polygon(scaled(collar), fill=(0, 0, 0, 64))
+
+    box = options.PLACEMENTS[config["placement"]]["box"]
+    text = Image.open(io.BytesIO(render_design_png(config)))
+    text = text.resize(
+        (max(1, round(box["w"] * scale)), max(1, round(box["h"] * scale))),
+        Image.LANCZOS,
+    )
+    image.paste(text, (round(box["x"] * scale), round(box["y"] * scale)), text)
+    image = image.resize((size, size), Image.LANCZOS)
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG", optimize=True)
+    return buffer.getvalue()

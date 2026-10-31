@@ -45,7 +45,7 @@ function api(codes: PromoCode[], deleteStatus = 204) {
       list = list.map((c) => (url.includes(`/${c.id}/`) ? { ...c, ...body } : c));
       return { ok: true, status: 200, json: async () => list.find((c) => url.includes(`/${c.id}/`)) } as Response;
     }
-    return { ok: true, status: 200, json: async () => list } as Response;
+    return { ok: true, status: 200, json: async () => ({ count: list.length, next: null, results: list }) } as Response;
   });
   vi.stubGlobal("fetch", fetchMock);
   return fetchMock;

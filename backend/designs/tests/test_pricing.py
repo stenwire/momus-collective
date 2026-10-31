@@ -110,7 +110,7 @@ def test_saved_designs_carry_their_server_computed_price():
     body = {"name": "x", "config": {**CONFIG, "shirt_color": "Navy"}, "price": 1}
     resp = client.post("/api/v1/designs/", body, format="json")
     assert resp.json()["price"] == price_list()["Navy"]
-    listed = client.get("/api/v1/designs/").json()[0]
+    listed = client.get("/api/v1/designs/").json()["results"][0]
     assert listed["price"] == price_list()["Navy"]
 
 

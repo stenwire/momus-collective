@@ -41,6 +41,7 @@ function WishlistItem({
   const done = (entries: WishlistEntry[]) => queryClient.setQueryData(["wishlist"], entries);
   const move = useMutation({
     mutationFn: () => moveToCart(product.id, size, color),
+    meta: { success: `${product.slogan} moved to your cart.`, label: "In your cart" },
     onSuccess: async (entries) => {
       done(entries);
       await queryClient.invalidateQueries({ queryKey: ["cart"] });
@@ -50,6 +51,7 @@ function WishlistItem({
   });
   const remove = useMutation({
     mutationFn: () => removeFromWishlist(product.id),
+    meta: { success: `${product.slogan} removed from your wishlist.`, label: "Removed" },
     onSuccess: done,
     onError: (error) => setErrors(errorMessages(error)),
   });

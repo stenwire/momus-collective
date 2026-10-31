@@ -120,7 +120,7 @@ describe("shared mockup", () => {
         </>,
       ),
     );
-    const [first] = screen.getAllByRole("link", { name: /Philosophy/ });
+    const [first] = screen.getAllByRole("link", { name: /cogito ergo sold out/ });
     first.addEventListener("click", (e) => e.preventDefault());
     await userEvent.click(first);
     const state = useSharedMockup.getState();

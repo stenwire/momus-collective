@@ -1,6 +1,7 @@
 "use client";
 
 import { useInfiniteQuery, useQuery, useQueryClient } from "@tanstack/react-query";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useId, useState } from "react";
 import { errorMessages } from "@/lib/auth/api";
@@ -8,6 +9,7 @@ import { useSignedIn } from "@/lib/auth/use-signed-in";
 import { fetchReviewEligibility, fetchReviews, postReview, type Review } from "@/lib/reviews";
 import { buttonClasses } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
+import { toast, toastError } from "@/lib/toast";
 
 const posted = new Intl.DateTimeFormat("en-NG", { dateStyle: "medium" });
 
@@ -35,9 +37,11 @@ function ReviewForm({ slug, token, onDone }: { slug: string; token: string; onDo
         setErrors([]);
         try {
           await postReview(slug, { rating, text, token });
+          toast("Thanks. Your review is in.", { tone: "success", label: "Posted" });
           onDone();
         } catch (error) {
           setErrors(errorMessages(error));
+          toastError(error);
         } finally {
           setBusy(false);
         }
@@ -161,6 +165,17 @@ export function ProductReviews({ slug }: { slug: string }) {
             await queryClient.invalidateQueries({ queryKey: ["review-eligibility", slug] });
           }}
         />
+      ) : eligibility.data?.reason ? (
+        <p className="border-l-2 border-laurel px-3 py-2 text-sm text-bone-muted">
+          {eligibility.data.reason}
+        </p>
+      ) : signedIn === false && !token ? (
+        <Link
+          href={`/login?next=${encodeURIComponent(`/product/${slug}#reviews`)}`}
+          className="inline-flex min-h-11 items-center text-sm text-laurel underline underline-offset-4 hover:text-laurel-hi"
+        >
+          Sign in to check if you can review
+        </Link>
       ) : null}
       {all.length ? (
         <ul className="flex flex-col gap-3">

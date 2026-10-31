@@ -7,6 +7,7 @@ import { errorMessages } from "@/lib/auth/api";
 import { requestRefund } from "@/lib/orders/api";
 import type { Order } from "@/lib/orders/types";
 import { buttonClasses } from "@/components/ui/button";
+import { toast, toastError } from "@/lib/toast";
 
 // FR-NOT-03: a rejected design can be revised or refunded from here.
 export function DesignReview({ order, token }: { order: Order; token: string }) {
@@ -56,9 +57,11 @@ export function DesignReview({ order, token }: { order: Order; token: string }) 
                 setErrors([]);
                 try {
                   await requestRefund(token);
+                  toast("Refund requested. We'll be in touch shortly.", { tone: "success", label: "Requested" });
                   router.refresh();
                 } catch (error) {
                   setErrors(errorMessages(error));
+                  toastError(error);
                 } finally {
                   setBusy(false);
                 }

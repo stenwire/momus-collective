@@ -5,6 +5,7 @@ import { subscribeToNewsletter } from "@/lib/newsletter";
 import { buttonClasses } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 import { inputClasses, labelClasses } from "@/components/ui/input";
+import { toast } from "@/lib/toast";
 
 // FR-NOT-04: new drops by email, from the footer and the homepage.
 export function NewsletterForm() {
@@ -24,8 +25,10 @@ export function NewsletterForm() {
           await subscribeToNewsletter(email.trim());
           setState({ kind: "done", message: "You're on the list. New drops land in your inbox every week." });
           setEmail("");
+          toast("You're on the list.", { tone: "success", label: "Subscribed" });
         } catch (error) {
           setState({ kind: "error", message: (error as Error).message });
+          toast((error as Error).message, { tone: "error" });
         }
       }}
     >

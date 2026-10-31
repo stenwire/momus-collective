@@ -5,11 +5,17 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from carts.models import SavedDesign
+from config.pagination import StandardPagination
 
 from .options import public_options
 from .pricing import price_list
 from .serializers import SavedDesignSerializer
-from .storage import design_file_name, design_storage, discard_design_files
+from .storage import (
+    design_file_name,
+    design_storage,
+    discard_design_files,
+    mockup_file_name,
+)
 from .tasks import generate_design_file
 
 
@@ -33,7 +39,7 @@ class SavedDesignViewSet(viewsets.ModelViewSet):
 
     serializer_class = SavedDesignSerializer
     permission_classes = [IsAuthenticated]
-    pagination_class = None
+    pagination_class = StandardPagination
 
     def get_queryset(self):
         return SavedDesign.objects.filter(user=self.request.user).order_by(
@@ -98,3 +104,13 @@ def design_file(request, pk):
         as_attachment=True,
         filename=f"momus-design-{design.id}.png",
     )
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def mockup_image(request, pk):
+    """Product photos are public; only product mockups live under this name."""
+    storage, name = design_storage(), mockup_file_name(pk)
+    if not storage.exists(name):
+        raise Http404
+    return FileResponse(storage.open(name, "rb"), content_type="image/png")

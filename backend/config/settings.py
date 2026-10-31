@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     "promocodes",
     "reviews",
     "newsletter",
+    "support",
     "designs",
     "notifications",
     "backups",
@@ -47,6 +48,7 @@ AUTH_USER_MODEL = "accounts.User"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -85,6 +87,8 @@ REDIS_URL = env("REDIS_URL")
 
 CELERY_BROKER_URL = REDIS_URL
 CELERY_RESULT_BACKEND = REDIS_URL
+# Local runs without a worker: print files render inline.
+CELERY_TASK_ALWAYS_EAGER = env.bool("CELERY_TASK_ALWAYS_EAGER", default=False)
 # Keep the redacting LOGGING config in workers too (T-517).
 CELERY_WORKER_HIJACK_ROOT_LOGGER = False
 # Run by `celery -A config beat` alongside the worker.
@@ -138,6 +142,10 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
+}
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -158,6 +166,7 @@ REST_FRAMEWORK = {
         "auth-password-reset": "5/min",
         "order-track": "30/min",
         "newsletter": "10/min",
+        "complaints": "5/hour",
         "reviews": "60/min",
     },
 }

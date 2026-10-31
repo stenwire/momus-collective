@@ -274,7 +274,7 @@ describe("CheckoutPage", () => {
   async function fillAddress() {
     await userEvent.type(await screen.findByLabelText("Email"), "g@example.com");
     await userEvent.type(screen.getByLabelText("Full name"), "Ada Lovelace");
-    await userEvent.type(screen.getByLabelText("Phone number"), "+2348000000000");
+    await userEvent.type(screen.getByLabelText("Phone number"), "8000000000");
     await userEvent.type(screen.getByLabelText("Address"), "12 Admiralty Way");
     await userEvent.type(screen.getByLabelText("City or town"), "Lekki");
     await userEvent.selectOptions(screen.getByLabelText("State"), "Lagos");

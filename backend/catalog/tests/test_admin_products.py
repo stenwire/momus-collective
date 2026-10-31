@@ -208,3 +208,30 @@ def test_stocked_shirt_colours_are_accepted():
         format="json",
     )
     assert resp.status_code == 201
+
+
+def test_product_list_filters_by_status_and_category():
+    client = auth_client(make_admin())
+    tees = make_category("Tees", "tees")
+    mugs = make_category("Mugs", "mugs")
+    Product.objects.create(
+        slogan="live tee", slug="live-tee", category=tees, price=1000
+    )
+    Product.objects.create(
+        slogan="draft tee", slug="draft-tee", category=tees, price=1000, is_active=False
+    )
+    Product.objects.create(
+        slogan="draft mug", slug="draft-mug", category=mugs, price=1000, is_active=False
+    )
+
+    def slogans(query):
+        resp = client.get(f"/api/v1/admin/products/?{query}")
+        assert resp.status_code == 200
+        return {row["slogan"] for row in resp.json()["results"]}
+
+    assert slogans("status=published") == {"live tee"}
+    assert slogans("status=draft") == {"draft tee", "draft mug"}
+    assert slogans(f"category={tees.id}") == {"live tee", "draft tee"}
+    assert slogans(f"status=draft&category={mugs.id}") == {"draft mug"}
+    assert slogans("category=not-a-uuid") == set()
+    assert len(slogans("status=anything")) == 3

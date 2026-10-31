@@ -4,6 +4,7 @@ import { useState } from "react";
 import { unsubscribeFromNewsletter } from "@/lib/newsletter";
 import { buttonClasses } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
+import { toast } from "@/lib/toast";
 
 export function UnsubscribeButton({ token }: { token: string }) {
   const [state, setState] = useState<{ done: boolean; message: string; error: boolean }>({
@@ -27,8 +28,10 @@ export function UnsubscribeButton({ token }: { token: string }) {
           try {
             const message = await unsubscribeFromNewsletter(token);
             setState({ done: true, message, error: false });
+            toast(message, { tone: "success", label: "Unsubscribed" });
           } catch (error) {
             setState({ done: false, message: (error as Error).message, error: true });
+            toast((error as Error).message, { tone: "error" });
           }
         }}
         className={cn(buttonClasses({ size: "sm" }), "self-start")}

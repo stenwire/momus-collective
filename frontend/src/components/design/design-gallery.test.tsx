@@ -3,8 +3,10 @@ import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useAuthStore } from "@/lib/auth/store";
-import { signedIn, signedOut } from "@/test/auth";
+import { signedIn, signedOut, testUser } from "@/test/auth";
 import { useDesignStore } from "@/lib/design/store";
+import { makeQueryClient } from "@/lib/query-client";
+import { useToasts } from "@/lib/toast";
 import { designOptions } from "@/test/design-fixtures";
 import { DesignGallery } from "./design-gallery";
 
@@ -28,7 +30,12 @@ const json = (status: number, body: unknown) =>
 
 function renderGallery() {
   return render(
-    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>
+    <QueryClientProvider
+      client={new QueryClient({
+        defaultOptions: { queries: { retry: false } },
+        mutationCache: makeQueryClient().getMutationCache(),
+      })}
+    >
       <DesignGallery />
     </QueryClientProvider>,
   );
@@ -40,6 +47,7 @@ describe("DesignGallery", () => {
 
   beforeEach(() => {
     localStorage.clear();
+    useToasts.setState({ toasts: [] });
     push.mockReset();
     replace.mockReset();
     designs = [design];
@@ -57,9 +65,11 @@ describe("DesignGallery", () => {
         designs = designs.filter((d) => !url.endsWith(`/${d.id}/`));
         return json(204, {});
       }
+      if (url.endsWith("/admin/categories/")) return json(200, [{ id: "c1", name: "Tech" }]);
+      if (url.endsWith("/convert/")) return json(201, { id: "p1" });
       if (url.endsWith("/export/")) return json(202, { status: "queued" });
       if (url.endsWith("/designs/d1/")) return json(200, { ...design, design_file_url: "http://f/" });
-      return json(200, designs);
+      return json(200, { count: designs.length, next: null, results: designs });
     });
     vi.stubGlobal("fetch", fetchMock);
   });
@@ -92,6 +102,16 @@ describe("DesignGallery", () => {
     expect(await screen.findByRole("heading", { name: "Trust me (copy)" })).toBeInTheDocument();
   });
 
+  it("starts a fresh design from the gallery", async () => {
+    useDesignStore.setState({ savedId: "d1", savedConfig: design.config, config: design.config });
+    renderGallery();
+
+    await userEvent.click(await screen.findByRole("button", { name: "New design" }));
+
+    expect(useDesignStore.getState()).toMatchObject({ savedId: null, savedConfig: null });
+    expect(push).toHaveBeenCalledWith("/design");
+  });
+
   it("deletes only after a confirming second press", async () => {
     renderGallery();
     await userEvent.click(await screen.findByRole("button", { name: "Delete Trust me" }));
@@ -104,6 +124,16 @@ describe("DesignGallery", () => {
     renderGallery();
     await userEvent.click(await screen.findByRole("button", { name: "Add Trust me to cart" }));
     expect(await screen.findByText("Print-ready file created at 300 DPI.")).toBeInTheDocument();
+  });
+
+  it("tells staff when a design became a draft product", async () => {
+    useAuthStore.setState({ user: { ...testUser, is_staff: true } });
+    renderGallery();
+    await userEvent.click(await screen.findByRole("button", { name: "Make a product" }));
+    await userEvent.selectOptions(await screen.findByLabelText("Product category"), "c1");
+    await userEvent.click(screen.getByRole("button", { name: "Create draft product" }));
+    await vi.waitFor(() => expect(push).toHaveBeenCalledWith("/admin/products/p1"));
+    expect(useToasts.getState().toasts[0].message).toMatch(/Draft product created/);
   });
 
   it("sends a signed-out visitor to log in", async () => {

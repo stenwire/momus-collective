@@ -1,9 +1,11 @@
 import { create } from "zustand";
+import { errorMessages } from "@/lib/auth/api";
 
 export type Toast = {
   id: number;
   message: string;
-  tone: "neutral" | "error";
+  tone: "neutral" | "success" | "error";
+  label: string;
   action?: { label: string; onClick: () => void };
 };
 
@@ -11,6 +13,8 @@ type ToastState = {
   toasts: Toast[];
   dismiss: (id: number) => void;
 };
+
+const LABELS = { neutral: "Noted", success: "Done", error: "Failed" } as const;
 
 export const TOAST_MS = 5000;
 // Longer when there is something to press, like Undo.
@@ -50,12 +54,17 @@ export function resumeToast(id: number) {
   if (clock && !clock.timer) run(id);
 }
 
+export function toastError(error: unknown) {
+  return toast(errorMessages(error).join(" "), { tone: "error" });
+}
+
 export function toast(
   message: string,
-  options: { tone?: Toast["tone"]; action?: Toast["action"] } = {},
+  options: { tone?: Toast["tone"]; label?: string; action?: Toast["action"] } = {},
 ): number {
   const id = nextId++;
-  const entry: Toast = { id, message, tone: options.tone ?? "neutral", action: options.action };
+  const tone = options.tone ?? "neutral";
+  const entry: Toast = { id, message, tone, label: options.label ?? LABELS[tone], action: options.action };
   // Newest last, at most three on screen.
   useToasts.setState((s) => {
     const kept = [...s.toasts, entry].slice(-3);

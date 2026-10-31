@@ -24,7 +24,7 @@ export function SearchInput({ value, onChange }: Props) {
         aria-label="Search products"
         autoComplete="off"
         spellCheck={false}
-        className={cn(inputClasses, "w-full pl-9")}
+        className={cn(inputClasses, "min-h-11 w-full pl-9 md:min-h-10")}
       />
     </div>
   );

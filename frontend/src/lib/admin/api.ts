@@ -24,6 +24,88 @@ export async function adminCall<T>(path: string, init: RequestInit = {}): Promis
 export const fetchBoard = () =>
   adminCall<{ columns: BoardColumn[] }>("/api/v1/admin/orders/board/");
 
+export type AdminProductInput = {
+  slogan: string;
+  slug: string;
+  category: string;
+  price: number;
+  description: string;
+  shirt_colors: string[];
+  mockup_images: string[];
+  tags: string[];
+  is_active: boolean;
+  is_custom: boolean;
+  display_order: number;
+};
+
+export type AdminProduct = AdminProductInput & {
+  id: string;
+  total_orders: number;
+  avg_rating: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type Page<T> = { count: number; next: string | null; results: T[] };
+
+export const nextPageParam = (last: Page<unknown>, pages: unknown[]) =>
+  last.next ? pages.length + 1 : undefined;
+
+export type ProductStatusFilter = "all" | "published" | "draft";
+
+export const fetchAdminProducts = ({
+  search,
+  page,
+  status = "all",
+  category = "",
+}: {
+  search: string;
+  page: number;
+  status?: ProductStatusFilter;
+  category?: string;
+}) => {
+  const query = new URLSearchParams({ search, page: String(page) });
+  if (status !== "all") query.set("status", status);
+  if (category) query.set("category", category);
+  return adminCall<Page<AdminProduct>>(`/api/v1/admin/products/?${query}`);
+};
+
+export const fetchAdminProduct = (id: string) =>
+  adminCall<AdminProduct>(`/api/v1/admin/products/${id}/`);
+
+export const saveAdminProduct = (id: string | null, body: AdminProductInput) =>
+  adminCall<AdminProduct>(id ? `/api/v1/admin/products/${id}/` : "/api/v1/admin/products/", {
+    method: id ? "PATCH" : "POST",
+    body: JSON.stringify(body),
+  });
+
+export async function deleteAdminProduct(id: string): Promise<void> {
+  const res = await authFetch(`/api/v1/admin/products/${id}/`, { method: "DELETE" });
+  if (!res.ok) throw new ApiError(res.status, await res.json().catch(() => ({})));
+}
+
+export type AdminComplaint = {
+  id: string;
+  email: string;
+  order_number: string;
+  topic: string;
+  topic_label: string;
+  details: string;
+  status: "open" | "resolved";
+  status_label: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export const fetchAdminComplaints = (page: number) =>
+  adminCall<Page<AdminComplaint>>(`/api/v1/admin/complaints/?page=${page}`);
+
+export const updateComplaintStatus = (id: string, status: AdminComplaint["status"]) =>
+  adminCall<AdminComplaint>(`/api/v1/admin/complaints/${id}/`, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
+  });
+
 export const moveOrder = (id: string, status: OrderStatus) =>
   adminCall<AdminCard>(`/api/v1/admin/orders/${id}/status/`, {
     method: "PATCH",
@@ -146,7 +228,7 @@ export type PromoInput = Omit<
   "id" | "uses_count" | "redemptions" | "total_discount" | "remaining_uses" | "created_at"
 >;
 
-export const fetchPromoCodes = () => adminCall<PromoCode[]>("/api/v1/admin/promo-codes/");
+export const fetchPromoCodes = (page: number) => adminCall<Page<PromoCode>>(`/api/v1/admin/promo-codes/?page=${page}`);
 
 export const savePromoCode = (id: string | null, body: Partial<PromoInput>) =>
   adminCall<PromoCode>(id ? `/api/v1/admin/promo-codes/${id}/` : "/api/v1/admin/promo-codes/", {
@@ -215,3 +297,34 @@ export const moderateReview = (
   id: string,
   body: { is_flagged?: boolean; is_visible?: boolean; hidden_reason?: string },
 ) => adminCall<AdminReview>(`/api/v1/admin/reviews/${id}/`, { method: "PATCH", body: JSON.stringify(body) });
+
+export type AdminCategory = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  display_order: number;
+  is_active: boolean;
+};
+export type AdminCategoryInput = Omit<AdminCategory, "id">;
+
+export const fetchAdminCategories = () => adminCall<AdminCategory[]>("/api/v1/admin/categories/");
+
+export const saveAdminCategory = (id: string | null, body: AdminCategoryInput) =>
+  adminCall<AdminCategory>(id ? `/api/v1/admin/categories/${id}/` : "/api/v1/admin/categories/", {
+    method: id ? "PATCH" : "POST",
+    body: JSON.stringify(body),
+  });
+
+export type DesignPricing = { print_cost: number; margin: number; blank_costs: Record<string, number> };
+
+export const fetchDesignPricingAdmin = () => adminCall<DesignPricing>("/api/v1/admin/design-pricing/");
+
+export const saveDesignPricing = (body: DesignPricing) =>
+  adminCall<DesignPricing>("/api/v1/admin/design-pricing/", { method: "PATCH", body: JSON.stringify(body) });
+
+export const convertDesignToProduct = (designId: string, category: string) =>
+  adminCall<AdminProduct>(`/api/v1/admin/designs/${designId}/convert/`, {
+    method: "POST",
+    body: JSON.stringify({ category }),
+  });

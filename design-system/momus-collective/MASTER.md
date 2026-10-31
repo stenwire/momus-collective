@@ -13,7 +13,9 @@ overrides this one for that page only. Decisions: D-106 (style), D-107
 - **Neoclassical material.** Bone, laurel gold and marble grain on ink, taken from the raven, the toga and the wordmark.
 - **Brutal motion, not soft.** Motion snaps, stamps and collapses hard offsets; it does not float or blur.
 
-The storefront is dark only.
+The storefront supports dark and light themes, switched from the footer. The
+same bone, laurel and ink relationships carry across both; light mode changes
+the surfaces and foreground values rather than introducing a second accent.
 
 ## Colour
 
@@ -28,6 +30,11 @@ The storefront is dark only.
 | `violet` | `#2A1F3D` | raven sheen; rare hover glow, never behind text | decorative |
 | `error` | `#E5484D` | errors | 5.1:1 (4.7:1 on ink-raised) |
 | `ok` | `#4CC38A` | success | 8.9:1 |
+
+Light theme overrides: `ink` `#F4F5F1`, `ink-raised` `#FFFFFF`, `bone`
+`#191D19`, `bone-muted` `#596159`, `laurel` `#73520B`, `laurel-hi` `#5D4106`,
+`error` `#B4232C`, and `ok` `#147044`. Both themes are checked against WCAG AA
+text contrast in `frontend/src/app/theme.test.ts`.
 
 **Rules:**
 - Text on `laurel` is `ink`.

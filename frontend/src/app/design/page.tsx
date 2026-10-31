@@ -1,5 +1,6 @@
 import { HydrationBoundary, dehydrate } from "@tanstack/react-query";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Raven } from "@/components/brand/raven";
 import { DesignTool } from "@/components/design/design-tool";
 import { fetchDesignOptions, fetchDesignPricing } from "@/lib/api";
@@ -39,6 +40,9 @@ export default async function DesignPage() {
           {/* PRD L31: the raven as a decorative element on the design tool. */}
           <Raven className="w-20 shrink-0 md:w-28" sizes="112px" />
         </div>
+        <p className="mx-auto w-full max-w-6xl px-4 pb-4 text-sm text-bone-muted">
+          <Link href="/account/designs" className="text-laurel underline">View your saved designs</Link>
+        </p>
         <DesignTool />
       </main>
     </HydrationBoundary>

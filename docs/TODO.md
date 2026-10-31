@@ -186,6 +186,9 @@ T-3xx = M3, T-4xx = M4, T-5xx = M5, T-6xx = M6. Never reuse a retired ID.
 | T-628 | M6 | Verify finding 1 (minor, CI-SEC-05): dev-only `braces@3.0.3` (high, stack-exhaustion DoS) via `eslint-config-next` → `fast-glob` → `micromatch`; predates T-617. Add a `braces` ≥3.0.4 override in `frontend/pnpm-workspace.yaml` | T-617 | [~] |
 | T-629 | M6 | Verify finding 1 (minor, DRY): `KineticText` (`ui/kinetic-text.tsx`) has no importer outside its test while `hero.tsx:8-17` reimplements the word rise, and the two have drifted (mask padding); make the hero use `KineticText` or delete it | T-627 | [x] |
 | T-630 | M6 | Verify finding 1 (minor, NFR-02): simulated-mobile LCP is 3.14–3.23s against "under 3 seconds on 3G" (home was 2.6s at M2; the Lighthouse score clause passes at 93–94). Cut initial JS (≈249KB gzip) further and re-measure toward LCP ≤ 3s | T-613 | [ ] |
+| T-631 | M6 | Verify finding 1 (major, BLD-04): `ruff check` has 2 × E501 (`support/models.py:24`, `support/tests/test_complaints.py:73`) and `ruff format --check` flags 6 files under `backend/support/`. Format the app and wrap the two lines (done 2026-11-01: `ruff check .` All checks passed, `ruff format --check .` 216 files already formatted, support tests 3 passed) | none | [x] |
+| T-632 | M6 | Verify finding 2 (major, API-06): complaints app, admin products/categories/complaints/pricing screens, profile page, backend Dockerfile and R2/S3 wiring are in the tree with no tracker rows. Record each as a task with proof, or move it off this branch | none | [ ] |
+| T-633 | M6 | Verify finding 3 (minor): untracked `frontend/AGENTS.md`, `frontend/CLAUDE.md`, `mascot-human-old.png`, `mascot-human-cutout.png` beside the deleted `mascot-human.png`; pick the canonical asset (SPC-15) and drop the rest | none | [ ] |
 
 ## Change log
 

@@ -11,13 +11,14 @@ import { FormErrors } from "../auth/form-field";
 import { buttonClasses } from "@/components/ui/button";
 import { inputClasses, labelClasses } from "@/components/ui/input";
 import { cn } from "@/lib/cn";
+import { toast, toastError } from "@/lib/toast";
 
 const BUTTON = buttonClasses();
 const SECONDARY = buttonClasses({ variant: "secondary" });
 
 export function SaveDesign({ config }: { config: DesignConfig }) {
   const signedIn = useSignedIn();
-  const { savedId, savedConfig, name, setName, markSaved } = useDesignStore();
+  const { savedId, savedConfig, name, setName, markSaved, startNew } = useDesignStore();
   const [prompting, setPrompting] = useState(false);
   const [status, setStatus] = useState("");
   const [errors, setErrors] = useState<string[]>([]);
@@ -65,7 +66,9 @@ export function SaveDesign({ config }: { config: DesignConfig }) {
     setErrors([]);
     setStatus("");
     try {
-      setStatus(await task());
+      const message = await task();
+      setStatus(message);
+      toast(message, { tone: "success", label: "Saved" });
     } catch (error) {
       // Deleted elsewhere: the next save creates it afresh.
       if (error instanceof ApiError && error.status === 404) {
@@ -73,6 +76,7 @@ export function SaveDesign({ config }: { config: DesignConfig }) {
       }
       setStatus("");
       setErrors(errorMessages(error));
+      toastError(error);
     } finally {
       setPending(false);
     }
@@ -125,6 +129,11 @@ export function SaveDesign({ config }: { config: DesignConfig }) {
       >
         Add to cart
       </button>
+      {savedId ? (
+        <button type="button" onClick={() => startNew()} className={SECONDARY}>
+          Start another design
+        </button>
+      ) : null}
       <p aria-live="polite" className="text-sm text-ok">
         {status}
       </p>

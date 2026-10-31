@@ -33,6 +33,11 @@ function Row({
   const reasonId = useId();
   const act = useMutation({
     mutationFn: (body: Parameters<typeof moderateReview>[1]) => moderateReview(review.id, body),
+    meta: {
+      success: (_review: unknown, body: Parameters<typeof moderateReview>[1]) =>
+        body.is_visible === false ? "Review hidden." : body.is_visible ? "Review restored." : body.is_flagged ? "Review flagged." : "Flag cleared.",
+      label: "Moderated",
+    },
     onMutate: () => setErrors([]),
     onSuccess: () => {
       setHiding(false);

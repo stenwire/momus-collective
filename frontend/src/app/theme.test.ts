@@ -11,6 +11,13 @@ function token(name: string): string {
   return match[1];
 }
 
+function lightToken(name: string): string {
+  const theme = css.match(/:root\[data-theme="light"\]\s*{([^}]+)}/)?.[1];
+  const match = theme?.match(new RegExp(`--color-${name}:\\s*(#[0-9a-f]{6});`, "i"));
+  if (!match) throw new Error(`Light --color-${name} is not a hex token in globals.css`);
+  return match[1];
+}
+
 function luminance(hex: string): number {
   const [r, g, b] = [1, 3, 5].map((i) => {
     const c = parseInt(hex.slice(i, i + 2), 16) / 255;
@@ -45,8 +52,13 @@ describe("theme tokens", () => {
     expect(contrast(token(fg), token(bg))).toBeGreaterThanOrEqual(4.5);
   });
 
-  it("is dark only", () => {
+  it.each(TEXT_PAIRS)("light %s on %s meets WCAG AA for body text", (fg, bg) => {
+    expect(contrast(lightToken(fg), lightToken(bg))).toBeGreaterThanOrEqual(4.5);
+  });
+
+  it("defines dark and light color schemes", () => {
     expect(css).toMatch(/color-scheme:\s*dark/);
+    expect(css).toMatch(/:root\[data-theme="light"\][^{]*{[\s\S]*?color-scheme:\s*light/);
   });
 
   // A held transform would keep every route wrapper a stacking context and

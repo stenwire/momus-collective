@@ -29,6 +29,7 @@ function StatusControl({ order }: { order: AdminOrderDetail }) {
   const [errors, setErrors] = useState<string[]>([]);
   const move = useMutation({
     mutationFn: (status: OrderStatus) => moveOrder(order.id, status),
+    meta: { success: "Order status updated.", label: "Updated" },
     onMutate: () => setErrors([]),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-order", order.id] }),
     onError: (error) => setErrors(errorMessages(error)),
@@ -70,6 +71,7 @@ function Notes({ order }: { order: AdminOrderDetail }) {
   const id = useId();
   const save = useMutation({
     mutationFn: () => saveOrderNotes(order.id, notes),
+    meta: { success: "Order notes saved.", label: "Saved" },
     onSuccess: (data) => {
       queryClient.setQueryData(["admin-order", order.id], data);
       setSaved("Notes saved.");

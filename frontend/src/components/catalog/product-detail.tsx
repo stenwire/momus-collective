@@ -25,7 +25,8 @@ type BagState = "idle" | "adding" | "bagged";
 export function ProductDetailView({ product }: { product: ProductDetail }) {
   const [size, setSize] = useState<string>(SIZES[0]);
   const [color, setColor] = useState<string | undefined>(product.shirt_colors[0]);
-  const mockup = product.mockup_images[0];
+  const [imageIndex, setImageIndex] = useState(0);
+  const mockup = product.mockup_images[imageIndex];
   const { add } = useCart();
   const openBag = useCartDrawer((s) => s.setOpen);
   const [status, setStatus] = useState("");
@@ -76,45 +77,61 @@ export function ProductDetailView({ product }: { product: ProductDetail }) {
   }
 
   return (
-    <div className="flex flex-col gap-8 p-4 md:flex-row md:p-8">
-      <m.div
-        ref={mockupRef}
-        layoutId={shared ? mockupLayoutId(product.id) : undefined}
-        className="relative aspect-square w-full shrink-0 self-start overflow-hidden border border-rule bg-ink md:w-96"
-      >
-        {mockup ? (
-          <Image
-            src={mockup}
-            alt={product.slogan}
-            fill
-            priority
-            sizes="(max-width: 768px) 100vw, 384px"
-            className="object-cover"
-          />
-        ) : (
-          <div
-            aria-hidden="true"
-            data-slogan={product.slogan}
-            className="marble absolute inset-0 grid place-items-center p-8 text-center font-display text-5xl uppercase leading-none tracking-tight text-bone before:content-[attr(data-slogan)]"
-          />
-        )}
-        {/* PRD: the avatar as a subtle stamp on the product view. The clip
-            drops its white corners; lighten drops its black disc. */}
-        <span className="absolute bottom-3 right-3 size-12 overflow-hidden rounded-full opacity-70">
-          <Image
-            src="/avatar-192.png"
-            alt="momus collective seal"
-            width={48}
-            height={48}
-            className="mix-blend-lighten"
-          />
-        </span>
-      </m.div>
+    <div className="mx-auto flex w-full max-w-[1600px] flex-col gap-8 p-3 sm:p-5 md:flex-row md:items-start md:gap-10 md:p-8">
+      <div className="flex w-full min-w-0 flex-col gap-2 md:sticky md:top-20 md:w-[min(54vw,720px)] md:shrink-0">
+        <m.div
+          ref={mockupRef}
+          layoutId={shared ? mockupLayoutId(product.id) : undefined}
+          className="relative aspect-[4/5] w-full overflow-hidden border border-rule bg-ink-raised"
+        >
+          {mockup ? (
+            <Image
+              src={mockup}
+              alt={`${product.slogan}, view ${imageIndex + 1}`}
+              fill
+              priority
+              sizes="(max-width: 768px) 100vw, 54vw"
+              className="object-cover"
+            />
+          ) : (
+            <div
+              aria-hidden="true"
+              data-slogan={product.slogan}
+              className="marble absolute inset-0 grid place-items-center p-8 text-center font-display text-5xl uppercase leading-none tracking-tight text-bone before:content-[attr(data-slogan)]"
+            />
+          )}
+          <span className="absolute bottom-3 right-3 size-10 overflow-hidden rounded-full opacity-70">
+            <Image
+              src="/avatar-192.png"
+              alt="momus collective seal"
+              width={40}
+              height={40}
+              className="mix-blend-lighten"
+            />
+          </span>
+        </m.div>
+        {product.mockup_images.length > 1 ? (
+          <div className="flex gap-2 overflow-x-auto pb-1" aria-label="Product images">
+            {product.mockup_images.map((src, index) => (
+              <button
+                key={src}
+                type="button"
+                aria-label={`Show image ${index + 1}`}
+                aria-pressed={imageIndex === index}
+                onClick={() => setImageIndex(index)}
+                className={`relative size-16 shrink-0 cursor-pointer overflow-hidden border ${imageIndex === index ? "border-laurel" : "border-rule"}`}
+              >
+                <Image src={src} alt={`${product.slogan}, thumbnail ${index + 1}`} fill sizes="64px" className="object-cover" />
+              </button>
+            ))}
+          </div>
+        ) : null}
+      </div>
 
-      <div className="flex min-w-0 flex-1 flex-col gap-6">
+      <div className="flex min-w-0 flex-1 flex-col gap-5 md:py-4">
         <div className="flex flex-col gap-2">
           <p className={labelClasses}>{product.category.name}</p>
-          <h1 className="font-display text-[clamp(2.5rem,7vw,4rem)] uppercase leading-[0.9] tracking-tight [overflow-wrap:anywhere]">
+          <h1 className="font-display text-4xl uppercase leading-[0.9] sm:text-5xl lg:text-6xl [overflow-wrap:anywhere]">
             {product.slogan}
           </h1>
           <p className="font-mono text-xl font-bold tabular-nums text-laurel">
@@ -147,7 +164,7 @@ export function ProductDetailView({ product }: { product: ProductDetail }) {
           </fieldset>
         ) : null}
 
-        <Button size="lg" onClick={addToBag} loading={bag === "adding"}>
+        <Button size="md" className="w-full sm:w-auto" onClick={addToBag} loading={bag === "adding"}>
           {bag === "bagged" ? (
             <>
               <Check className="size-5" aria-hidden="true" /> Bagged
@@ -185,7 +202,7 @@ export function ProductDetailView({ product }: { product: ProductDetail }) {
         {product.related_products.length > 0 ? (
           <div className="border-t border-rule pt-6">
             <h2 className="mb-4 font-display text-2xl uppercase tracking-tight">You might also like</h2>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3">
               {product.related_products.map((related) => (
                 <ProductCard key={related.id} product={related} />
               ))}

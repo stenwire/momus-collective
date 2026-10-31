@@ -13,6 +13,7 @@ from catalog.admin_views import (
 )
 from designs.views import SavedDesignViewSet
 from promocodes.admin_views import AdminPromoCodeViewSet
+from support.views import AdminComplaintViewSet
 
 router = DefaultRouter()
 router.register("addresses", AddressViewSet, basename="address")
@@ -23,6 +24,7 @@ router.register(
     "admin/collections", AdminCollectionViewSet, basename="admin-collection"
 )
 router.register("admin/promo-codes", AdminPromoCodeViewSet, basename="admin-promo-code")
+router.register("admin/complaints", AdminComplaintViewSet, basename="admin-complaint")
 
 
 @api_view(["GET"])
@@ -61,6 +63,7 @@ urlpatterns = [
     path("", include("carts.urls")),
     path("", include("orders.urls")),
     path("", include("newsletter.urls")),
+    path("", include("support.urls")),
     path("", include("reviews.urls")),
     path("", include(router.urls)),
 ]

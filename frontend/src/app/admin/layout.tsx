@@ -11,9 +11,11 @@ export const metadata: Metadata = {
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <AdminGuard>
-      <div className="flex min-w-0 flex-1 flex-col">
-        <AdminNav />
-        {children}
+      <div className="admin-shell flex min-w-0 flex-1 flex-col">
+        <div className="flex min-w-0 flex-1 flex-col lg:flex-row">
+          <AdminNav />
+          <div className="flex min-w-0 flex-1 flex-col">{children}</div>
+        </div>
       </div>
     </AdminGuard>
   );

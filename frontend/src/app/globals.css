@@ -13,6 +13,27 @@
   --color-error: #e5484d;
   --color-ok: #4cc38a;
 
+  --color-zinc-50: var(--color-bone);
+  --color-zinc-100: var(--color-bone);
+  --color-zinc-200: var(--color-bone);
+  --color-zinc-300: var(--color-bone-muted);
+  --color-zinc-400: var(--color-bone-muted);
+  --color-zinc-500: var(--color-bone-muted);
+  --color-zinc-600: var(--color-rule);
+  --color-zinc-700: var(--color-rule);
+  --color-zinc-800: var(--color-rule);
+  --color-zinc-900: var(--color-ink-raised);
+  --color-zinc-950: var(--color-ink);
+  --color-black: var(--color-ink);
+  --color-white: var(--color-bone);
+  --color-amber-300: var(--color-laurel-hi);
+  --color-amber-400: var(--color-laurel);
+  --color-amber-500: var(--color-laurel-hi);
+  --color-emerald-400: var(--color-ok);
+  --color-emerald-500: var(--color-ok);
+  --color-red-400: var(--color-error);
+  --color-red-500: var(--color-error);
+
   --font-sans: var(--font-epilogue), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-anton), Impact, "Arial Narrow", sans-serif;
   --font-mono: var(--font-space-mono), ui-monospace, monospace;
@@ -65,6 +86,20 @@
   --animate-fill: strike 0.45s var(--ease-out-expo) both;
   --animate-stamp: stamp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both;
   --animate-flip: flip 0.9s var(--ease-out-expo) 0.7s both;
+  --animate-draw: draw 0.45s var(--ease-out-expo) 0.2s both;
+  --animate-countdown: countdown var(--toast-ms) linear forwards;
+
+  @keyframes draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+  }
+
+  @keyframes countdown {
+    to {
+      transform: scaleX(0);
+    }
+  }
 
   @keyframes stamp {
     from {
@@ -105,6 +140,20 @@
     color-scheme: dark;
   }
 
+  :root[data-theme="light"] {
+    color-scheme: light;
+    --color-ink: #f4f5f1;
+    --color-ink-raised: #ffffff;
+    --color-bone: #191d19;
+    --color-bone-muted: #596159;
+    --color-rule: rgb(25 29 25 / 0.18);
+    --color-laurel: #73520b;
+    --color-laurel-hi: #5d4106;
+    --color-violet: #e8e4ef;
+    --color-error: #b4232c;
+    --color-ok: #147044;
+  }
+
   html {
     -webkit-tap-highlight-color: rgb(201 162 74 / 0.2);
     scroll-padding-top: 5rem;
@@ -117,12 +166,43 @@
 
   a,
   button,
-  input,
   select,
-  textarea,
   label,
-  [role="button"] {
+  summary,
+  [role="button"],
+  input[type="checkbox"],
+  input[type="radio"],
+  input[type="range"] {
+    cursor: pointer;
     touch-action: manipulation;
+  }
+
+  button:disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  textarea {
+    cursor: text;
+  }
+
+  input[type="checkbox"],
+  input[type="radio"] {
+    accent-color: var(--color-laurel);
+  }
+
+  select {
+    appearance: none;
+    padding-right: 2.5rem;
+    background-image:
+      linear-gradient(45deg, transparent 50%, var(--color-laurel) 50%),
+      linear-gradient(135deg, var(--color-laurel) 50%, transparent 50%);
+    background-position:
+      calc(100% - 1.125rem) 50%,
+      calc(100% - 0.75rem) 50%;
+    background-repeat: no-repeat;
+    background-size: 6px 6px;
   }
 
   :focus-visible {
@@ -134,6 +214,12 @@
   h2,
   h3 {
     text-wrap: balance;
+  }
+}
+
+@layer utilities {
+  .admin-shell :where(.rounded-sm, .rounded, .rounded-md, .rounded-lg, .rounded-xl) {
+    border-radius: 0;
   }
 }
 
@@ -160,8 +246,13 @@
     display: none;
   }
 
-  .animate-stamp {
+  .animate-stamp,
+  .animate-draw {
     animation: none;
+  }
+
+  .animate-countdown {
+    display: none;
   }
 
   /* Show the comedy side straight away. */

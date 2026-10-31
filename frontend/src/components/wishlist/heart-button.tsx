@@ -44,6 +44,7 @@ function MemberHeart({ productId, slogan }: { productId: string; slogan: string 
   const saved = wishlist.data?.some((entry) => entry.product.id === productId) ?? false;
   const toggle = useMutation({
     mutationFn: () => (saved ? removeFromWishlist(productId) : addToWishlist(productId)),
+    meta: { success: saved ? "Removed from your wishlist." : "Saved to your wishlist.", label: saved ? "Removed" : "Saved" },
     onSuccess: (entries) => {
       queryClient.setQueryData(["wishlist"], entries);
       if (entries.some((entry) => entry.product.id === productId)) setBursts((n) => n + 1);

@@ -6,6 +6,7 @@ import { useState } from "react";
 import { spring } from "@/lib/motion";
 
 const TABS = [
+  { href: "/account/profile", label: "Profile" },
   { href: "/account/orders", label: "Orders" },
   { href: "/account/designs", label: "Designs" },
   { href: "/account/wishlist", label: "Wishlist" },

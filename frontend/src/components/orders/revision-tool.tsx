@@ -12,6 +12,7 @@ import { DesignControls } from "../design/design-controls";
 import { ShirtCanvas } from "../design/shirt-canvas";
 import { buttonClasses } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
+import { toast, toastError } from "@/lib/toast";
 
 // Local state on purpose: a revision never touches the saved design draft.
 export function RevisionTool({ token, itemId }: { token: string; itemId: string }) {
@@ -57,9 +58,11 @@ export function RevisionTool({ token, itemId }: { token: string; itemId: string 
             setErrors([]);
             try {
               await submitRevision(token, itemId, config);
+              toast("Revised design sent for review.", { tone: "success", label: "Sent" });
               router.push(`/track/${encodeURIComponent(token)}?revised=1`);
             } catch (error) {
               setErrors(errorMessages(error));
+              toastError(error);
               setSending(false);
             }
           }}

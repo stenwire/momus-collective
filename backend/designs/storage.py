@@ -37,6 +37,10 @@ def discard_design_files(design_id):
         os.rmdir(storage.path(prefix))
 
 
+def mockup_file_name(product_id):
+    return f"mockups/{product_id}.png"
+
+
 def order_item_file_name(item_id):
     return f"orders/{item_id}.png"
 

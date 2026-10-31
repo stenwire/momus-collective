@@ -1,10 +1,14 @@
+from uuid import UUID
+
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import transaction
+from django.db.models import Q
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from config.pagination import StandardPagination
 from config.permissions import IsStaffUser
 
 from .admin_serializers import (
@@ -21,9 +25,31 @@ class AdminProductViewSet(viewsets.ModelViewSet):
 
     serializer_class = AdminProductSerializer
     permission_classes = [IsStaffUser]
+    pagination_class = StandardPagination
     queryset = Product.objects.select_related("category").order_by(
         "category", "display_order"
     )
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        if self.action != "list":
+            return queryset
+        params = self.request.query_params
+        search = params.get("search", "").strip()
+        if search:
+            queryset = queryset.filter(
+                Q(slogan__icontains=search) | Q(slug__icontains=search)
+            )
+        status = params.get("status")
+        if status in ("published", "draft"):
+            queryset = queryset.filter(is_active=status == "published")
+        category = params.get("category", "")
+        if category:
+            try:
+                queryset = queryset.filter(category_id=UUID(category))
+            except ValueError:
+                queryset = queryset.none()
+        return queryset
 
     @action(detail=False, methods=["post"])
     def bulk_price(self, request):

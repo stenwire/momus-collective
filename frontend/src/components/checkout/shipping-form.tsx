@@ -2,6 +2,7 @@
 
 import { cloneElement, isValidElement, useId } from "react";
 import { inputClasses, labelClasses } from "@/components/ui/input";
+import { PhoneNumberInput } from "@/components/ui/phone-number-input";
 import { cn } from "@/lib/cn";
 import type { CheckoutOptions, SavedAddress, Shipping } from "@/lib/checkout/types";
 
@@ -49,6 +50,7 @@ export function ShippingForm({
   errors: Partial<Record<keyof Shipping, string>>;
 }) {
   const set = (patch: Partial<Shipping>) => onChange({ ...value, ...patch });
+  const phoneErrorId = useId();
   const input = (key: keyof Shipping, extra: React.InputHTMLAttributes<HTMLInputElement> = {}) => (
     <input
       value={value[key]}
@@ -87,9 +89,19 @@ export function ShippingForm({
       <Field label="Full name" error={errors.full_name}>
         {input("full_name", { autoComplete: "name" })}
       </Field>
-      <Field label="Phone number" error={errors.phone}>
-        {input("phone", { type: "tel", autoComplete: "tel" })}
-      </Field>
+      <div className="flex flex-col gap-1">
+        <PhoneNumberInput
+          label="Phone number"
+          name="phone"
+          value={value.phone || "+234"}
+          onChange={(phone) => set({ phone })}
+          autoComplete="tel"
+          required
+          invalid={Boolean(errors.phone)}
+          describedBy={errors.phone ? phoneErrorId : undefined}
+        />
+        {errors.phone ? <span id={phoneErrorId} className="text-xs text-error">{errors.phone}</span> : null}
+      </div>
       <Field label="Address" error={errors.address_line_1}>
         {input("address_line_1", { autoComplete: "address-line1" })}
       </Field>

@@ -61,9 +61,10 @@ describe("ProductDetailView", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders up to 4 related products", () => {
-    render(<ProductDetailView product={product} />);
+  it("renders related products in a two-column grid", () => {
+    const { container } = render(<ProductDetailView product={product} />);
     expect(screen.getByText("related product")).toBeInTheDocument();
+    expect(container.querySelector(".grid.grid-cols-2.gap-3")).toBeInTheDocument();
   });
 
   it("gives every image alt text", () => {

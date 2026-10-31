@@ -27,13 +27,14 @@ export function useCart() {
   });
   const onServerCart = (data: CartData) => queryClient.setQueryData(["cart"], data);
 
-  const addMutation = useMutation({ mutationFn: addToServerCart, onSuccess: onServerCart });
+  const addMutation = useMutation({ mutationFn: addToServerCart, onSuccess: onServerCart, meta: { quiet: true } });
   const quantityMutation = useMutation({
     mutationFn: ({ id, quantity }: { id: string; quantity: number }) =>
       setServerQuantity(id, quantity),
     onSuccess: onServerCart,
+    meta: { quiet: true },
   });
-  const removeMutation = useMutation({ mutationFn: removeServerLine, onSuccess: onServerCart });
+  const removeMutation = useMutation({ mutationFn: removeServerLine, onSuccess: onServerCart, meta: { quiet: true } });
 
   const cart = signedIn ? (server.data ?? EMPTY) : guestCartData(guest.lines);
 

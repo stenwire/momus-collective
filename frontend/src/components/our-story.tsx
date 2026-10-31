@@ -8,15 +8,14 @@ export function OurStory() {
       className="mx-auto grid w-full max-w-6xl gap-10 border-b border-rule px-4 py-16 md:grid-cols-[auto_1fr] md:items-center md:gap-16"
     >
       <Reveal>
-        {/* A marble tablet: multiply turns the artwork's white ground into
-            bone, so the illustration sits on the page instead of a white box. */}
-        <figure className="marble relative mx-auto aspect-[825/1536] w-56 bg-bone shadow-press md:w-72">
+        {/* A marble tablet the transparent cutout stands on. */}
+        <figure className="marble relative mx-auto aspect-[366/682] w-56 bg-bone shadow-press md:w-72">
           <Image
-            src="/mascot-human.png"
+            src="/mascot-human-cutout.png"
             alt="Momus, depicted as a young man in a Greek toga, wearing a comedy theater mask at his belt"
             fill
             sizes="(min-width: 768px) 288px, 224px"
-            className="object-contain mix-blend-multiply"
+            className="object-contain"
           />
         </figure>
       </Reveal>

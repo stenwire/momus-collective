@@ -7,9 +7,7 @@ import { useId, type CSSProperties } from "react";
 import { mockupLayoutId, useSharedMockup } from "@/lib/shared-mockup";
 import type { Product } from "@/lib/api";
 import { formatNaira } from "@/lib/format";
-import { Tag } from "../ui/tag";
 import { HeartButton } from "../wishlist/heart-button";
-import { RatingSummary } from "./product-reviews";
 
 export function productNumber(index: number): string {
   return `№ ${String(index + 1).padStart(3, "0")}`;
@@ -32,19 +30,19 @@ export function ProductCard({ product, index }: { product: Product; index?: numb
       <Link
         href={`/product/${product.slug}`}
         onClick={() => claim(product.id, owner)}
-        className="group flex flex-col gap-2 border border-rule bg-ink-raised p-3 transition-[border-color,box-shadow,transform] duration-150 hover:border-bone-muted hover:shadow-press active:translate-x-1 active:translate-y-1 active:shadow-none motion-reduce:transition-none"
+        className="group flex cursor-pointer flex-col gap-2"
       >
         <m.div
           layoutId={shared ? mockupLayoutId(product.id) : undefined}
-          className="relative aspect-square overflow-hidden bg-ink"
+          className="relative aspect-[4/5] overflow-hidden border border-rule bg-ink-raised"
         >
           {mockup ? (
             <Image
               src={mockup}
               alt={product.slogan}
               fill
-              sizes="(max-width: 768px) 50vw, 25vw"
-              className="object-cover transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none"
+              sizes="(max-width: 640px) 50vw, (max-width: 1200px) 33vw, 25vw"
+              className="object-cover transition-transform duration-300 group-hover:scale-[1.02] motion-reduce:transition-none"
             />
           ) : (
             // No mockup yet: print the slogan itself. Drawn from a data
@@ -55,27 +53,22 @@ export function ProductCard({ product, index }: { product: Product; index?: numb
               className="marble absolute inset-0 grid place-items-center px-3 pb-9 pt-14 text-center font-display text-lg uppercase leading-none tracking-tight text-bone before:content-[attr(data-slogan)] sm:text-2xl md:text-3xl"
             />
           )}
-          {product.tags[0] ? (
-            <Tag className="absolute left-2 top-2">{product.tags[0]}</Tag>
-          ) : null}
           {index !== undefined ? (
-            <span className="absolute bottom-2 left-2 font-mono text-xs text-bone-muted">
+            <span aria-hidden="true" className="absolute bottom-2 left-2 bg-ink/80 px-1.5 py-1 font-mono text-[10px] text-bone-muted">
               {productNumber(index)}
             </span>
           ) : null}
         </m.div>
-        <p className="font-mono text-xs uppercase tracking-widest text-bone-muted">
-          {product.category.name}
-        </p>
-        <h3 className="text-sm font-semibold text-bone transition-transform duration-200 group-hover:-translate-y-1 motion-reduce:transition-none motion-reduce:group-hover:translate-y-0">
-          {product.slogan}
-        </h3>
-        <p className="font-mono text-sm font-bold tabular-nums text-laurel">
-          {formatNaira(product.price)}
-        </p>
-        <RatingSummary average={product.avg_rating} count={product.review_count} />
+        <div className="flex min-w-0 items-baseline justify-between gap-2">
+          <h3 className="min-w-0 [overflow-wrap:anywhere] text-sm font-medium text-bone group-hover:underline group-hover:decoration-laurel group-hover:underline-offset-4">
+            {product.slogan}
+          </h3>
+          <p className="shrink-0 font-mono text-xs tabular-nums text-laurel">
+            {formatNaira(product.price)}
+          </p>
+        </div>
       </Link>
-      <div className="absolute right-5 top-5">
+      <div className="absolute right-2 top-2">
         <HeartButton productId={product.id} slogan={product.slogan} />
       </div>
     </div>

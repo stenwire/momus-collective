@@ -66,7 +66,7 @@ def test_lists_only_the_requesters_designs():
     save(client_for(other))
     resp = client_for(user).get("/api/v1/designs/")
     assert resp.status_code == 200
-    assert len(resp.json()) == 1
+    assert len(resp.json()["results"]) == 1
 
 
 def test_another_users_design_is_invisible():
@@ -163,7 +163,7 @@ def test_duplicate_copies_the_config_under_a_new_name():
     assert copy["name"] == "My shirt (copy)"
     assert copy["config"] == original["config"]
     assert copy["design_file_url"] == ""
-    assert len(client.get("/api/v1/designs/").json()) == 2
+    assert len(client.get("/api/v1/designs/").json()["results"]) == 2
 
 
 def test_duplicate_name_stays_within_the_field_limit():

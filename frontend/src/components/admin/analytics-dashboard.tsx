@@ -39,8 +39,8 @@ function Trend({ trend }: { trend: Analytics["trend"] }) {
         className="h-40 w-full"
         preserveAspectRatio="none"
       >
-        <line x1="0" y1={height - 4} x2={width} y2={height - 4} stroke="#3f3f46" strokeWidth="1" />
-        <polyline points={points} fill="none" stroke="#fbbf24" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+        <line x1="0" y1={height - 4} x2={width} y2={height - 4} stroke="var(--color-rule)" strokeWidth="1" />
+        <polyline points={points} fill="none" stroke="var(--color-laurel)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
       </svg>
       <div className="flex justify-between text-xs text-zinc-400">
         <span>{day.format(asDate(trend[0].date))}</span>

@@ -6,6 +6,7 @@ import { useState } from "react";
 import { errorMessages, login, safeNext } from "@/lib/auth/api";
 import { FormErrors, FormField } from "./form-field";
 import { buttonClasses } from "@/components/ui/button";
+import { toast } from "@/lib/toast";
 
 export function LoginForm() {
   const router = useRouter();
@@ -24,6 +25,7 @@ export function LoginForm() {
         String(form.get("password")),
         form.get("remember") === "on",
       );
+      toast("Welcome back.", { tone: "success", label: "Signed in" });
       router.push(next);
     } catch (error) {
       setErrors(errorMessages(error));
